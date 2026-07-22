@@ -66,9 +66,10 @@ class BalladeController extends Controller
             'distance' => 'required',
             'denivele' => 'required',
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'ballade_latitude'=> 'required',
-            'ballade_longitude'=> 'required',
+            'ballade_latitude'=> 'required|numeric|between:-90,90',
+            'ballade_longitude'=> 'required|numeric|between:-180,180',
             'tag' => 'required',
+            'status' => 'nullable|in:publie,en_attente',
         ]);
         if ($request->hasFile('ballade_image')) {
             $filename = $this->getFilename($request);
@@ -85,6 +86,7 @@ class BalladeController extends Controller
             'ballade_longitude' => $request->ballade_longitude,
             'user' => $current,
             'tag' => $request->tag,
+            'status' => $request->status ?? 'publie',
         ]);
 
         $ballade->tag = $ballade->tag()->get()[0];
@@ -124,9 +126,10 @@ class BalladeController extends Controller
             'distance' => 'required',
             'denivele' => 'required',
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'ballade_latitude'=> 'required',
-            'ballade_longitude'=> 'required',
+            'ballade_latitude'=> 'required|numeric|between:-90,90',
+            'ballade_longitude'=> 'required|numeric|between:-180,180',
             'tag' => 'required',
+            'status' => 'nullable|in:publie,en_attente',
         ]);
 
         if ($request->hasFile('ballade_image')) {
@@ -151,6 +154,7 @@ class BalladeController extends Controller
             'ballade_longitude' => $request->ballade_longitude,
             'user' => $current,
             'tag' => $request->tag,
+            'status' => $request->status ?? $ballade->status,
         ]);
 
         $ballade->tag = $ballade->tag()->get()[0];

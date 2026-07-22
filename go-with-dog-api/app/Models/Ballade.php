@@ -9,6 +9,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Ballade extends Model
 {
     use HasFactory;
+    protected $casts = [
+        'ballade_latitude' => 'float',
+        'ballade_longitude' => 'float',
+    ];
     protected $fillable = [
         'ballade_name' ,
         'distance',
@@ -18,7 +22,8 @@ class Ballade extends Model
         'ballade_latitude',
         'ballade_longitude',
         'user',
-        'tag'
+        'tag',
+        'status'
     ];
 
     public function user(): BelongsTo

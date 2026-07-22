@@ -8,7 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Address extends Model
 {
     use HasFactory;
-    use HasFactory;
+    protected $casts = [
+        'latitude' => 'float',
+        'longitude' => 'float',
+    ];
     protected $fillable = [
         'address',
         'postal_code',

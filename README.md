@@ -3,28 +3,48 @@ Go with dog
 
 Ce projet est une application web qui répertorie tous les lieux autorisés pour les chiens , les ballades à faire avec eux. Le projet utilise Laravel 9 pour l'API et ReactJS avec la librairie de style MUI avec Material UI pour le front-end.
 
+## Installation avec Docker (recommandé)
+
+Prérequis : Docker + Docker Compose.
+
+    docker compose up --build
+
+Ça démarre l'API Laravel (avec sa base MySQL et migrations automatiques), le front React (Vite) et Mailhog pour intercepter les emails en local :
+
+- Front : http://localhost:3000
+- API : http://localhost:8000
+- Mailhog (emails interceptés) : http://localhost:8025
+
+Pour un lancement façon production (images optimisées, sans montage du code source) :
+
+    docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+
+Voir `CLAUDE.md` pour le détail de l'architecture Docker.
+
+## Installation manuelle (sans Docker)
+
 Prérequis
 
 Avant de pouvoir exécuter l'application, vous devez avoir les éléments suivants installés sur votre système:
 
-    PHP 8
+    PHP 8.3+
     Composer
     Node.js
     NPM
+    MySQL
 
 Installation
 
  Clonez le repository Git.
- Dans le dossier racine, exécutez la commande suivante pour installer les dépendances Laravel:
+ Dans le dossier `go-with-dog-api`, exécutez la commande suivante pour installer les dépendances Laravel:
 
     composer install
 
   Renommez le fichier .env.example en .env et modifiez les variables d'environnement selon vos besoins (par exemple, la configuration de la base de données).
-  Générez une clé d'application en exécutant la commande suivante:
-
-
+  Générez une clé d'application et un secret JWT en exécutant les commandes suivantes:
 
     php artisan key:generate
+    php artisan jwt:secret
 
   Exécutez les migrations pour créer les tables de base de données:
 
@@ -48,23 +68,21 @@ Dans le fichier .env, vous pouvez configurer les variables d'environnement suiva
     DB_USERNAME: Le nom d'utilisateur de la base de données.
     DB_PASSWORD: Le mot de passe de la base de données.
 
+Dans le fichier `go-with-dog-app/.env` (copié depuis `.env.example`), configurez `VITE_API_URL` pour pointer vers l'URL de l'API.
+
 Exécution
 
 Pour exécuter l'application, exécutez les deux commandes suivantes dans deux terminaux différents:
 
-Dans le dossier racine, exécutez la commande suivante pour démarrer l'API:
+Dans le dossier `go-with-dog-api`, exécutez la commande suivante pour démarrer l'API:
 
     php artisan serve
 
-Dans le dossier client, exécutez la commande suivante pour démarrer le serveur de développement de React:
-
-
+Dans le dossier `go-with-dog-app`, exécutez la commande suivante pour démarrer le serveur de développement de React:
 
     npm start
 
 Ensuite, accédez à l'URL suivante dans votre navigateur:
-
-javascript
 
 http://localhost:3000
 

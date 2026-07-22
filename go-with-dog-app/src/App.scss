@@ -100,13 +100,10 @@ $booFaceColor: #9b9b9b;
 
 // ===========
 
-body {
-  background-color: $bgColor;
-}
-
 .container {
   font-family: 'Varela Round', sans-serif;
   color: black;
+  background-color: $bgColor;
   position: relative;
   height: 100vh;
   text-align: center;

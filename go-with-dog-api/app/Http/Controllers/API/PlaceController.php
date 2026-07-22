@@ -51,6 +51,7 @@ class PlaceController extends Controller
             'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
             'category' => 'required',
             'address' => 'required',
+            'status' => 'nullable|in:publie,en_attente',
         ]);
         if ($request->hasFile('place_image')) {
             $filename = $this->getFilename($request);
@@ -64,6 +65,7 @@ class PlaceController extends Controller
             'address' => $request->address,
             'category' => $request->category,
             'user' => $current,
+            'status' => $request->status ?? 'publie',
         ]);
 
         $place->address = $place->address()->get()[0];
@@ -105,6 +107,7 @@ class PlaceController extends Controller
             'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
             'category' => 'required',
             'address' => 'required',
+            'status' => 'nullable|in:publie,en_attente',
         ]);
         if ($request->hasFile('place_image')) {
             if (Place::findOrFail($place->id)->place_image){
@@ -123,6 +126,7 @@ class PlaceController extends Controller
             'address' => $request->address,
             'category' => $request->category,
             'user' => $current,
+            'status' => $request->status ?? $place->status,
         ]);
 
         $place->address = $place->address()->get()[0];

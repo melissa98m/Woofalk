@@ -15,7 +15,8 @@ class Place extends Model
         'place_image',
         'user',
         'address',
-        'category'
+        'category',
+        'status'
     ];
 
     public function user(): BelongsTo

@@ -34,8 +34,8 @@ class AddressController extends Controller
             'address' => 'required|max:100',
             'postal_code' => 'required|max:6',
             'city' => 'required|max:100',
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
         ]);
         // On crée une nouvelle adresse
         $address = Address::create([
@@ -76,8 +76,8 @@ class AddressController extends Controller
             'address' => 'required|max:100',
             'postal_code' => 'required|max:6',
             'city' => 'required|max:100',
-            'latitude' => 'required',
-            'longitude' => 'required',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
         ]);
         // On crée un nouvel utilisateur
         $address->update([
