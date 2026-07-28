@@ -1,7 +1,10 @@
 import {
     Box,
     Button,
+    Checkbox,
+    Chip,
     FormControl,
+    ListItemText,
     Snackbar,
     TextField,
     Alert,
@@ -28,9 +31,11 @@ function EditPlace(props) {
     // One of ...
     const [category, setCategory] = useState(undefined);
     const [address, setAddress] = useState(undefined);
+    const [tags, setTags] = useState((props.updateValue.tags ?? []).map((t) => t.id));
     // List All
     const [categories, setCategories] = useState({});
     const [addresses, setAddresses] = useState({});
+    const [availableTags, setAvailableTags] = useState({});
 
     const [onePlace, setOnePlace] = useState("");
     const [editPlace, setShowEdit] = useState(false);
@@ -52,6 +57,7 @@ function EditPlace(props) {
     let getAlls = async () => {
         await axios.get(`${API_URL}/api/categories`).then((actualData) => { setCategories(actualData.data.data) });
         await axios.get(`${API_URL}/api/addresses`).then((actualData) => { setAddresses(actualData.data.data) });
+        await axios.get(`${API_URL}/api/tags`).then((actualData) => { setAvailableTags(actualData.data.data) });
     }
 
     let editPlaceForm = async () => {
@@ -63,6 +69,7 @@ function EditPlace(props) {
             formData.append("category",  category ? `${category}` : `${props.updateValue.category.id}`);
             formData.append("address", address ? `${address}` : `${props.updateValue.address.id}`);
             formData.append("status", status);
+            tags.forEach((tagId) => formData.append("tags[]", tagId));
             if (place_image){
                 formData.append("place_image", place_image);
             }
@@ -236,6 +243,34 @@ function EditPlace(props) {
                                   </FormControl>
                               )}
                             />
+
+                            <FormControl sx={{ m: 1, mt: 5, minWidth: 120 }} size="small">
+                                <InputLabel id="tags-select">Tags</InputLabel>
+                                <Select
+                                    labelId="tags-select"
+                                    id="tags-select"
+                                    multiple
+                                    value={tags}
+                                    label="Tags"
+                                    onChange={(e) => setTags(e.target.value)}
+                                    sx={{height: 50}}
+                                    variant="outlined"
+                                    renderValue={(selected) => (
+                                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                                            {selected.map((id) => (
+                                                <Chip key={id} size="small" label={availableTags.find((t) => t.id === id)?.tag_name} />
+                                            ))}
+                                        </Box>
+                                    )}
+                                >
+                                {availableTags.map((t) => (
+                                    <MenuItem key={t.id} value={t.id}>
+                                        <Checkbox checked={tags.indexOf(t.id) > -1} />
+                                        <ListItemText primary={t.tag_name} />
+                                    </MenuItem>
+                                ))}
+                                </Select>
+                            </FormControl>
 
                             <FormControl sx={{ m: 1, mt: 5, minWidth: 120 }} size="small">
                                 <InputLabel id="status-select">Statut</InputLabel>

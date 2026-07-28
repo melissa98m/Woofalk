@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Ballade extends Model
 {
@@ -22,7 +23,6 @@ class Ballade extends Model
         'ballade_latitude',
         'ballade_longitude',
         'user',
-        'tag',
         'status'
     ];
 
@@ -30,8 +30,8 @@ class Ballade extends Model
     {
         return $this->BelongsTo(User::class, 'user');
     }
-    public function tag(): BelongsTo
+    public function tags(): BelongsToMany
     {
-        return $this->BelongsTo(Tag::class, 'tag');
+        return $this->belongsToMany(Tag::class);
     }
 }

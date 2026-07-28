@@ -26,7 +26,7 @@ function Dashboard() {
 
 
 
-    return <Container maxWidth="lg" id='dashboard'>
+    return <Container maxWidth="xl" id='dashboard'>
 
     <Grid container spacing={2}>
     <Grid id="dashboardMenu" item xs={4} sx={{ backgroundColor }}>

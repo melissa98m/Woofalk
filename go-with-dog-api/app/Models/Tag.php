@@ -10,8 +10,13 @@ class Tag extends Model
     use HasFactory;
     protected $fillable = ['tag_name' , 'color'];
 
+    public function places()
+    {
+        return $this->belongsToMany(Place::class);
+    }
+
     public function ballades()
     {
-        return $this->hasMany(Ballade::class);
+        return $this->belongsToMany(Ballade::class);
     }
 }

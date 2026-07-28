@@ -40,7 +40,7 @@ function PlaceDetail() {
         </Container>;
     }
 
-    const { place_name, place_description, place_image, category, address } = place;
+    const { place_name, place_description, place_image, category, address, tags } = place;
 
     return <Container maxWidth="md" id="place-detail" sx={{ px: { xs: 2, md: 4 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
@@ -59,6 +59,13 @@ function PlaceDetail() {
             <Typography variant="h1" sx={{ fontSize: { xs: "24px", md: "32px" }, marginBottom: "8px" }}>{place_name}</Typography>
             {category ? (
                 <Chip label={category.category_name} sx={{ bgcolor: "sageSoft", color: "sageDark", fontWeight: 700 }} />
+            ) : null}
+            {tags && tags.length > 0 ? (
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mt: 1.5 }}>
+                    {tags.map((t) => (
+                        <Chip key={t.id} size="small" variant="outlined" label={`#${t.tag_name}`} />
+                    ))}
+                </Box>
             ) : null}
         </Box>
 

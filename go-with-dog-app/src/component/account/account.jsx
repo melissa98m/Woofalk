@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from "react";
-import { Box, CardHeader, Container, Card, TableContainer, Table, TablePagination} from "@mui/material";
+import { Box, CardHeader, Chip, Container, Card, TableContainer, Table, TablePagination} from "@mui/material";
 import axios from "axios";
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
@@ -122,7 +122,7 @@ function Account() {
                                     <Typography variant="body" sx={{textAlign: "center"}} gutterBottom>Chargement des ballades...</Typography>
                                 ) : (
                                     <Box sx={{ maxWidth: '100%' }}>
-                                                {ballades.map(({id, ballade_name, ballade_description, ballade_image, tag,  ballade_latitude , ballade_longitude,denivele , distance ,created_at , data}) => {
+                                                {ballades.map(({id, ballade_name, ballade_description, ballade_image, tags,  ballade_latitude , ballade_longitude,denivele , distance ,created_at , data}) => {
                                         return (
                                        <Card sx={{ display: 'inline-block' , margin: "10px" , width: '200px'}} key={id}>
                                                             <CardMedia
@@ -135,9 +135,11 @@ function Account() {
                                                                 <Typography gutterBottom variant="h5" component="div">
                                                                     {ballade_name}
                                                                 </Typography>
-                                                                <Typography gutterBottom variant="body2" component="div" color={tag.color}>
-                                                                  {tag.tag_name}
-                                                                 </Typography>
+                                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px', mb: 1 }}>
+                                                                    {(tags ?? []).map((t) => (
+                                                                        <Chip key={t.id} size="small" label={t.tag_name} sx={{ color: t.color }} />
+                                                                    ))}
+                                                                </Box>
                                                                  <Typography gutterBottom variant="body2" component="div">
                                                                     Créer le:{created_at.slice(0,10)}
                                                                 </Typography>

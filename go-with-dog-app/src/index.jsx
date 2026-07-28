@@ -20,9 +20,11 @@ import Category from "./component/category/category";
 import Places from "./component/place/places";
 import Place from "./component/place/place";
 import PlaceDetail from "./component/place/placeDetail";
+import NewPlace from "./component/place/newPlace";
 import Ballades from "./component/ballade/ballades";
 import Ballade from "./component/ballade/ballade";
 import BalladeDetail from "./component/ballade/balladeDetail";
+import NewBallade from "./component/ballade/newBallade";
 import Address from "./component/address/address";
 import Tag from "./component/tag/tag";
 import User from "./component/user/user";
@@ -93,8 +95,10 @@ function CustomTheme() {
                     <Route exact path="reset-password/:token" element={<ResetPassword/>}>ResetPassword</Route>
                     <Route exact path="register" element={<Register/>}>Inscription</Route>
                     <Route exact path="places" element={<Places/>}>Places</Route>
+                    <Route exact path="places/new" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <NewPlace/> : <Home adminMessage='Non connecté'/>}>NewPlace</Route>
                     <Route exact path="places/:id" element={<PlaceDetail/>}>PlaceDetail</Route>
                     <Route exact path="ballades" element={<Ballades/>}>Ballades</Route>
+                    <Route exact path="ballades/new" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <NewBallade/> : <Home adminMessage='Non connecté'/>}>NewBallade</Route>
                     <Route exact path="ballades/:id" element={<BalladeDetail/>}>BalladeDetail</Route>
                     <Route exact path="logout" element={<Logout/>}>Logout</Route>
                     <Route element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>

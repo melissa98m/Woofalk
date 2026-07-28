@@ -17,7 +17,7 @@ class BalladeController extends Controller
      */
     public function index()
     {
-        $ballades = Ballade::with(['user', 'tag'])->get();
+        $ballades = Ballade::with(['user', 'tags'])->get();
         return response()->json([
             'status' => 'Success',
             'data' => $ballades
@@ -27,7 +27,7 @@ class BalladeController extends Controller
     public function byUser()
     {
         $userId = Auth::id();
-        $ballades = Ballade::with(['user', 'tag'])
+        $ballades = Ballade::with(['user', 'tags'])
             ->where('user', '=', $userId)
             ->get();
         return response()->json([
@@ -42,7 +42,7 @@ class BalladeController extends Controller
      */
     public function sortByDateDesc()
     {
-        $balladesdesc = Ballade::with(['user', 'tag'])
+        $balladesdesc = Ballade::with(['user', 'tags'])
             ->orderBy("created_at", 'desc')
             ->get();
         return response()->json([
@@ -68,8 +68,9 @@ class BalladeController extends Controller
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
             'ballade_latitude'=> 'required|numeric|between:-90,90',
             'ballade_longitude'=> 'required|numeric|between:-180,180',
-            'tag' => 'required',
             'status' => 'nullable|in:publie,en_attente',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer|exists:tags,id',
         ]);
         if ($request->hasFile('ballade_image')) {
             $filename = $this->getFilename($request);
@@ -85,11 +86,11 @@ class BalladeController extends Controller
             'ballade_latitude' => $request->ballade_latitude,
             'ballade_longitude' => $request->ballade_longitude,
             'user' => $current,
-            'tag' => $request->tag,
             'status' => $request->status ?? 'publie',
         ]);
+        $ballade->tags()->sync($request->input('tags', []));
 
-        $ballade->tag = $ballade->tag()->get()[0];
+        $ballade->tags = $ballade->tags()->get();
         $ballade->user = $ballade->user()->get()[0];
         return response()->json([
             'status' => 'Success',
@@ -106,7 +107,7 @@ class BalladeController extends Controller
     public function show(Ballade $ballade)
     {
         $ballade->load(['user']);
-        $ballade->load(['tag']);
+        $ballade->load(['tags']);
         return response()->json($ballade);
     }
 
@@ -128,8 +129,9 @@ class BalladeController extends Controller
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
             'ballade_latitude'=> 'required|numeric|between:-90,90',
             'ballade_longitude'=> 'required|numeric|between:-180,180',
-            'tag' => 'required',
             'status' => 'nullable|in:publie,en_attente',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer|exists:tags,id',
         ]);
 
         if ($request->hasFile('ballade_image')) {
@@ -153,11 +155,11 @@ class BalladeController extends Controller
             'ballade_latitude' => $request->ballade_latitude,
             'ballade_longitude' => $request->ballade_longitude,
             'user' => $current,
-            'tag' => $request->tag,
             'status' => $request->status ?? $ballade->status,
         ]);
+        $ballade->tags()->sync($request->input('tags', []));
 
-        $ballade->tag = $ballade->tag()->get()[0];
+        $ballade->tags = $ballade->tags()->get();
         $ballade->user = $ballade->user()->get()[0];
 
         return response()->json([

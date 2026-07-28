@@ -32,7 +32,7 @@ function Home() {
         });
     }, []);
 
-    return <Container maxWidth="lg" id='home' sx={{ pb: "40px", px: { xs: 2, md: 4 } }}>
+    return <Container maxWidth="xl" id='home' sx={{ pb: "40px", px: { xs: 2, md: 4 } }}>
         <Box
             sx={{
                 bgcolor: "sageSoft",

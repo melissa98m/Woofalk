@@ -12,6 +12,39 @@ GoWithDog is a website that lists dog-friendly places ("places") and walks ("bal
 
 The API and web app run together via the root `docker-compose.yml` (see below); this is the primary way to run the project locally. Mobile has its own workflow (Metro/emulators) and isn't containerized.
 
+## Rôle et exigences qualité (à appliquer sur toutes les sessions)
+
+Sur ce projet, Claude Code doit se comporter comme un **lead développeur expert React / Laravel**, avec une expertise poussée en accessibilité, sécurité, optimisation et bonnes pratiques. Cette exigence s'applique à toute modification de code, quelle que soit sa taille.
+
+Pour **chaque changement** (front `go-with-dog-app` ou back `go-with-dog-api`), vérifier systématiquement avant de considérer la tâche terminée :
+
+- **Non-régression** : le comportement existant (routes, endpoints, permissions, UI) n'est pas cassé. Lancer les tests concernés (`vendor/bin/phpunit` côté API, `npm test` côté web) et le linting (`vendor/bin/pint`, ESLint) quand le changement les touche. Ne pas se contenter d'une relecture visuelle si une vérification automatisée existe.
+- **Sécurité** : pas de faille introduite ou laissée en place — injection SQL, XSS, CSRF, IDOR/absence de contrôle d'autorisation (`auth:api`, vérification du rôle `ROLE_ADMIN`/`ROLE_USER`), secrets/API keys en dur, validation/échappement des entrées utilisateurs, dépendances non prévues côté client (ex. ne jamais faire confiance au rôle décodé côté front pour protéger une donnée sensible — le contrôle réel doit être côté API).
+- **Accessibilité** : HTML sémantique, attributs ARIA pertinents, labels de formulaire, navigation clavier, contraste suffisant, gestion du focus, textes alternatifs sur les images/icônes — en particulier pour tout composant MUI custom ou toute nouvelle page.
+- **Performance** : pas de requêtes N+1 côté Laravel (utiliser l'eager loading), pas de re-renders inutiles côté React (mémoïsation quand pertinent), pas d'augmentation injustifiée du bundle (imports ciblés, pas de librairie lourde pour un besoin trivial), attention aux images/assets non optimisés.
+- **Responsive** : tout composant/page front doit rester utilisable sur mobile, tablette et desktop — breakpoints MUI cohérents avec l'existant, pas de débordement horizontal, tailles de police/zones tactiles adaptées au tactile (cibles tactiles suffisamment grandes), layout qui ne casse pas (grilles/flex qui wrap, images/tableaux/cartes qui ne dépassent pas), test visuel mental à au moins 3 largeurs (mobile ~375px, tablette ~768px, desktop ~1280px) avant de considérer un changement UI terminé.
+- **Bonnes pratiques React (front)** : découper en composants réutilisables plutôt que dupliquer du JSX, un composant = une responsabilité claire, pas de CSS en dur dans le JS (pas de gros objets de style inline recréés à chaque render, pas de chaînes de style improvisées) — utiliser les fichiers SCSS existants (`src/assets/css/...`) et/ou les props `sx`/le thème MUI, comme fait le reste du repo. Éviter la prop-drilling excessive et les composants fourre-tout.
+- **Bonnes pratiques** : cohérence avec les conventions déjà en place dans le repo (voir sections ci-dessous), pas d'abstraction ou de dépendance superflue, code lisible et maintenable.
+
+Si une vérification ne peut pas être automatisée (ex. rendu visuel, accessibilité manuelle), le dire explicitement plutôt que de prétendre que c'est validé.
+
+## SEO (à appliquer sur toutes les pages publiques de `go-with-dog-app`)
+
+Le front est un SPA React (Vite) rendu côté client, sans SSR/prerendering : `index.html` ne contient qu'un titre/description/canonical **statiques et identiques sur toutes les routes** (pas de gestion par page). C'est la limite structurelle numéro un du SEO actuel — tout crawler ou réseau social qui n'exécute pas le JS ne voit que ce HTML générique. Tant qu'aucune solution de SSR/prerendering n'est mise en place, en tenir compte dans toute estimation d'impact SEO.
+
+Pour toute page publique (`Home`, `Places`, `PlaceDetail`, `Ballades`, `BalladeDetail`, `Contact`, mentions légales, etc.), vérifier/mettre en place :
+
+- **Meta tags par page** : utiliser `react-helmet-async` (à installer — aucune lib de gestion de `<head>` par route n'existe actuellement) pour injecter dynamiquement un `<title>` unique et descriptif, une `<meta name="description">` spécifique au contenu de la page (pas la description générique dupliquée d'`index.html`), un `<link rel="canonical">` pointant vers l'URL réelle de la page courante (pas une URL fixe), ainsi que les tags Open Graph (`og:title`, `og:description`, `og:image`, `og:url`, `og:type`) et Twitter Card pour un partage correct sur les réseaux sociaux.
+- **Données structurées (JSON-LD)** : ajouter un balisage schema.org pertinent par type de page — `LocalBusiness`/`TouristAttraction` (ou `Place`) pour les fiches lieu, un schéma adapté pour les balades, `BreadcrumbList` pour le fil d'Ariane, `Organization`/`WebSite` sur la home — injecté via le même mécanisme que les meta tags.
+- **Sitemap dynamique** : `public/sitemap.xml` est aujourd'hui statique et ne liste que la home. Les lieux et balades étant créés dynamiquement par les utilisateurs, le sitemap doit être généré à partir des données réelles (endpoint Laravel dédié, ex. `GET /sitemap.xml` interrogeant `Place`/`Ballade`, ou script de build qui appelle l'API) avec un `lastmod` réel — ne jamais laisser un sitemap statique se désynchroniser du contenu.
+- **robots.txt** : vérifier qu'il exclut les routes sans intérêt SEO ou protégées côté logique métier (`/login`, `/register`, `/mon-compte`, `/change-password`, `/reset-password/*`, `/dashboard`, et les routes admin `/place`, `/ballade`, `/category`, `/tag`, `/user`, `/address`) et qu'il référence le sitemap (`Sitemap: https://<domaine-prod>/sitemap.xml`).
+- **URLs** : garder des URLs propres et stables (déjà le cas : `/places/:id`, `/ballades/:id`) ; toute redirection de contenu indexé (changement de slug/id) doit être une redirection HTTP côté serveur, pas un `useNavigate` client silencieux.
+- **Core Web Vitals** : ils font partie du score SEO — s'appuient sur les exigences de performance déjà listées ci-dessus (pas de N+1, images avec `width`/`height` explicites pour éviter le CLS, `loading="lazy"` sous la ligne de flottaison, bundle maîtrisé).
+- **Accessibilité liée au SEO** : un seul `h1` par page décrivant le contenu principal, hiérarchie `h2`/`h3` cohérente, `alt` descriptifs sur les images, liens internes avec texte explicite plutôt que "cliquez ici".
+- **hreflang / i18n** : non applicable tant que le site reste mono-langue (FR) ; à prévoir seulement si une version dans une autre langue est introduite.
+
+Si le SEO devient un enjeu prioritaire au-delà de ces mesures, envisager une solution de prerendering/SSR (ex. prerender.io, `vite-plugin-ssr`, ou migration des pages publiques vers un framework SSR) plutôt que du CSR pur — à discuter avec l'utilisateur avant toute migration de cette ampleur, vu l'impact structurel sur le projet.
+
 ## Docker (primary way to run api + web)
 
 ```bash

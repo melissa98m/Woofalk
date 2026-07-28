@@ -17,7 +17,7 @@ class PlaceController extends Controller
      */
     public function index()
     {
-        $places = Place::with(['user', 'category' , 'address'])->get();
+        $places = Place::with(['user', 'category' , 'address', 'tags'])->get();
         return response()->json([
             'status' => 'Success',
             'data' => $places
@@ -26,7 +26,7 @@ class PlaceController extends Controller
     public function byUser()
     {
         $userId = Auth::id();
-        $places = Place::with(['user', 'category' , 'address'])
+        $places = Place::with(['user', 'category' , 'address', 'tags'])
             ->where('user', '=', $userId)
             ->get();
         return response()->json([
@@ -52,6 +52,8 @@ class PlaceController extends Controller
             'category' => 'required',
             'address' => 'required',
             'status' => 'nullable|in:publie,en_attente',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer|exists:tags,id',
         ]);
         if ($request->hasFile('place_image')) {
             $filename = $this->getFilename($request);
@@ -67,10 +69,12 @@ class PlaceController extends Controller
             'user' => $current,
             'status' => $request->status ?? 'publie',
         ]);
+        $place->tags()->sync($request->input('tags', []));
 
         $place->address = $place->address()->get()[0];
         $place->category = $place->category()->get()[0];
        $place->user = $place->user()->get()[0];
+        $place->tags = $place->tags()->get();
         return response()->json([
             'status' => 'Success',
             'data' => $place,
@@ -88,6 +92,7 @@ class PlaceController extends Controller
         $place->load(['user']);
         $place->load(['category']);
         $place->load(['address']);
+        $place->load(['tags']);
         return response()->json($place);
     }
 
@@ -108,6 +113,8 @@ class PlaceController extends Controller
             'category' => 'required',
             'address' => 'required',
             'status' => 'nullable|in:publie,en_attente',
+            'tags' => 'nullable|array',
+            'tags.*' => 'integer|exists:tags,id',
         ]);
         if ($request->hasFile('place_image')) {
             if (Place::findOrFail($place->id)->place_image){
@@ -128,10 +135,12 @@ class PlaceController extends Controller
             'user' => $current,
             'status' => $request->status ?? $place->status,
         ]);
+        $place->tags()->sync($request->input('tags', []));
 
         $place->address = $place->address()->get()[0];
         $place->category = $place->category()->get()[0];
         $place->user = $place->user()->get()[0];
+        $place->tags = $place->tags()->get();
 
         return response()->json([
             'status' => 'Mise à jour avec succèss',

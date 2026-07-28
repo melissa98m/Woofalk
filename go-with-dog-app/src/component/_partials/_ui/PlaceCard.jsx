@@ -1,10 +1,10 @@
-import { Button, Card, CardActions, CardContent, CardMedia, Chip, Typography } from "@mui/material";
+import { Box, Button, Card, CardActions, CardContent, CardMedia, Chip, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { API_URL } from "../../../config";
 
 // Shared place listing card, used by the home page and the public places list.
 export function PlaceCard({ place }) {
-    const { id, place_name, place_image, category, address } = place;
+    const { id, place_name, place_image, category, address, tags } = place;
 
     return (
         <Card component="article">
@@ -25,6 +25,13 @@ export function PlaceCard({ place }) {
                     <Typography variant="body2" color="text.secondary">
                         {address.address}, {address.city}
                     </Typography>
+                ) : null}
+                {tags && tags.length > 0 ? (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mt: 1.5 }}>
+                        {tags.map((t) => (
+                            <Chip key={t.id} size="small" variant="outlined" label={`#${t.tag_name}`} />
+                        ))}
+                    </Box>
                 ) : null}
             </CardContent>
             <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>

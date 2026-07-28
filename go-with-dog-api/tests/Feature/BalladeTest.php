@@ -45,7 +45,7 @@ class BalladeTest extends TestCase
             'ballade_latitude' => '44.02',
             'ballade_longitude' => "-10.25",
             'user' => 1,
-            'tag' => 2
+            'tags' => [2]
         ];
 
         $response = $this->postJson('/api/ballades', $data);
@@ -70,7 +70,7 @@ class BalladeTest extends TestCase
             'ballade_latitude' => '44.02',
             'ballade_longitude' => "-10.25",
             'user' => 1,
-            'tag' => 2
+            'tags' => [2]
         ];
         $response = $this->putJson("/api/ballades/{$balllade->id}", $data);
         $response->assertStatus(200);

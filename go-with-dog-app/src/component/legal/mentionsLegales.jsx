@@ -20,7 +20,7 @@ function MentionsLegales() {
 
     <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>Statut du propriétaire : <strong>particulier</strong><br/>
     Le Propriétaire est : <strong>Mélissa Mangione</strong><br/>
-    Adresse postale du propriétaire : <strong>6 rue galilée 38400 Saint Martin d'heres</strong><br/>
+    Adresse postale du propriétaire : <strong>my address</strong><br/>
     </Typography>
      <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>
     Le Créateur du site est : <strong>Go with dog</strong><br/>

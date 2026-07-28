@@ -48,5 +48,12 @@ class RouteServiceProvider extends ServiceProvider
         RateLimiter::for('api', function (Request $request) {
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
+
+        // Tighter limit than the default 60/min API-wide throttle: a real
+        // visitor won't submit the contact form more than a couple of times
+        // a minute, so this caps automated flooding without a captcha.
+        RateLimiter::for('contact', function (Request $request) {
+            return Limit::perMinute(3)->by($request->ip());
+        });
     }
 }

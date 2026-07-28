@@ -4,11 +4,10 @@ use App\Http\Controllers\API\AddressController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\BalladeController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\ContactController;
 use App\Http\Controllers\API\PlaceController;
 use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\UserController;
-use App\Http\Controllers\API\ContactController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -28,7 +27,7 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('logout', 'logout');
     Route::post('refresh', 'refresh');
     Route::get('current-user', 'currentUser');
-    Route::post('forgot-password','forgotPassword');
+    Route::post('forgot-password', 'forgotPassword');
     Route::post('reset-password', 'resetPassword');
 });
 
@@ -71,7 +70,7 @@ Route::controller(TagController::class)->group(function () {
     Route::delete('tags/{tag}', 'destroy')->middleware('auth:api');
 });
 Route::controller(ContactController::class)->group(function () {
-    Route::post('contact', 'store');
+    Route::post('contact', 'store')->middleware('throttle:contact');
 });
 
 Route::controller(UserController::class)->group(function () {

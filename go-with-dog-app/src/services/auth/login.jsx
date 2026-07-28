@@ -35,7 +35,7 @@ function Login() {
             });
       if (res.status === 200) {
           localStorage.setItem("access_token", res.data.token)
-          navigate(-1);
+          navigate("/");
       } else {
         setToastMessage({message: "Une erreur est survenue", severity: "error"});
         setShowToast(true);

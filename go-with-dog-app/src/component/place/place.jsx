@@ -12,7 +12,7 @@ import {
     TablePagination,
     TableRow,
     Typography,
-    Alert, Avatar
+    Alert, Avatar, Chip
 } from "@mui/material";
 import DeletePlace from "./deletePlace";
 import NewPlace from "./newPlace";
@@ -86,12 +86,13 @@ function Place() {
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={4}>Image</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={5}>Adresse</TableCell>
                                     <TableCell key={6}>Categorie</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={7}>Créateur</TableCell>
-                                    <TableCell key={8} align={'right'}>Actions</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={7}>Tags</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={8}>Créateur</TableCell>
+                                    <TableCell key={9} align={'right'}>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, place_name, place_description, place_image, category, address , user}) => {
+                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, place_name, place_description, place_image, category, address , user, tags}) => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={place_name+id}>
                                             <TableCell>{id}</TableCell>
@@ -106,10 +107,17 @@ function Place() {
                                             </TableCell>
                                             <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{address.address ?? '--'} {address.city ?? '--'} {address.postal_code ?? '--'}</TableCell>
                                             <TableCell sx={{fontWeight: 'bold'}}>{category.category_name ?? '--'}</TableCell>
+                                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                    {(tags ?? []).map((t) => (
+                                                        <Chip key={t.id} size="small" label={t.tag_name} />
+                                                    ))}
+                                                </Box>
+                                            </TableCell>
                                              <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{user.username ?? '--'}</TableCell>
                                             <TableCell>
                                                 <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                                    <EditPlace updateValue={{id, place_name, place_description, place_image, category, address, data}} handleDataChange={handleDataChange} />
+                                                    <EditPlace updateValue={{id, place_name, place_description, place_image, category, address, tags, data}} handleDataChange={handleDataChange} />
                                                     <DeletePlace deleteValue={{id, place_name, place_description, place_image, category, address, data}} handleDataChange={handleDataChange}/>
                                                 </Box>
                                             </TableCell>

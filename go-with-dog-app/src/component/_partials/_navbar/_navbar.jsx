@@ -17,7 +17,10 @@ const NAV_LINKS = [
 
 export function Navbar() {
     const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    // "lg" (1200px) plutôt que "md" : en dessous, recherche + liens + actions
+    // (jusqu'à 8 éléments) ne tiennent pas sur une ligne et retombent en wrap
+    // désordonné (~900-1150px) — le drawer est plus propre sur cette plage.
+    const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
     const location = useLocation();
 
     const navButtonSx = (to) => ({
@@ -42,7 +45,17 @@ export function Navbar() {
             <Box
                 sx={{
                     display: "grid",
-                    gridTemplateColumns: "minmax(0, 1fr) auto minmax(0, 1fr)",
+                    // AppBar est en flex-row et ne stretch pas ses enfants : sans
+                    // width 100%, cette grille ne prenait que la largeur de son
+                    // contenu (flex-grow: 0), d'où un rendu incohérent selon la
+                    // largeur d'écran plutôt que de remplir la barre.
+                    width: "100%",
+                    // Logo/nav en "auto" (juste leur contenu) et recherche en 1fr :
+                    // avec 2 colonnes "1fr" symétriques, la colonne des liens était
+                    // bridée à la largeur (minuscule) de la colonne du logo, donc les
+                    // liens wrappaient sur 2 lignes jusqu'à ~1800px (surtout admin :
+                    // Dashboard + compte + déconnexion + thème en plus).
+                    gridTemplateColumns: "auto minmax(0, 1fr) auto",
                     alignItems: "center",
                     columnGap: "16px",
                     rowGap: "8px",

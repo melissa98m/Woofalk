@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Tag;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -27,7 +26,6 @@ class BalladeFactory extends Factory
             'ballade_latitude' => fake()->latitude(41, 51),
             'ballade_longitude' => fake()->longitude(-5, 9),
             'user' => User::factory(),
-            'tag' => Tag::factory(),
             'status' => fake()->randomElement(['publie', 'en_attente']),
         ];
     }

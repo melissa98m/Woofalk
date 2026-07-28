@@ -48,7 +48,7 @@ function DrawerComponent() {
                 PaperProps={{ sx: { width: "min(80%, 320px)", padding: "12px" } }}
             >
                 <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 1 }}>
-                    <IconButton aria-label="Fermer le menu" color="secondary" onClick={close}>
+                    <IconButton aria-label="Fermer le menu" color="secondary" onClick={close} sx={{ minWidth: "44px", minHeight: "44px" }}>
                         <CloseIcon />
                     </IconButton>
                 </Box>
@@ -85,7 +85,7 @@ function DrawerComponent() {
                     <SwitchModeButton />
                 </Box>
             </Drawer>
-            <IconButton aria-label="Ouvrir le menu" onClick={() => setOpenDrawer(true)}>
+            <IconButton aria-label="Ouvrir le menu" onClick={() => setOpenDrawer(true)} sx={{ minWidth: "44px", minHeight: "44px" }}>
                 <MenuIcon />
             </IconButton>
         </>

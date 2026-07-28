@@ -35,15 +35,16 @@ class DatabaseSeeder extends Seeder
         $tags = Tag::factory(5)->create();
         Address::factory(10)->create();
 
-        Place::factory(15)->create([
+        $places = Place::factory(15)->create([
             'user' => fn () => $users->random()->id,
             'address' => fn () => Address::inRandomOrder()->first()->id,
             'category' => fn () => $categories->random()->id,
         ]);
+        $places->each(fn ($place) => $place->tags()->attach($tags->random(rand(1, 3))->pluck('id')));
 
-        Ballade::factory(15)->create([
+        $ballades = Ballade::factory(15)->create([
             'user' => fn () => $users->random()->id,
-            'tag' => fn () => $tags->random()->id,
         ]);
+        $ballades->each(fn ($ballade) => $ballade->tags()->attach($tags->random(rand(1, 3))->pluck('id')));
     }
 }

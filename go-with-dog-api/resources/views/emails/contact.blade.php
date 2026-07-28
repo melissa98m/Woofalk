@@ -47,6 +47,12 @@
                                     <p
                                         style="color:#455056; font-size:18px;line-height:20px; margin:0; font-weight: 500;">
                                         <strong
+                                            style="display: block; font-size: 13px; margin: 24px 0 4px 0; font-weight:normal; color:rgba(0,0,0,.64);">Nom</strong><span
+                                            style="color: #44455f;">{{ $name }}</span>
+                                    </p>
+                                    <p
+                                        style="color:#455056; font-size:18px;line-height:20px; margin:0; font-weight: 500;">
+                                        <strong
                                             style="display: block; font-size: 13px; margin: 24px 0 4px 0; font-weight:normal; color:rgba(0,0,0,.64);">Email</strong><span
                                             style="color: #44455f;">{{ $email }}</span>
                                     </p>

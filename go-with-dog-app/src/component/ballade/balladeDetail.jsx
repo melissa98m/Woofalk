@@ -41,7 +41,7 @@ function BalladeDetail() {
         </Container>;
     }
 
-    const { ballade_name, ballade_description, ballade_image, tag, ballade_latitude, ballade_longitude, denivele, distance } = ballade;
+    const { ballade_name, ballade_description, ballade_image, tags, ballade_latitude, ballade_longitude, denivele, distance } = ballade;
 
     return <Container maxWidth="md" id="ballade-detail" sx={{ px: { xs: 2, md: 4 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
@@ -59,8 +59,12 @@ function BalladeDetail() {
         <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginBottom: "20px" }}>
             <Box>
                 <Typography variant="h1" sx={{ fontSize: { xs: "24px", md: "32px" }, marginBottom: "8px" }}>{ballade_name}</Typography>
-                {tag ? (
-                    <Chip label={tag.tag_name} sx={{ bgcolor: "coralSoft", color: "coral", fontWeight: 700 }} />
+                {tags && tags.length > 0 ? (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                        {tags.map((t) => (
+                            <Chip key={t.id} label={`#${t.tag_name}`} sx={{ bgcolor: "coralSoft", color: "coral", fontWeight: 700 }} />
+                        ))}
+                    </Box>
                 ) : null}
             </Box>
         </Box>
@@ -68,7 +72,6 @@ function BalladeDetail() {
         <Box sx={{ display: "flex", gap: "14px", flexWrap: "wrap", marginBottom: "32px" }}>
             <DetailStat dotColor="sageDark" value={`${distance} km`} label="Distance" />
             <DetailStat dotColor="terracottaDark" value={`+${denivele} m`} label="Dénivelé" />
-            {tag ? <DetailStat dotColor="coral" value={tag.tag_name} label="Difficulté" /> : null}
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1.5fr 1fr" }, gap: "32px" }}>
@@ -79,9 +82,9 @@ function BalladeDetail() {
             <Box sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "20px", padding: "20px", height: "fit-content" }}>
                 <Typography variant="h3" sx={{ fontSize: "16px", marginBottom: "14px" }}>Infos pratiques</Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "16px" }}>
-                    {tag ? <div><strong>Difficulté :</strong> {tag.tag_name}</div> : null}
                     <div><strong>Distance :</strong> {distance} km</div>
                     <div><strong>Dénivelé :</strong> +{denivele} m</div>
+                    {tags && tags.length > 0 ? <div><strong>Tags :</strong> {tags.map((t) => t.tag_name).join(", ")}</div> : null}
                 </Box>
                 <Box
                     role="img"

@@ -4,7 +4,7 @@ import { API_URL } from "../../../config";
 
 // Shared walk ("ballade") listing card, used by the home page and the public ballades list.
 export function BalladeCard({ ballade }) {
-    const { id, ballade_name, ballade_image, tag, denivele, distance } = ballade;
+    const { id, ballade_name, ballade_image, tags, denivele, distance } = ballade;
 
     return (
         <Card component="article">
@@ -15,9 +15,6 @@ export function BalladeCard({ ballade }) {
                 alt={ballade_name}
             />
             <CardContent>
-                {tag ? (
-                    <Chip size="small" label={tag.tag_name} sx={{ bgcolor: "coralSoft", color: "coral", mb: 1 }} />
-                ) : null}
                 <Typography gutterBottom variant="h6" component="h3" sx={{ mt: 1, mb: 1 }}>
                     {ballade_name}
                 </Typography>
@@ -25,6 +22,13 @@ export function BalladeCard({ ballade }) {
                     <Chip size="small" variant="outlined" label={`${distance} km`} />
                     <Chip size="small" variant="outlined" label={`+${denivele} m`} />
                 </Box>
+                {tags && tags.length > 0 ? (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mt: 1.5 }}>
+                        {tags.map((t) => (
+                            <Chip key={t.id} size="small" variant="outlined" label={`#${t.tag_name}`} />
+                        ))}
+                    </Box>
+                ) : null}
             </CardContent>
             <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
                 <Button component={Link} to={`/ballades/${id}`} variant="contained">Voir détails</Button>

@@ -3,34 +3,45 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Mail\Contact as MailContact;
 use App\Models\Contact;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\Contact as MailContact;
 
 class ContactController extends Controller
 {
+    public function store(Request $request)
+    {
+        // Honeypot: a field real users never see or fill (hidden off-screen
+        // client-side). Bots that blindly fill every input trip it, so we
+        // fake a success response without persisting anything or sending
+        // mail — no error is returned, which avoids tipping the bot off.
+        if ($request->filled('website')) {
+            return response()->json([
+                'status' => 'success',
+            ]);
+        }
 
-    public function store(Request $request) {
         // Form validation
         $request->validate([
-            'email' => 'required',
-            'subject'=>'required',
-            'contenu' => 'required'
+            'name' => 'required',
+            'email' => 'required|email',
+            'subject' => 'required',
+            'contenu' => 'required',
         ]);
 
         $contact = Contact::create([ // Assigne les valeurs saisies dans le formulaire au champs correspondant dans la bd (création de la nouvelle opération)
+            'name' => $request->name,
             'email' => $request->email,
             'subject' => $request->subject,
-            'contenu'=> $request->contenu,
+            'contenu' => $request->contenu,
         ]);
 
-        Mail::to('melissa.mangione@gmail.com') //permet définir de qui est envoyé le mail
-        ->send(new MailContact($contact));
+        Mail::to('melissa.mangione@gmail.com') // permet définir de qui est envoyé le mail
+            ->send(new MailContact($contact));
 
         return response()->json([
-            'status' => 'success'
+            'status' => 'success',
         ]);
     }
-
 }

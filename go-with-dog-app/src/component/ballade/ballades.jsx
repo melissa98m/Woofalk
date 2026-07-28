@@ -1,14 +1,16 @@
 import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
+    Button,
+    Chip,
     Container,
     Typography,
     MenuItem , Select ,InputLabel,
     Pagination
 } from "@mui/material";
+import { Link } from "react-router-dom";
 
 import axios from "axios";
-import NewBallade from "./newBallade";
 import auth from "../../services/auth/token";
 import { BalladeCard } from "../_partials/_ui/BalladeCard";
 import { API_URL } from "../../config";
@@ -22,7 +24,8 @@ function Ballades() {
     const [data, setData] = useState(null); // array of data
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null); // WIP
-    const [selectedDifficulty, setSelectedDifficulty] = useState(null);
+    const [availableTags, setAvailableTags] = useState([]);
+    const [selectedTags, setSelectedTags] = useState([]);
     const [sortOrder, setSortOrder] = useState("");
     const [page, setPage] = useState(1);
 
@@ -41,17 +44,25 @@ function Ballades() {
         }).finally(() => {
             setLoading(false);
         });
+        axios.get(`${API_URL}/api/tags`).then((res) => setAvailableTags(res.data.data));
     }, []);
 
+    const toggleTag = (tagId) => {
+        setSelectedTags((current) => current.includes(tagId) ? current.filter((id) => id !== tagId) : [...current, tagId]);
+        setPage(1);
+    };
 
-    const handleDataChange = async (dataChange) => {
-        await setData(dataChange)
-    }
+    const firstTagName = (ballade) => (ballade.tags ?? []).length > 0
+        ? [...ballade.tags].map((t) => t.tag_name).sort()[0]
+        : null;
 
     const filteredData = useMemo(() => {
         let result = data?.filter((ballade) => {
-            if (selectedDifficulty) {
-                return ballade.tag.tag_name === selectedDifficulty;
+            if (selectedTags.length > 0) {
+                const balladeTagIds = (ballade.tags ?? []).map((t) => t.id);
+                if (!selectedTags.every((id) => balladeTagIds.includes(id))) {
+                    return false;
+                }
             }
             return true;
         }) ?? [];
@@ -63,9 +74,18 @@ function Ballades() {
             result = [...result].sort((a, b) => a.distance - b.distance);
         } else if (sortOrder === "denivele-asc") {
             result = [...result].sort((a, b) => a.denivele - b.denivele);
+        } else if (sortOrder === "tags-asc") {
+            result = [...result].sort((a, b) => {
+                const ta = firstTagName(a);
+                const tb = firstTagName(b);
+                if (!ta && !tb) return 0;
+                if (!ta) return 1;
+                if (!tb) return -1;
+                return ta.localeCompare(tb);
+            });
         }
         return result;
-    }, [data, selectedDifficulty, sortOrder]);
+    }, [data, selectedTags, sortOrder]);
 
     const pageCount = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
     const pagedData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -75,7 +95,7 @@ function Ballades() {
         setPage(1);
     };
 
-    return <Container maxWidth="lg" id="ballade" sx={{ px: { xs: 2, md: 4 }, pb: "40px" }}>
+    return <Container maxWidth="xl" id="ballade" sx={{ px: { xs: 2, md: 4 }, pb: "40px" }}>
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginTop: "20px", marginBottom: "6px" }}>
                 <Box>
@@ -85,7 +105,7 @@ function Ballades() {
                     </Typography>
                 </Box>
                 {auth.loggedAndUser() || auth.loggedAndAdmin() ? (
-                    <NewBallade newValue={{data}} handleDataChange={handleDataChange} />
+                    <Button component={Link} to="/ballades/new" variant="contained">Ajouter une balade</Button>
                 ) : null}
             </Box>
 
@@ -99,20 +119,6 @@ function Ballades() {
                     marginBottom: "24px",
                 }}
             >
-                <InputLabel id="ballade-tag-filter-label" sx={{ whiteSpace: "nowrap" }}>Difficulté :</InputLabel>
-                <Select
-                    labelId="ballade-tag-filter-label"
-                    value={selectedDifficulty}
-                    onChange={handleFilterChange(setSelectedDifficulty)}
-                    size="small"
-                >
-                    <MenuItem value={null}>Toutes difficultés</MenuItem>
-                    <MenuItem value="Facile">Facile</MenuItem>
-                    <MenuItem value="Moyen">Moyen</MenuItem>
-                    <MenuItem value="Difficile">Difficile</MenuItem>
-                    <MenuItem value="Expert">Expert</MenuItem>
-                </Select>
-
                 <Box sx={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: { md: "auto" } }}>
                     <InputLabel id="ballade-sort-label" sx={{ whiteSpace: "nowrap" }}>Trier par :</InputLabel>
                     <Select
@@ -126,9 +132,35 @@ function Ballades() {
                         <MenuItem value="nom-desc">Nom (Z → A)</MenuItem>
                         <MenuItem value="distance-asc">Distance croissante</MenuItem>
                         <MenuItem value="denivele-asc">Dénivelé croissant</MenuItem>
+                        <MenuItem value="tags-asc">Tags (A → Z)</MenuItem>
                     </Select>
                 </Box>
             </Box>
+
+            {availableTags.length > 0 ? (
+                <Box
+                    role="group"
+                    aria-label="Filtrer par tags"
+                    sx={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "24px" }}
+                >
+                    {availableTags.map((t) => {
+                        const selected = selectedTags.includes(t.id);
+                        return (
+                            <Chip
+                                key={t.id}
+                                label={`#${t.tag_name}`}
+                                size="small"
+                                clickable
+                                onClick={() => toggleTag(t.id)}
+                                color={selected ? "primary" : "default"}
+                                variant={selected ? "filled" : "outlined"}
+                                aria-pressed={selected}
+                            />
+                        );
+                    })}
+                </Box>
+            ) : null}
+
             {loading ? (
                 <Typography role="status" aria-live="polite" variant="h5" sx={{textAlign: "center"}} gutterBottom>Chargement des balades...</Typography>
             ) : (
@@ -136,7 +168,7 @@ function Ballades() {
                     <Box
                         sx={{
                             display: "grid",
-                            gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+                            gridTemplateColumns: { xs: "repeat(1, 1fr)", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)", lg: "repeat(4, 1fr)" },
                             gap: { xs: "16px", md: "22px" },
                             marginBottom: "36px",
                         }}

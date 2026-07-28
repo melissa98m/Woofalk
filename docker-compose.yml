@@ -16,9 +16,9 @@ services:
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
-      DB_DATABASE: laravel
-      DB_USERNAME: laravel
-      DB_PASSWORD: laravel
+      DB_DATABASE: gowithdog
+      DB_USERNAME: gowithdog
+      DB_PASSWORD: gowithdog
       MAIL_MAILER: smtp
       MAIL_HOST: mailhog
       MAIL_PORT: 1025

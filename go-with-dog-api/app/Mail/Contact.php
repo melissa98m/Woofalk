@@ -3,13 +3,13 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
 class Contact extends Mailable
 {
     use Queueable, SerializesModels;
+
     /**
      * Create a new message instance.
      *
@@ -19,6 +19,7 @@ class Contact extends Mailable
     {
         $this->contact = $contact;
     }
+
     /**
      * Build the message.
      *
@@ -26,13 +27,14 @@ class Contact extends Mailable
      */
     public function build()
     {
-        return $this->from("melissa.mangione+supportGowithdog@gmail.com")
+        return $this->from('melissa.mangione+supportGowithdog@gmail.com')
             ->view('emails.contact')
-            ->subject("Message provenant de la plateforme Go with dog")
-            ->with([ //ici j'assigne aux variables les données rentrées dans le formulaire pour les envoyer à la vue
-                'email'=> $this->contact->email,
-                'subject'=> $this->contact->subject,
-                'contenu' => $this->contact->contenu
+            ->subject('Message provenant de la plateforme Go with dog')
+            ->with([ // ici j'assigne aux variables les données rentrées dans le formulaire pour les envoyer à la vue
+                'name' => $this->contact->name,
+                'email' => $this->contact->email,
+                'subject' => $this->contact->subject,
+                'contenu' => $this->contact->contenu,
             ]);
     }
 }

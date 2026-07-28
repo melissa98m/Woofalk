@@ -1,7 +1,10 @@
 import {
     Box,
     Button,
+    Checkbox,
+    Chip,
     FormControl,
+    ListItemText,
     Modal,
     Snackbar,
     TextField,
@@ -31,10 +34,10 @@ function EditBallade(props) {
     const [cImage, setCImage] = useState(props.updateValue.ballade_image);
 
     // One of ...
-    const [tag, setType] = useState(undefined);
+    const [tags, setTags] = useState((props.updateValue.tags ?? []).map((t) => t.id));
 
     // List All
-    const [tags, setTags] = useState({});
+    const [availableTags, setAvailableTags] = useState({});
 
     const [oneBallade, setOneBallade] = useState("");
     const [editBallade, setShowEdit] = useState(false);
@@ -49,9 +52,6 @@ function EditBallade(props) {
         distance: props.updateValue.distance,
         denivele: props.updateValue.denivele,
         ballade_image: props.updateValue.ballade_image,
-        tag: props.updateValue.tag,
-
-
     } });
 
     useEffect( () => {
@@ -59,7 +59,7 @@ function EditBallade(props) {
     }, [])
 
     let getAlls = async () => {
-        await axios.get(`${API_URL}/api/tags`).then((actualData) => { setTags(actualData.data.data) });
+        await axios.get(`${API_URL}/api/tags`).then((actualData) => { setAvailableTags(actualData.data.data) });
     }
 
     let editBalladeForm = async () => {
@@ -72,23 +72,11 @@ function EditBallade(props) {
             formData.append("ballade_longitude", ballade_longitude);
             formData.append("denivele", denivele);
             formData.append("distance", distance);
-            formData.append("tag",  tag ? `${tag}` : `${props.updateValue.tag.id}`);
+            tags.forEach((tagId) => formData.append("tags[]", tagId));
             if (ballade_image){
                 formData.append("ballade_image", ballade_image);
             }
             formData.append("_method", 'PATCH');
-
-            let updatedBallade = {
-                id: id ? id : parseInt(oneBallade.id),
-                ballade_name: ballade_name ? ballade_name : oneBallade.ballade_name,
-                ballade_description: ballade_description ? ballade_description : oneBallade.ballade_description,
-                ballade_latitude: ballade_latitude ? ballade_latitude : oneBallade.ballade_latitude,
-                ballade_longitude: ballade_longitude ? ballade_longitude : oneBallade.ballade_longitude ,
-                denivele: denivele ? denivele : oneBallade.denivele ,
-                distance: distance ? distance : oneBallade.distance,
-                ballade_image: ballade_image ? ballade_image : oneBallade.ballade_image,
-                tag: tag ? tag : oneBallade.tag.id,
-            }
 
             let res = await axios.post(`${API_URL}/api/ballades/` + oneBallade.id, formData, {
                 "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
@@ -123,7 +111,7 @@ function EditBallade(props) {
                     denivele: props.updateValue.denivele,
                     distance: props.updateValue.distance,
                     ballade_image: props.updateValue.ballade_image,
-                    tag: props.updateValue.tag,
+                    tags: props.updateValue.tags,
                 })
                 setCImage(props.updateValue.ballade_image);
             }}>
@@ -262,25 +250,34 @@ function EditBallade(props) {
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex',flexDirection: 'column'}}>
                             <Controller
-                              name="tag"
+                              name="tags"
                               control={control}
                               render={() => (
                                   <FormControl sx={{ m: 1, mt: 5, minWidth: 120 }} size="small">
-                                      <InputLabel id="tag-select">Type</InputLabel>
+                                      <InputLabel id="tags-select">Tags</InputLabel>
                                       <Select
-                                        labelId="tag-select"
-                                        id="tag-select"
-                                        defaultValue={props.updateValue.tag.id}
-                                        label="Type"
-                                        onChange={(e) => setType(e.target.value)}
+                                        labelId="tags-select"
+                                        id="tags-select"
+                                        multiple
+                                        value={tags}
+                                        label="Tags"
+                                        onChange={(e) => setTags(e.target.value)}
                                         sx={{height: 50}}
                                         variant="outlined"
+                                        renderValue={(selected) => (
+                                            <Box sx={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
+                                                {selected.map((id) => (
+                                                    <Chip key={id} size="small" label={availableTags.find((t) => t.id === id)?.tag_name} />
+                                                ))}
+                                            </Box>
+                                        )}
                                       >
-                                      {tags.map((tag) => {
-                                          return(
-                                              <MenuItem key={tag.id} value={tag.id}>{tag.tag_name}</MenuItem>
-                                          )
-                                      })}
+                                      {availableTags.map((t) => (
+                                          <MenuItem key={t.id} value={t.id}>
+                                              <Checkbox checked={tags.indexOf(t.id) > -1} />
+                                              <ListItemText primary={t.tag_name} />
+                                          </MenuItem>
+                                      ))}
                                       </Select>
                                   </FormControl>
                               )}

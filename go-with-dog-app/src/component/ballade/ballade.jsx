@@ -12,7 +12,7 @@ import {
     TablePagination,
     TableRow,
     Typography,
-    Alert, Avatar
+    Alert, Avatar, Chip
 } from "@mui/material";
 import DeleteBallade from "./deleteBallade";
 import NewBallade from "./newBallade";
@@ -93,7 +93,7 @@ function Ballade() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, ballade_name, ballade_description, ballade_image, tag, ballade_latitude , ballade_longitude , distance , denivele , user}) => {
+                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, ballade_name, ballade_description, ballade_image, tags, ballade_latitude , ballade_longitude , distance , denivele , user}) => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={ballade_name+id}>
                                             <TableCell>{id}</TableCell>
@@ -109,12 +109,18 @@ function Ballade() {
                                              <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{ distance ?? '--'}</TableCell>
                                               <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{ denivele ?? '--'}</TableCell>
                                             <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{ballade_latitude ?? '--'} , {ballade_longitude ?? '--'}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}} ><Typography  color={tag.color}>{tag.tag_name ?? '--'}</Typography></TableCell>
+                                            <TableCell sx={{fontWeight: 'bold'}}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                                    {(tags ?? []).map((t) => (
+                                                        <Chip key={t.id} size="small" label={t.tag_name} sx={{ color: t.color }} />
+                                                    ))}
+                                                </Box>
+                                            </TableCell>
                                              <TableCell sx={{  display: { xs: 'none', lg: 'table-cell' } }}>{user.username ?? '--'}</TableCell>
                                             <TableCell>
                                                 <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                                    <EditBallade updateValue={{id, ballade_name, ballade_description, ballade_image,tag, distance, denivele, ballade_latitude, ballade_longitude, data}} handleDataChange={handleDataChange} />
-                                                    <DeleteBallade deleteValue={{id, ballade_name, ballade_description, ballade_image, tag, data}} handleDataChange={handleDataChange}/>
+                                                    <EditBallade updateValue={{id, ballade_name, ballade_description, ballade_image,tags, distance, denivele, ballade_latitude, ballade_longitude, data}} handleDataChange={handleDataChange} />
+                                                    <DeleteBallade deleteValue={{id, ballade_name, ballade_description, ballade_image, tags, data}} handleDataChange={handleDataChange}/>
                                                 </Box>
                                             </TableCell>
                                         </TableRow>
