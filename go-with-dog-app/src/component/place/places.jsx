@@ -22,7 +22,8 @@ import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { normalizeText } from "../../services/search/searchIndex";
 import { API_URL } from "../../config";
 
-const PAGE_SIZE = 9;
+const PAGE_SIZE_OPTIONS = [10, 20, 50];
+const DEFAULT_PAGE_SIZE = 10;
 const MAX_VISIBLE_FILTER_TAGS = 15;
 
 function Places() {
@@ -41,6 +42,7 @@ function Places() {
     const [sortOrder, setSortOrder] = useState("");
     const [searchText, setSearchText] = useState(searchParams.get("search") ?? "");
     const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
 
 
@@ -109,11 +111,16 @@ function Places() {
         return result;
     }, [data, selectedCategory, selectedTags, sortOrder, searchText]);
 
-    const pageCount = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
-    const pagedData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const pageCount = Math.max(1, Math.ceil(filteredData.length / pageSize));
+    const pagedData = filteredData.slice((page - 1) * pageSize, page * pageSize);
 
     const handleFilterChange = (setter) => (e) => {
         setter(e.target.value);
+        setPage(1);
+    };
+
+    const handlePageSizeChange = (e) => {
+        setPageSize(e.target.value);
         setPage(1);
     };
 
@@ -197,6 +204,20 @@ function Places() {
                         <MenuItem value="nom-asc">Nom (A → Z)</MenuItem>
                         <MenuItem value="nom-desc">Nom (Z → A)</MenuItem>
                         <MenuItem value="tags-asc">Tags (A → Z)</MenuItem>
+                    </Select>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <InputLabel id="place-page-size-label" sx={{ whiteSpace: "nowrap" }}>Afficher :</InputLabel>
+                    <Select
+                        labelId="place-page-size-label"
+                        value={pageSize}
+                        onChange={handlePageSizeChange}
+                        size="small"
+                    >
+                        {PAGE_SIZE_OPTIONS.map((size) => (
+                            <MenuItem key={size} value={size}>{size}</MenuItem>
+                        ))}
                     </Select>
                 </Box>
             </Box>
