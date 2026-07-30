@@ -286,7 +286,6 @@ function NewBallade() {
                                 <TextField
                                     {...register("ballade_description", {
                                         required: "Ce champ est requis",
-                                        maxLength: { value: 255, message: "Longueur maximale de 255 caractères" },
                                     })}
                                     id="ballade_description"
                                     multiline
@@ -298,11 +297,9 @@ function NewBallade() {
                                     value={ballade_description}
                                     error={!!errors.ballade_description}
                                     aria-required="true"
-                                    aria-describedby="ballade-description-count"
                                 />
                             )}
                         />
-                        <Typography id="ballade-description-count" variant="body2" color="text.secondary">{ballade_description.length}/255 caractères</Typography>
                         {errors.ballade_description ? (
                             <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_description?.message}</Alert>
                         ) : null}

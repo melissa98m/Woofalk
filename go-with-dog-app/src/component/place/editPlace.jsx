@@ -158,8 +158,7 @@ function EditPlace(props) {
                                    {...register(
                                        'place_description',
                                        {
-                                           required: 'Ce champ est requis',
-                                           maxLength: {value: 255, message: 'Longueur maximale de 255 caractères'}
+                                           required: 'Ce champ est requis'
                                        }
                                    )}
                                    multiline
@@ -172,7 +171,6 @@ function EditPlace(props) {
                                 />
                               )}
                             />
-                            <Box className='description-limit'>{place_description.length}/255 caractères</Box>
                             {errors.place_description ? (
                                 <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_description?.message}</Alert>
                             ) : ''}

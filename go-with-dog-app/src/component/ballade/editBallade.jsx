@@ -154,8 +154,7 @@ function EditBallade(props) {
                                    {...register(
                                        'ballade_description',
                                        {
-                                           required: 'Ce champ est requis',
-                                           maxLength: {value: 255, message: 'Longueur maximale de 255 caractères'}
+                                           required: 'Ce champ est requis'
                                        }
                                    )}
                                    multiline
@@ -168,7 +167,6 @@ function EditBallade(props) {
                                 />
                               )}
                             />
-                            <Box className='description-limit'>{ballade_description.length}/255 caractères</Box>
                             {errors.ballade_description ? (
                                 <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_description?.message}</Alert>
                             ) : ''}
