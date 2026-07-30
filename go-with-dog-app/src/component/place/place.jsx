@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Button,
@@ -22,6 +22,7 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { normalizeText } from "../../services/search/searchIndex";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -37,6 +38,7 @@ function Place() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -48,6 +50,11 @@ function Place() {
 
     const handleChangeRowsPerPage = (place) => {
         setRowsPerPage(+place.target.value);
+        setPage(0);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
         setPage(0);
     };
 
@@ -113,7 +120,13 @@ function Place() {
         }
     };
 
-    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const filteredData = useMemo(() => {
+        const q = normalizeText(search);
+        if (q.length === 0) return data ?? [];
+        return (data ?? []).filter((place) => normalizeText([place.place_name, place.place_description, place.category?.category_name, place.address?.city].filter(Boolean).join(" ")).includes(q));
+    }, [data, search]);
+
+    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((p) => p.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -121,11 +134,15 @@ function Place() {
     return <Box id="place">
         <AdminResourceLayout
             title="Lieux"
-            countLabel={data ? `${data.length} lieu${data.length > 1 ? "x" : ""} référencé${data.length > 1 ? "s" : ""}` : undefined}
+            countLabel={data ? `${filteredData.length} lieu${filteredData.length > 1 ? "x" : ""} référencé${filteredData.length > 1 ? "s" : ""}` : undefined}
             actions={<Button component={Link} to="/places/new" variant="contained">Ajouter un lieu</Button>}
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Rechercher un lieu…"
+            searchAriaLabel="Rechercher un lieu par nom"
             loading={loading}
             loadingLabel="Chargement des places..."
-            count={data ? data.length : 0}
+            count={filteredData.length}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
@@ -136,8 +153,8 @@ function Place() {
             bulkBar={data ? (
                 <BulkActionsBar
                     count={selection.count}
-                    total={data.length}
-                    onSelectAll={() => selection.selectAll(data.map((p) => p.id))}
+                    total={filteredData.length}
+                    onSelectAll={() => selection.selectAll(filteredData.map((p) => p.id))}
                     onClear={selection.clear}
                 >
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('publie')}>Publier</RowActionButton>
@@ -169,7 +186,11 @@ function Place() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {pageRows.map(({id, place_name, place_description, place_image, status, category, address , user, tags, created_at}) => {
+                        {pageRows.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={9} sx={{ textAlign: "center", color: "text.secondary" }}>Aucun lieu trouvé</TableCell>
+                            </TableRow>
+                        ) : pageRows.map(({id, place_name, place_description, place_image, status, category, address , user, tags, created_at}) => {
                             return (
                                 <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={place_name+id}>
                                     <TableCell padding="checkbox">

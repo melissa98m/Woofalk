@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Button,
@@ -22,6 +22,7 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { normalizeText } from "../../services/search/searchIndex";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -37,6 +38,7 @@ function Ballade() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -48,6 +50,11 @@ function Ballade() {
 
     const handleChangeRowsPerPage = (ballade) => {
         setRowsPerPage(+ballade.target.value);
+        setPage(0);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
         setPage(0);
     };
 
@@ -113,7 +120,13 @@ function Ballade() {
         }
     };
 
-    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const filteredData = useMemo(() => {
+        const q = normalizeText(search);
+        if (q.length === 0) return data ?? [];
+        return (data ?? []).filter((ballade) => normalizeText([ballade.ballade_name, ballade.ballade_description].filter(Boolean).join(" ")).includes(q));
+    }, [data, search]);
+
+    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((b) => b.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -121,11 +134,15 @@ function Ballade() {
     return <Box id="ballade">
         <AdminResourceLayout
             title="Balades"
-            countLabel={data ? `${data.length} balade${data.length > 1 ? "s" : ""} référencée${data.length > 1 ? "s" : ""}` : undefined}
+            countLabel={data ? `${filteredData.length} balade${filteredData.length > 1 ? "s" : ""} référencée${filteredData.length > 1 ? "s" : ""}` : undefined}
             actions={<Button component={Link} to="/ballades/new" variant="contained">Ajouter une balade</Button>}
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Rechercher une balade…"
+            searchAriaLabel="Rechercher une balade par nom"
             loading={loading}
             loadingLabel="Chargement des balades..."
-            count={data ? data.length : 0}
+            count={filteredData.length}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
@@ -136,8 +153,8 @@ function Ballade() {
             bulkBar={data ? (
                 <BulkActionsBar
                     count={selection.count}
-                    total={data.length}
-                    onSelectAll={() => selection.selectAll(data.map((b) => b.id))}
+                    total={filteredData.length}
+                    onSelectAll={() => selection.selectAll(filteredData.map((b) => b.id))}
                     onClear={selection.clear}
                 >
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('publie')}>Publier</RowActionButton>
@@ -169,7 +186,11 @@ function Ballade() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {pageRows.map(({id, ballade_name, ballade_description, ballade_image, status, tags, ballade_latitude , ballade_longitude , distance , denivele , user, created_at}) => {
+                        {pageRows.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={9} sx={{ textAlign: "center", color: "text.secondary" }}>Aucune balade trouvée</TableCell>
+                            </TableRow>
+                        ) : pageRows.map(({id, ballade_name, ballade_description, ballade_image, status, tags, ballade_latitude , ballade_longitude , distance , denivele , user, created_at}) => {
                             return (
                                 <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={ballade_name+id}>
                                     <TableCell padding="checkbox">

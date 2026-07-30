@@ -19,6 +19,8 @@ import { StatCard } from "../_partials/_ui/StatCard";
 import { StatusChip } from "../_partials/_ui/StatusChip";
 import EditPlace from "../place/editPlace";
 import DeletePlace from "../place/deletePlace";
+import EditBallade from "../ballade/editBallade";
+import DeleteBallade from "../ballade/deleteBallade";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -31,6 +33,7 @@ function Dashboard() {
     const [users, setUsers] = useState(null);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [searchBallade, setSearchBallade] = useState("");
 
     useEffect(() => {
         Promise.all([
@@ -52,6 +55,10 @@ function Dashboard() {
         setPlaces(dataChange);
     };
 
+    const handleBalladesChange = async (dataChange) => {
+        setBallades(dataChange);
+    };
+
     const stats = useMemo(() => {
         const now = Date.now();
         return [
@@ -70,27 +77,18 @@ function Dashboard() {
             .slice(0, 5);
     }, [places, search]);
 
+    const latestBallades = useMemo(() => {
+        if (!ballades) return [];
+        return [...ballades]
+            .sort((a, b) => new Date(b.created_at ?? 0) - new Date(a.created_at ?? 0))
+            .filter((b) => b.ballade_name.toLowerCase().includes(searchBallade.trim().toLowerCase()))
+            .slice(0, 5);
+    }, [ballades, searchBallade]);
+
     return (
         <Box id="dashboard">
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "16px", mb: "28px" }}>
                 <Typography variant="h1" sx={{ fontSize: "26px", m: 0 }}>Tableau de bord</Typography>
-                <TextField
-                    size="small"
-                    placeholder="Rechercher un lieu…"
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    sx={{ width: 280 }}
-                    slotProps={{
-                        input: {
-                            startAdornment: (
-                                <InputAdornment position="start">
-                                    <SearchIcon fontSize="small" color="disabled" />
-                                </InputAdornment>
-                            ),
-                        },
-                        htmlInput: { "aria-label": "Rechercher un lieu par nom" },
-                    }}
-                />
             </Box>
 
             <Box
@@ -106,14 +104,31 @@ function Dashboard() {
                 ))}
             </Box>
 
-            <Card sx={{ borderRadius: "16px", overflow: "hidden" }}>
+            <Card sx={{ borderRadius: "16px", overflow: "hidden", mb: "28px" }}>
                 <Box sx={{
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px",
                     px: "20px", py: "16px", borderBottom: "1px solid", borderColor: "divider",
                 }}>
                     <Typography component="h2" sx={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: "16px", m: 0 }}>
                         Derniers lieux ajoutés
                     </Typography>
+                    <TextField
+                        size="small"
+                        placeholder="Rechercher un lieu…"
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        sx={{ width: 260 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" color="disabled" />
+                                    </InputAdornment>
+                                ),
+                            },
+                            htmlInput: { "aria-label": "Rechercher un lieu par nom" },
+                        }}
+                    />
                     <Typography component={Link} to="/place" sx={{ fontSize: "13px", fontWeight: 700, color: "sageDark", textDecoration: "none" }}>
                         Voir tous les lieux
                     </Typography>
@@ -146,6 +161,72 @@ function Dashboard() {
                                         <Box sx={{ display: "flex", justifyContent: "right" }}>
                                             <EditPlace updateValue={{id, place_name, place_description, place_image, status, category, address, tags, data: places}} handleDataChange={handlePlacesChange} />
                                             <DeletePlace deleteValue={{id, place_name, place_description, place_image, category, address, data: places}} handleDataChange={handlePlacesChange} />
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                )}
+            </Card>
+
+            <Card sx={{ borderRadius: "16px", overflow: "hidden" }}>
+                <Box sx={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px",
+                    px: "20px", py: "16px", borderBottom: "1px solid", borderColor: "divider",
+                }}>
+                    <Typography component="h2" sx={{ fontFamily: "'Fredoka', sans-serif", fontWeight: 600, fontSize: "16px", m: 0 }}>
+                        Dernières balades ajoutées
+                    </Typography>
+                    <TextField
+                        size="small"
+                        placeholder="Rechercher une balade…"
+                        value={searchBallade}
+                        onChange={(e) => setSearchBallade(e.target.value)}
+                        sx={{ width: 260 }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" color="disabled" />
+                                    </InputAdornment>
+                                ),
+                            },
+                            htmlInput: { "aria-label": "Rechercher une balade par nom" },
+                        }}
+                    />
+                    <Typography component={Link} to="/ballade" sx={{ fontSize: "13px", fontWeight: 700, color: "sageDark", textDecoration: "none" }}>
+                        Voir toutes les balades
+                    </Typography>
+                </Box>
+                {loading ? (
+                    <Typography role="status" aria-live="polite" color="text.secondary" sx={{ p: "20px" }}>Chargement…</Typography>
+                ) : (
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Nom</TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Distance</TableCell>
+                                <TableCell>Statut</TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Date</TableCell>
+                                <TableCell align="right">Actions</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {latestBallades.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} sx={{ textAlign: "center", color: "text.secondary" }}>Aucune balade trouvée</TableCell>
+                                </TableRow>
+                            ) : latestBallades.map(({id, ballade_name, ballade_description, ballade_image, ballade_latitude, ballade_longitude, ballade_website, distance, denivele, status, tags, user, created_at}) => (
+                                <TableRow hover key={id}>
+                                    <TableCell sx={{ fontWeight: "bold" }}>{ballade_name ?? "--"}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{distance != null ? `${distance} km` : "--"}</TableCell>
+                                    <TableCell><StatusChip status={status ?? "publie"} /></TableCell>
+                                    <TableCell sx={{ color: "text.secondary", fontSize: "13px", display: { xs: 'none', sm: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : "--"}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{ display: "flex", justifyContent: "right" }}>
+                                            <EditBallade updateValue={{id, ballade_name, ballade_description, ballade_image, ballade_latitude, ballade_longitude, ballade_website, distance, denivele, status, tags, data: ballades}} handleDataChange={handleBalladesChange} />
+                                            <DeleteBallade deleteValue={{id, ballade_name, data: ballades}} handleDataChange={handleBalladesChange} />
                                         </Box>
                                     </TableCell>
                                 </TableRow>

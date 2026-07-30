@@ -1,4 +1,5 @@
-import { Alert, Box, Card, Snackbar, TableContainer, TablePagination, Typography } from "@mui/material";
+import { Alert, Box, Card, InputAdornment, Snackbar, TableContainer, TablePagination, TextField, Typography } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 // Shared shell for every admin resource list (places, ballades, categories,
 // tags, users, addresses): header with title/count + actions, table wrapped
@@ -7,6 +8,10 @@ export function AdminResourceLayout({
     title,
     countLabel,
     actions,
+    searchValue,
+    onSearchChange,
+    searchPlaceholder,
+    searchAriaLabel,
     loading,
     loadingLabel,
     count,
@@ -29,6 +34,25 @@ export function AdminResourceLayout({
                         <Typography variant="body2" color="text.secondary" sx={{ mt: "6px" }}>{countLabel}</Typography>
                     ) : null}
                 </Box>
+                {onSearchChange ? (
+                    <TextField
+                        size="small"
+                        placeholder={searchPlaceholder}
+                        value={searchValue}
+                        onChange={onSearchChange}
+                        sx={{ minWidth: { xs: "100%", sm: 260 }, order: { xs: 3, sm: 0 } }}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon fontSize="small" color="action" />
+                                    </InputAdornment>
+                                ),
+                            },
+                            htmlInput: { "aria-label": searchAriaLabel },
+                        }}
+                    />
+                ) : null}
                 {actions}
             </Box>
             {loading ? (
