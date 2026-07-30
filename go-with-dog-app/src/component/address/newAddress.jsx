@@ -1,8 +1,8 @@
-import {Box, Button, FormControl, Modal, Snackbar, Typography, Alert, Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, Typography, Alert, Grid} from "@mui/material";
 import {useState} from "react";
 import update from "immutability-helper";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
 import { API_URL } from "../../config";
 import { AddressSearchField } from "./AddressSearchField";
 
@@ -55,21 +55,8 @@ function NewAddress(props) {
     }
 
     return (<Box>
-        <Button variant="contained" onClick={() => setShowNew(true)}>Ajouter</Button>
-        <Modal
-            id="modal-crud-container"
-            hideBackdrop
-            open={newAddress}
-            onClose={() => setShowNew(false)}
-            aria-labelledby="new-address-title"
-            aria-describedby="child-modal-description"
-
-        >
-            <Box className="modal-crud modal-crud-address" sx={{bgcolor: 'background.default'}}>
-            <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-              <Button variant="outlined"  color="secondary" onClick={() => setShowNew(false)}><CloseIcon /></Button>
-              </Grid>
-                <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="new-address-title">Nouveau address de lieux</Typography>
+        <Button variant="contained" onClick={() => setShowNew(true)}>Ajouter une adresse</Button>
+        <CrudModal open={newAddress} onClose={() => setShowNew(false)} title="Nouvelle adresse" titleId="new-address-title">
                 <form onSubmit={newAddressForm} className="addressForm">
                     <Grid container spacing={8}>
                     <Grid item xs={12} sx={{ display: 'flex',flexDirection: 'column' , textAlign: 'center' , justifyContent: 'center'}}>
@@ -94,9 +81,7 @@ function NewAddress(props) {
                      </Grid>
                     </Grid>
                 </form>
-
-            </Box>
-        </Modal>
+        </CrudModal>
 
         <Snackbar
             open={toast}

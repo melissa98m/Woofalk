@@ -1,9 +1,10 @@
-import {Box, Button, FormControl, Modal, Snackbar, Typography, Alert , Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, Alert} from "@mui/material";
 import {useEffect, useState} from "react";
 import update from "immutability-helper";
 import {DeleteForeverRounded} from "@mui/icons-material";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 function DeleteCategory(props) {
@@ -33,39 +34,27 @@ function DeleteCategory(props) {
     }
 
     return(<Box>
-            <Button
-                variant='contained'
-                sx={{mx: 2}}
+            <RowActionButton
+                danger
+                icon={<DeleteForeverRounded fontSize="small"/>}
+                aria-label="Supprimer la catégorie"
                 onClick={ () => {
                     setShowDelete(true)
                     setOneCategory({id: props.deleteValue.id, category_name: props.deleteValue.category_name} )
                 } }
             >
-                <DeleteForeverRounded/>
-            </Button>
-            <Modal
-                id="modal-crud-container"
-                hideBackdrop
-                open={delCategory}
-                onClose={() => setShowDelete(false)}
-                aria-labelledby="delete-brand-title"
-                aria-describedby="child-modal-description"
-            >
-                <Box className="modal-crud modal-crud-ballade" sx={{bgcolor: 'background.default'}}>
-                <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-                 <Button variant="outlined"  color="secondary" onClick={() => setShowDelete(false)}><CloseIcon /></Button>
-                 </Grid>
-                    <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="delete-brand-title">Supprimer une categorie</Typography>
+                Supprimer
+            </RowActionButton>
+            <CrudModal open={delCategory} onClose={() => setShowDelete(false)} title="Supprimer une catégorie" titleId="delete-brand-title">
                     <FormControl>
                         <Box>
-                            êtes vous sur de vouloir supprimer: {oneCategory.category_name}?
+                            êtes vous sur de vouloir supprimer : {oneCategory.category_name} ?
                         </Box>
                         <Box className="action-button">
-                            <Button sx={{m: 3}} type="submit" variant="contained" onClick={deleteCategory}>Supprimer</Button>
+                            <Button sx={{m: 3}} type="submit" variant="contained" color="error" onClick={deleteCategory}>Supprimer</Button>
                         </Box>
                     </FormControl>
-                </Box>
-            </Modal>
+            </CrudModal>
 
             <Snackbar
                 open={toast}

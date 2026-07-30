@@ -7,6 +7,7 @@ import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { DetailStat } from "../_partials/_ui/DetailStat";
+import { LikeButton } from "../_partials/_ui/LikeButton";
 import { API_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
@@ -16,11 +17,15 @@ function BalladeDetail() {
     const [ballade, setBallade] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [like, setLike] = useState({ liked: false, count: 0 });
 
     useEffect(() => {
         setLoading(true);
         axios.get(`${API_URL}/api/ballades/${id}`)
-            .then((res) => setBallade(res.data))
+            .then((res) => {
+                setBallade(res.data);
+                setLike({ liked: !!res.data.is_liked, count: res.data.likes_count ?? 0 });
+            })
             .catch(() => setError("Balade introuvable."))
             .finally(() => setLoading(false));
     }, [id]);
@@ -67,6 +72,13 @@ function BalladeDetail() {
                     </Box>
                 ) : null}
             </Box>
+            <LikeButton
+                type="ballades"
+                id={id}
+                liked={like.liked}
+                likesCount={like.count}
+                onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
+            />
         </Box>
 
         <Box sx={{ display: "flex", gap: "14px", flexWrap: "wrap", marginBottom: "32px" }}>

@@ -5,10 +5,8 @@ import {
     Chip,
     FormControl,
     ListItemText,
-    Modal,
     Snackbar,
     TextField,
-    Typography,
     Alert,
     Grid,
     MenuItem,
@@ -19,7 +17,8 @@ import {useEffect, useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 function EditBallade(props) {
@@ -32,12 +31,13 @@ function EditBallade(props) {
     const [distance , setDistance] = useState(props.updateValue.distance);
     const [ denivele , setDenivele] = useState(props.updateValue.denivele);
     const [cImage, setCImage] = useState(props.updateValue.ballade_image);
+    const [status, setStatus] = useState(props.updateValue.status || 'publie');
 
     // One of ...
     const [tags, setTags] = useState((props.updateValue.tags ?? []).map((t) => t.id));
 
     // List All
-    const [availableTags, setAvailableTags] = useState({});
+    const [availableTags, setAvailableTags] = useState([]);
 
     const [oneBallade, setOneBallade] = useState("");
     const [editBallade, setShowEdit] = useState(false);
@@ -72,6 +72,7 @@ function EditBallade(props) {
             formData.append("ballade_longitude", ballade_longitude);
             formData.append("denivele", denivele);
             formData.append("distance", distance);
+            formData.append("status", status);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
             if (ballade_image){
                 formData.append("ballade_image", ballade_image);
@@ -99,7 +100,8 @@ function EditBallade(props) {
     }
 
     return(<Box >
-          <Button color='info' variant='contained' sx={{mx: 2}}
+          <RowActionButton
+            icon={<Edit fontSize="small"/>}
             onClick={() => {
                 setShowEdit(true)
                 setOneBallade({
@@ -115,21 +117,9 @@ function EditBallade(props) {
                 })
                 setCImage(props.updateValue.ballade_image);
             }}>
-              <Edit/>
-          </Button>
-         <Modal
-            id="modal-crud-container"
-            hideBackdrop
-            open={editBallade}
-            onClose={() => setShowEdit(false)}
-            aria-labelledby="edit-ballade-title"
-            aria-describedby="child-modal-description"
-        >
-            <Box className="modal-crud modal-crud-ballade" sx={{bgcolor: 'background.default'}}>
-            <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-            <Button variant="outlined"  color="secondary" onClick={() => setShowEdit(false)}><CloseIcon /></Button>
-             </Grid>
-                <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="edit-ballade-title">Editer une balade</Typography>
+              Modifier
+          </RowActionButton>
+         <CrudModal open={editBallade} onClose={() => setShowEdit(false)} title="Editer une balade" titleId="edit-ballade-title">
                 <form onSubmit={handleSubmit(editBalladeForm)}>
                     <Grid container spacing={8}>
                         <Grid item xs={6} sx={{ display: 'flex',flexDirection: 'column'}}>
@@ -328,14 +318,29 @@ function EditBallade(props) {
                                                                 {errors.denivele ? (
                                                                  <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.denivele?.message}</Alert>
                                                                  ) : ''}
+
+                            <FormControl sx={{ m: 1, mt: 5, minWidth: 120 }} size="small">
+                                <InputLabel id="ballade-status-select">Statut</InputLabel>
+                                <Select
+                                    labelId="ballade-status-select"
+                                    id="ballade-status-select"
+                                    defaultValue={status}
+                                    label="Statut"
+                                    onChange={(e) => setStatus(e.target.value)}
+                                    sx={{height: 50}}
+                                    variant="outlined"
+                                >
+                                    <MenuItem value="publie">Publié</MenuItem>
+                                    <MenuItem value="en_attente">En attente</MenuItem>
+                                </Select>
+                            </FormControl>
                         </Grid>
                         <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
                             <Button type="submit" sx={{m: 3}} variant="contained">Envoyer</Button>
                         </Grid>
                     </Grid>
                 </form>
-            </Box>
-        </Modal>
+        </CrudModal>
         <Snackbar
             open={toast}
             autoHideDuration={3000}

@@ -1,10 +1,11 @@
-import {Box, Button, FormControl, Modal, Snackbar, TextField, Typography, Alert , Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, TextField, Typography, Alert , Grid} from "@mui/material";
 import {Edit} from "@mui/icons-material";
 import {useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 function EditTag(props) {
@@ -51,26 +52,15 @@ const handleChange = (color) => {
   }
 
     return(<Box >
-          <Button color='info' variant='contained' sx={{mx: 2}}
+          <RowActionButton
+            icon={<Edit fontSize="small"/>}
             onClick={() => {
                 setShowEdit(true)
                 setOneTag({id: props.updateValue.id, tag_name: props.updateValue.tag_name , color: props.updateValue.color})
             }}>
-              <Edit/>
-          </Button>
-         <Modal
-            id="modal-crud-container"
-            hideBackdrop
-            open={editTag}
-            onClose={() => setShowEdit(false)}
-            aria-labelledby="edit-tag-title"
-            aria-describedby="child-modal-description"
-        >
-            <Box className="modal-crud modal-crud-tag" sx={{bgcolor: 'background.default'}}>
-             <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-                <Button variant="outlined"  color="secondary" onClick={() => setShowEdit(false)}><CloseIcon /></Button>
-             </Grid>
-                <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="edit-tag-title">Editer un tag de lieux</Typography>
+              Modifier
+          </RowActionButton>
+         <CrudModal open={editTag} onClose={() => setShowEdit(false)} title="Éditer un tag" titleId="edit-tag-title">
                 <form onSubmit={handleSubmit(editTagForm)}>
                 <Grid container spacing={8}>
                  <Grid item xs={12} sx={{ display: 'flex',flexDirection: 'column' , textAlign: 'center' , justifyContent: 'center'}}>
@@ -108,8 +98,7 @@ const handleChange = (color) => {
                         </Grid>
                         </Grid>
                 </form>
-            </Box>
-        </Modal>
+        </CrudModal>
         <Snackbar
             open={toast}
             autoHideDuration={3000}

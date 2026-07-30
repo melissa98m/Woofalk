@@ -23,16 +23,28 @@ class User extends Authenticatable implements JWTSubject
         'email',
         'password',
         'roles',
+        'terms_accepted_at',
     ];
 
-    function places()
+    public function places()
     {
-        return $this->hasMany(Place::class);
-
+        // The FK column is named "user", not the Eloquent-conventional "user_id".
+        return $this->hasMany(Place::class, 'user');
     }
-    function ballades()
+
+    public function ballades()
     {
-        return $this->hasMany(Ballade::class);
+        return $this->hasMany(Ballade::class, 'user');
+    }
+
+    public function likedPlaces()
+    {
+        return $this->belongsToMany(Place::class, 'place_likes')->withTimestamps();
+    }
+
+    public function likedBallades()
+    {
+        return $this->belongsToMany(Ballade::class, 'ballade_likes')->withTimestamps();
     }
 
     /**
@@ -52,6 +64,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'terms_accepted_at' => 'datetime',
     ];
 
     /**
@@ -72,9 +85,9 @@ class User extends Authenticatable implements JWTSubject
     public function getJWTCustomClaims()
     {
         return [
-            "roles" => $this->roles,
-            "username" => $this->username,
-            "email" => $this->email
+            'roles' => $this->roles,
+            'username' => $this->username,
+            'email' => $this->email,
         ];
     }
 }

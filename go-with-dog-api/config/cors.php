@@ -25,7 +25,12 @@ return [
 
     'allowed_headers' => ['*'],
 
-    'exposed_headers' => [],
+    // Without this, cross-origin JS (the Vite dev server on :3000 calling the
+    // API on :8000, or any other host serving the front-end) can't read the
+    // real filename off a download response and falls back to a generic one
+    // — visible on /export, where a multi-table CSV zip could get saved
+    // with a .csv extension since the front-end couldn't see it was a zip.
+    'exposed_headers' => ['Content-Disposition'],
 
     'max_age' => 0,
 

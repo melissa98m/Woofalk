@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Chip, Container, IconButton, InputBase, Typography } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { Box, Chip, Container, Typography } from "@mui/material";
 import axios from "axios";
 import { PlaceCard } from "../_partials/_ui/PlaceCard";
 import { BalladeCard } from "../_partials/_ui/BalladeCard";
+import Search from "../search/search";
 import { API_URL } from "../../config";
 
 const QUICK_CATEGORIES = ["Restaurant", "Parc", "Hebergement", "Autre"];
@@ -54,33 +54,8 @@ function Home() {
                     Parcs, plages, forêts et balades vérifiés par des propriétaires de chiens, partout en France.
                 </Typography>
 
-                <Box
-                    component="form"
-                    role="search"
-                    aria-label="Recherche principale"
-                    onSubmit={(e) => e.preventDefault()}
-                    sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: { xs: "4px", sm: "8px" },
-                        width: "100%",
-                        maxWidth: "480px",
-                        bgcolor: "background.paper",
-                        border: "1px solid",
-                        borderColor: "divider",
-                        borderRadius: "999px",
-                        padding: { xs: "4px 4px 4px 12px", sm: "6px 6px 6px 16px" },
-                    }}
-                >
-                    <IconButton type="submit" aria-label="Rechercher" size="small">
-                        <SearchIcon fontSize="small" />
-                    </IconButton>
-                    <InputBase
-                        placeholder="Rechercher une ville, un lieu…"
-                        inputProps={{ "aria-label": "Rechercher une ville ou un lieu" }}
-                        sx={{ flex: 1, minWidth: 0, fontFamily: "'Nunito', sans-serif", fontSize: "14px" }}
-                    />
-                    <Button type="submit" variant="contained" sx={{ padding: { xs: "8px 14px", sm: "10px 20px" }, fontSize: { xs: "13px", sm: "14px" }, flexShrink: 0 }}>Chercher</Button>
+                <Box sx={{ width: "100%", maxWidth: "480px" }}>
+                    <Search variant="hero" label="Recherche principale" placeholder="Rechercher une ville, un lieu…" />
                 </Box>
 
                 <Box sx={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "18px" }}>

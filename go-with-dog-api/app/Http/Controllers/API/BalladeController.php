@@ -4,8 +4,11 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Ballade;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class BalladeController extends Controller
@@ -13,14 +16,16 @@ class BalladeController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
-        $ballades = Ballade::with(['user', 'tags'])->get();
+        $ballades = Ballade::with(['user', 'tags'])->withCount('likedByUsers as likes_count')->get();
+        $this->attachLikeState($ballades);
+
         return response()->json([
             'status' => 'Success',
-            'data' => $ballades
+            'data' => $ballades,
         ]);
     }
 
@@ -28,34 +33,108 @@ class BalladeController extends Controller
     {
         $userId = Auth::id();
         $ballades = Ballade::with(['user', 'tags'])
+            ->withCount('likedByUsers as likes_count')
             ->where('user', '=', $userId)
             ->get();
+        $this->attachLikeState($ballades);
+
         return response()->json([
             'status' => 'Success',
             'data' => $ballades,
         ]);
     }
+
+    /**
+     * Display the ballades liked by the authenticated user.
+     *
+     * @return Response
+     */
+    public function likedByUser()
+    {
+        $ballades = Auth::user()->likedBallades()
+            ->with(['user', 'tags'])
+            ->withCount('likedByUsers as likes_count')
+            ->get();
+        $ballades->each(function (Ballade $ballade) {
+            $ballade->is_liked = true;
+        });
+
+        return response()->json([
+            'status' => 'Success',
+            'data' => $ballades,
+        ]);
+    }
+
+    /**
+     * Like the specified resource on behalf of the authenticated user.
+     *
+     * @return Response
+     */
+    public function like(Ballade $ballade)
+    {
+        $ballade->likedByUsers()->syncWithoutDetaching([Auth::id()]);
+
+        return response()->json([
+            'status' => 'Success',
+            'is_liked' => true,
+            'likes_count' => $ballade->likedByUsers()->count(),
+        ]);
+    }
+
+    /**
+     * Remove the authenticated user's like from the specified resource.
+     *
+     * @return Response
+     */
+    public function unlike(Ballade $ballade)
+    {
+        $ballade->likedByUsers()->detach(Auth::id());
+
+        return response()->json([
+            'status' => 'Success',
+            'is_liked' => false,
+            'likes_count' => $ballade->likedByUsers()->count(),
+        ]);
+    }
+
+    /**
+     * Mark, without an extra query per row, which of the given ballades the
+     * authenticated user (if any) has liked.
+     *
+     * @param  Collection<int, Ballade>  $ballades
+     */
+    private function attachLikeState(Collection $ballades): void
+    {
+        $userId = Auth::id();
+        $likedIds = $userId
+            ? DB::table('ballade_likes')->where('user_id', $userId)->pluck('ballade_id')->all()
+            : [];
+        $ballades->each(function (Ballade $ballade) use ($likedIds) {
+            $ballade->is_liked = in_array($ballade->id, $likedIds, true);
+        });
+    }
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function sortByDateDesc()
     {
         $balladesdesc = Ballade::with(['user', 'tags'])
-            ->orderBy("created_at", 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
+
         return response()->json([
             'status' => 'Success',
-            'data' => $balladesdesc
+            'data' => $balladesdesc,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -66,8 +145,8 @@ class BalladeController extends Controller
             'distance' => 'required',
             'denivele' => 'required',
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'ballade_latitude'=> 'required|numeric|between:-90,90',
-            'ballade_longitude'=> 'required|numeric|between:-180,180',
+            'ballade_latitude' => 'required|numeric|between:-90,90',
+            'ballade_longitude' => 'required|numeric|between:-180,180',
             'status' => 'nullable|in:publie,en_attente',
             'tags' => 'nullable|array',
             'tags.*' => 'integer|exists:tags,id',
@@ -75,7 +154,7 @@ class BalladeController extends Controller
         if ($request->hasFile('ballade_image')) {
             $filename = $this->getFilename($request);
         } else {
-            $filename = Null;
+            $filename = null;
         }
         $ballade = Ballade::create([
             'ballade_name' => $request->ballade_name,
@@ -92,6 +171,7 @@ class BalladeController extends Controller
 
         $ballade->tags = $ballade->tags()->get();
         $ballade->user = $ballade->user()->get()[0];
+
         return response()->json([
             'status' => 'Success',
             'data' => $ballade,
@@ -101,22 +181,23 @@ class BalladeController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Ballade  $ballade
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Ballade $ballade)
     {
         $ballade->load(['user']);
         $ballade->load(['tags']);
+        $ballade->loadCount('likedByUsers as likes_count');
+        $userId = Auth::id();
+        $ballade->is_liked = $userId ? $ballade->likedByUsers()->where('users.id', $userId)->exists() : false;
+
         return response()->json($ballade);
     }
 
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Ballade  $ballade
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, Ballade $ballade)
     {
@@ -127,22 +208,22 @@ class BalladeController extends Controller
             'distance' => 'required',
             'denivele' => 'required',
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'ballade_latitude'=> 'required|numeric|between:-90,90',
-            'ballade_longitude'=> 'required|numeric|between:-180,180',
+            'ballade_latitude' => 'required|numeric|between:-90,90',
+            'ballade_longitude' => 'required|numeric|between:-180,180',
             'status' => 'nullable|in:publie,en_attente',
             'tags' => 'nullable|array',
             'tags.*' => 'integer|exists:tags,id',
         ]);
 
         if ($request->hasFile('ballade_image')) {
-            if (Ballade::findOrFail($ballade->id)->ballade_image){
-                Storage::delete("/public/uploads/ballade/".Ballade::findOrFail($ballade->id)->ballade_image);
+            if (Ballade::findOrFail($ballade->id)->ballade_image) {
+                Storage::delete('/public/uploads/ballade/'.Ballade::findOrFail($ballade->id)->ballade_image);
             }
             $filename = $this->getFilename($request);
             $request->ballade_image = $filename;
         }
 
-        if ($request->ballade_image == null){
+        if ($request->ballade_image == null) {
             $request->ballade_image = Ballade::findOrFail($ballade->id)->ballade_image;
         }
 
@@ -151,7 +232,7 @@ class BalladeController extends Controller
             'ballade_description' => $request->ballade_description,
             'distance' => $request->distance,
             'denivele' => $request->denivele,
-            'ballade_image' => $filename,
+            'ballade_image' => $request->ballade_image,
             'ballade_latitude' => $request->ballade_latitude,
             'ballade_longitude' => $request->ballade_longitude,
             'user' => $current,
@@ -165,24 +246,24 @@ class BalladeController extends Controller
         return response()->json([
             'status' => 'Mise à jour avec success',
             'data' => $ballade,
-            'request' => $request->ballade_image
+            'request' => $request->ballade_image,
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Ballade  $ballade
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Ballade $ballade)
     {
-        if ($ballade->ballade_image){
-            Storage::delete("/public/uploads/ballades".$ballade->ballade_image);
+        if ($ballade->ballade_image) {
+            Storage::delete('/public/uploads/ballades'.$ballade->ballade_image);
         }
         $ballade->delete();
+
         return response()->json([
-            'status' => 'Supprimer avec success'
+            'status' => 'Supprimer avec success',
         ]);
     }
 
@@ -191,8 +272,9 @@ class BalladeController extends Controller
         $filenameWithExt = $request->file('ballade_image')->getClientOriginalName();
         $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
         $extension = $request->file('ballade_image')->getClientOriginalExtension();
-        $filename = $filenameWithoutExt . '_' . time() . '.' . $extension;
+        $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
         $path = $request->file('ballade_image')->storeAs('public/uploads/ballades', $filename);
+
         return $filename;
     }
 }

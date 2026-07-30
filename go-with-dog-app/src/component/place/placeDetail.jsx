@@ -6,6 +6,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
+import { LikeButton } from "../_partials/_ui/LikeButton";
 import { API_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
@@ -15,11 +16,15 @@ function PlaceDetail() {
     const [place, setPlace] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [like, setLike] = useState({ liked: false, count: 0 });
 
     useEffect(() => {
         setLoading(true);
         axios.get(`${API_URL}/api/places/${id}`)
-            .then((res) => setPlace(res.data))
+            .then((res) => {
+                setPlace(res.data);
+                setLike({ liked: !!res.data.is_liked, count: res.data.likes_count ?? 0 });
+            })
             .catch(() => setError("Lieu introuvable."))
             .finally(() => setLoading(false));
     }, [id]);
@@ -56,7 +61,16 @@ function PlaceDetail() {
         />
 
         <Box sx={{ marginBottom: "24px" }}>
-            <Typography variant="h1" sx={{ fontSize: { xs: "24px", md: "32px" }, marginBottom: "8px" }}>{place_name}</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
+                <Typography variant="h1" sx={{ fontSize: { xs: "24px", md: "32px" }, marginBottom: "8px" }}>{place_name}</Typography>
+                <LikeButton
+                    type="places"
+                    id={id}
+                    liked={like.liked}
+                    likesCount={like.count}
+                    onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
+                />
+            </Box>
             {category ? (
                 <Chip label={category.category_name} sx={{ bgcolor: "sageSoft", color: "sageDark", fontWeight: 700 }} />
             ) : null}

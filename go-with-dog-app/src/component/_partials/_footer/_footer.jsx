@@ -6,6 +6,7 @@ const FOOTER_LINKS = [
     { to: "/places", label: "Lieux" },
     { to: "/ballades", label: "Balades" },
     { to: "/contact", label: "Contact" },
+    { to: "/faq", label: "FAQ" },
     { to: "/mentions-legales", label: "Mentions légales" },
     { to: "/politique-confidentialite", label: "Politique de confidentialité" },
 ];

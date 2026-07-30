@@ -1,92 +1,78 @@
-import React, {useEffect, useState} from "react";
-import { Box, Container, Typography} from "@mui/material";
+import { Box, Container, Link, Typography } from "@mui/material";
+import { Link as RouterLink } from "react-router-dom";
 
+const CONTACT_EMAIL = "bonjour@gowithdog.fr";
+const MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Contact depuis les mentions légales — gowithdog.fr")}`;
 
+function Section({ title, children }) {
+    return (
+        <Box component="section" sx={{ marginTop: "28px" }}>
+            <Typography variant="h2" sx={{ fontSize: "20px", marginBottom: "10px" }}>{title}</Typography>
+            <Typography variant="body2" color="text.secondary" component="div" sx={{ lineHeight: 1.7 }}>
+                {children}
+            </Typography>
+        </Box>
+    );
+}
 
 function MentionsLegales() {
 
-    document.title = "Mentions Légales";
+    document.title = "Mentions légales";
 
+    return (
+        <Container maxWidth="md" id="mentions-legales" sx={{ px: { xs: 2, md: 4 }, pt: { xs: "32px", md: "48px" }, pb: "80px" }}>
+            <Typography variant="h1" sx={{ fontSize: { xs: "26px", md: "32px" } }} gutterBottom>
+                Mentions légales
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+                Conformément aux articles 6-III et 19 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie
+                numérique (LCEN), les informations suivantes sont mises à la disposition des utilisateurs et visiteurs du
+                site <strong>gowithdog.fr</strong>.
+            </Typography>
 
-    return <Container maxWidth="md" id='mentions-legales'>
+            <Section title="1. Éditeur du site">
+                Statut de l'éditeur : [À COMPLÉTER — particulier ou société]<br />
+                Nom / raison sociale : [À COMPLÉTER]<br />
+                Adresse postale : [À COMPLÉTER]<br />
+                Contact : <Link href={MAILTO}>{CONTACT_EMAIL}</Link>
+            </Section>
 
+            <Section title="2. Responsable de la publication">
+                Le responsable de la publication est : Mélissa Mangione.<br />
+                Pour toute question relative au contenu du site, contactez : <Link href={MAILTO}>{CONTACT_EMAIL}</Link>
+            </Section>
 
-    <Typography variant='h1' sx={{ fontSize: "30px" , fontWeight: "bold" , textAlign: "center"}}>MENTIONS LEGALES :</Typography>
-    <Typography variant='body2' sx={{ textAlign: "center" , marginTop: "10px"}}>Conformément aux dispositions des articles 6-III et 19 de la
-    Loi n° 2004-575 du 21 juin 2004 pour la Confiance dans l'économie numérique, dite L.C.E.N., nous portons à la connaissance
-    des utilisateurs et visiteurs du site :
-    <a href="http://www.liendusit.fr" target="_blank">www.liendusit.fr</a> les informations suivantes :</Typography>
-    <Typography variant='h2' sx={{ textAlign: "center" , marginTop: "10px" , fontSize: "20px" , fontWeight: "bold" ,}}><strong>1. Informations légales :</strong></Typography>
+            <Section title="3. Hébergement">
+                Le site est hébergé par : [À COMPLÉTER — nom de l'hébergeur, adresse, contact].
+            </Section>
 
-    <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>Statut du propriétaire : <strong>particulier</strong><br/>
-    Le Propriétaire est : <strong>Mélissa Mangione</strong><br/>
-    Adresse postale du propriétaire : <strong>my address</strong><br/>
-    </Typography>
-     <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>
-    Le Créateur du site est : <strong>Go with dog</strong><br/>
-    Le Responsable de la  publication est : <strong>Mélissa Mangione</strong><br/>
-    Contacter le responsable de la publication : <strong>melissa.mangione+gowithdog@gmail.com</strong><br/>
-    Le responsable de la publication est une<strong> personne physique</strong><br/>
-    <br/>
-    </Typography>
-     <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>
-    Le Webmaster est  : <strong>Mélissa M</strong><br />
-    Contacter le Webmaster :  <strong><a href="mailto:melissa.mangione+webmaster@gmail.com?subject=Contact a partir des mentions lÃ©gales via le site www.liendusit.fr">melissa.mangione+webmaster@gmail.com</a></strong><br />
-    L’hebergeur du site est : <strong>a remplir a remplir a remplir a remplir</strong><br />
-    </Typography>
+            <Section title="4. Propriété intellectuelle">
+                L'ensemble des éléments accessibles sur le site (structure, textes, images, graphismes, logo, icônes) est
+                protégé par le droit de la propriété intellectuelle. Toute reproduction ou représentation, totale ou
+                partielle, sans autorisation écrite préalable, est interdite et pourrait constituer une contrefaçon au sens
+                des articles L.335-2 et suivants du Code de la propriété intellectuelle. Les lieux et balades publiés par les
+                utilisateurs restent leur propriété ; en les publiant, ils accordent au site le droit de les afficher
+                publiquement dans le cadre du service.
+            </Section>
 
-    <Typography variant='h2' sx={{ textAlign: "center" , marginTop: "20px" , fontSize: "20px" , fontWeight: "bold" }}><strong>2. Présentation et principe :</strong></Typography>
-    <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>Est désigné ci-après : <strong>Utilisateur</strong>, tout internaute se connectant et utilisant le site susnommé : <a href="http://www.liendusit.fr" target="_blank">www.liendusit.fr</a>.<br />
-    Le site <strong>www.liendusit.fr</strong><strong> </strong>regroupe un ensemble de services, dans l'état,  mis à la disposition des utilisateurs. Il est ici précisé que ces derniers doivent rester courtois et faire preuve de bonne
-    foi tant envers les autres utilisateurs qu'envers le webmaster du site www.liendusit.fr. Le site www.liendusit.fr est mis à jour régulièrement par Mélissa M.<br />
-    Mélissa Mangione s’efforce de fournir sur le site www.liendusit.fr des informations les plus précises possibles (sous réserve de modifications apportées depuis leur mise en ligne), mais ne saurait garantir l'exactitude, la complétude et
-    l'actualité des informations diffusées sur son site, qu’elles soient de son fait ou du fait des tiers partenaires qui lui fournissent ces informations. En conséquence,
-    l'utilisateur reconnaît utiliser ces informations données (à titre indicatif, non exhaustives et susceptibles d'évoluer) sous sa responsabilité exclusive.</Typography>
+            <Section title="5. Accessibilité du service">
+                Le site est accessible 24h/24, 7j/7, sauf interruption programmée ou non pour les besoins de sa maintenance,
+                ou en cas de force majeure. L'éditeur ne saurait être tenu responsable des conséquences d'une indisponibilité
+                du service.
+            </Section>
 
-    <Typography variant='h2' sx={{ textAlign: "center" , marginTop: "20px" , fontSize: "20px" , fontWeight: "bold" }}><strong>3. Accessibilité :</strong></Typography>
-   <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}> Le site www.liendusit.fr est par principe accessible aux utilisateurs 24/24h, 7/7j, sauf interruption, programmée ou non, pour les besoins
-   de sa maintenance ou en cas de force majeure. En cas d’impossibilité d’accès au service, www.liendusit.fr
-    s’engage à faire son maximum afin de rétablir l’accès au service et s’efforcera alors de communiquer préalablement aux utilisateurs les dates et heures de l’intervention.  N’étant soumis qu’à une obligation
-    de moyen, www.liendusit.fr ne saurait être tenu pour responsable de tout dommage, quelle qu’en soit la nature, résultant d’une indisponibilité du service.
- </Typography>
- <Typography variant='h2' sx={{ textAlign: "center" , marginTop: "20px" , fontSize: "20px" , fontWeight: "bold" }}><strong>4. Propriété intellectuelle :</strong></Typography>
-<Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>
- Mélissa Mangione est propriétaire exclusif de tous les droits de propriété intellectuelle ou détient les droits d’usage sur tous
- les éléments accessibles sur le site, tant sur la structure que sur les textes, images, graphismes, logo, icônes, sons, logiciels…<br />
- Toute reproduction totale ou partielle du site www.liendusit.fr, représentation, modification, publication, adaptation totale ou partielle de
-  l'un quelconque de ces éléments, quel que soit le moyen ou le procédé utilisé, est interdite, sauf autorisation écrite préalable de Mélissa Mangione,
-  propriétaire du site à l'email : melissa.mangione+webmaster@gmail.com, à défaut elle sera considérée comme
-  constitutive d’une contrefaçon et passible de poursuite conformément aux dispositions des articles L.335-2 et suivants du Code de Propriété Intellectuelle.</Typography>
-  <Typography variant='h2' sx={{ textAlign: "center" , marginTop: "20px" , fontSize: "20px" , fontWeight: "bold" }}>5. Liens hypertextes et cookies :</Typography>
-   <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}> Le site www.liendusit.fr contient un certain nombre de liens hypertextes vers d’autres sites (partenaires, informations …) mis en place avec l’autorisation de Mélissa Mangione. Cependant, Mélissa Mangione n’a pas la possibilité de vérifier l'ensemble du contenu des sites ainsi visités et décline donc toute responsabilité de ce fait quand aux risques éventuels de contenus illicites.<br />
-    L’utilisateur est informé que lors de ses visites sur le site www.liendusit.fr, un ou des cookies sont susceptibles de s’installer automatiquement
-    sur son ordinateur par l'intermédiaire de son logiciel de navigation. Un cookie est un bloc de données qui ne permet pas d'identifier l'utilisateur,
-     mais qui enregistre des informations relatives à la navigation de celui-ci sur le site. <br />
-    Le paramétrage du logiciel de navigation permet d’informer de la présence de cookie et éventuellement, de la refuser de la manière décrite
-    à l’adresse suivante : <a href="http://www.cnil.fr">www.cnil.fr</a>. L’utilisateur peut toutefois configurer le navigateur de son ordinateur pour
-    refuser l’installation des cookies, sachant que le refus d'installation d'un cookie peut entraîner l’impossibilité d’accéder à certains services.
-    Pour tout bloquage des cookies,
-     tapez dans votre moteur de recherche : bloquage des cookies sous IE ou firefox et suivez les instructions en fonction de votre version.</Typography>
-      <Typography variant='h2' sx={{ textAlign: "center" , marginTop: "20px" , fontSize: "20px" , fontWeight: "bold" }}>6. Protection des biens et des personnes - gestion des données personnelles :</Typography>
-       <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}> En France, les données personnelles sont notamment protégées par la loi n° 78-87 du 6 janvier 1978, la loi n° 2004-801 du 6 août 2004, l'article L. 226-13 du Code pénal et
-        la Directive Européenne du 24 octobre 1995.</Typography>
-        <Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>Sur le site www.liendusit.fr, Go with dog ne collecte des informations personnelles ( suivant l'article 4 loi n°78-17 du 06 janvier 1978) relatives à l'utilisateur que pour le besoin de certains services proposés par le site www.liendusit.fr.
-        L'utilisateur fournit ces informations en toute connaissance de cause, notamment lorsqu'il procède par lui-même à leur saisie. Il est alors précisé à l'utilisateur du site www.liendusit.fr l’obligation ou non de fournir ces informations.<br />
-        Conformément aux dispositions des articles 38 et suivants de la loi 78-17 du 6 janvier 1978 relative à l’informatique, aux fichiers et aux libertés, tout utilisateur dispose d’un droit d’accès, de rectification,
-        de suppression et d’opposition aux données personnelles le concernant. Pour l’exercer, adressez votre demande à www.liendusit.fr par email : <strong><a href="mailto:melissa.mangione+webmaster@gmail.com?subject=Contact ï¿½ partir des mentions lï¿½gales via le site www.liendusit.fr">melissa.mangione+gowithdog@gmail.com</a></strong>
-        ou par écrit dûment signée,
-        accompagnée d’une copie du titre d’identité avec signature du titulaire de la pièce, en précisant l’adresse à laquelle la réponse doit être envoyée.</Typography>
+            <Section title="6. Données personnelles">
+                Le traitement des données personnelles des utilisateurs (compte, formulaire de contact, contenu publié) est
+                décrit en détail dans notre{" "}
+                <Link component={RouterLink} to="/politique-confidentialite">politique de confidentialité</Link>, qui précise
+                notamment les données collectées, leurs finalités, leur durée de conservation et les modalités d'exercice de
+                vos droits (accès, rectification, effacement, portabilité, etc.).
+            </Section>
 
-
-<Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>Aucune information personnelle de l'utilisateur du site www.liendusit.fr n'est
-publiée à l'insu de l'utilisateur, échangée, transférée, cédée ou vendue sur un support quelconque à des tiers. Seule l'hypothèse du rachat du
-site www.liendusit.fr et de ses droits autorise Mélissa Mangione à transmettre les dites informations à l'éventuel acquéreur qui serait à son
-tour tenu à la même obligation de conservation et de modification des données vis à vis de l'utilisateur du site www.liendusit.fr.<br/>
-Le site www.liendusit.fr est en conformité avec le RGPD <a href="/politique-confidentialite">voir notre politique RGPD </a>
-</Typography>
-<Typography variant='body2' sx={{ textAlign: "justify" , marginTop: "10px"}}>Les bases de données sont protégées par les dispositions de la loi du 1er juillet 1998 transposant
-la directive 96/9 du 11 mars 1996 relative à la protection juridique des bases de données.</Typography>
-</Container>
-
+            <Typography variant="caption" color="text.secondary" sx={{ display: "block", marginTop: "32px" }}>
+                Dernière mise à jour : 28 juillet 2026.
+            </Typography>
+        </Container>
+    );
 }
 export default MentionsLegales;

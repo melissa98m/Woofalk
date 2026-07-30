@@ -1,23 +1,33 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
-    Container,
-    Paper,
-    Snackbar,
+    Chip,
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
-    TablePagination,
     TableRow,
-    Typography,
-    Alert, Avatar
 } from "@mui/material";
 import DeleteUser from "./deleteUser";
 import axios from "axios";
 import { API_URL } from "../../config";
+import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
 
+// The API stores `roles` as a JSON-encoded string column with no model cast,
+// so it comes back over the wire as a raw string like '["ROLE_ADMIN"]' rather
+// than an actual array — parse it defensively before rendering as chips.
+const parseRoles = (roles) => {
+    if (Array.isArray(roles)) return roles;
+    if (typeof roles === "string") {
+        try {
+            const parsed = JSON.parse(roles);
+            return Array.isArray(parsed) ? parsed : [parsed];
+        } catch {
+            return [roles];
+        }
+    }
+    return [];
+};
 
 function User() {
 
@@ -69,69 +79,59 @@ function User() {
         }
     }
 
-    return <Container sx={{ width : '80%'}} id="user">
-        <Paper sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', py: 10}}>
-            <Typography variant="h3" sx={{textAlign: "center"}} gutterBottom>Utilisateurs</Typography>
-            {loading ? (
-                <Typography variant="h5" sx={{textAlign: "center"}} gutterBottom>Chargement des utilisateurs...</Typography>
-            ) : (
-                <Box sx={{ maxWidth: '90%' }}>
-                    <TableContainer sx={{ mt:4 }}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell key={1}>ID</TableCell>
-                                    <TableCell key={2}>Username</TableCell>
-                                    <TableCell key={3}>Email</TableCell>
-                                    <TableCell key={4}>Roles</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={5}>Créer le</TableCell>
-                                    <TableCell key={6} align={'right'}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, username, email, roles, created_at  }) => {
-                                    return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={username+id}>
-                                            <TableCell>{id}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{username ?? '--'}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{email ?? '--'}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{ roles ?? '--'}</TableCell>
-                                             <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{ created_at.slice(0, 16)  ?? '--'}</TableCell>
-                                            <TableCell>
-                                                <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                                    <DeleteUser deleteValue={{id, username, email , roles, data}} handleDataChange={handleDataChange}/>
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 100]}
-                        component="div"
-                        count={data.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Box>
-            )}
-        </Paper>
-
-        <Snackbar
-            open={toast}
-            autoHideDuration={3000}
-            onClose={() => setShowToast(false)}
-            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+    return <Box id="user">
+        <AdminResourceLayout
+            title="Utilisateurs"
+            countLabel={data ? `${data.length} utilisateur${data.length > 1 ? "s" : ""}` : undefined}
+            loading={loading}
+            loadingLabel="Chargement des utilisateurs..."
+            count={data ? data.length : 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            toast={toast}
+            toastMessage={toastMessage}
+            onCloseToast={() => setShowToast(false)}
         >
-            <Alert onClose={() => setShowToast(false)} severity={toastMessage.severity} sx={{width: '100%'}}>
-                {toastMessage.message}
-            </Alert>
-        </Snackbar>
-    </Container>
+            {data ? (
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Username</TableCell>
+                            <TableCell>Email</TableCell>
+                            <TableCell>Rôles</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créé le</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, username, email, roles, created_at  }) => {
+                            return (
+                                <TableRow hover role="checkbox" tabIndex={-1} key={username+id}>
+                                    <TableCell sx={{fontWeight: 'bold'}}>{username ?? '--'}</TableCell>
+                                    <TableCell>{email ?? '--'}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                            {parseRoles(roles).filter(Boolean).map((role) => (
+                                                <Chip key={role} size="small" label={role} sx={{ bgcolor: 'sageSoft', color: 'sageDark' }} />
+                                            ))}
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell sx={{ color: 'text.secondary', fontSize: '13px', display: { xs: 'none', lg: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : '--'}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{display: 'flex', justifyContent: 'right'}}>
+                                            <DeleteUser deleteValue={{id, username, email , roles, data}} handleDataChange={handleDataChange}/>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            ) : null}
+        </AdminResourceLayout>
+    </Box>
 }
 
 export default User;

@@ -6,6 +6,8 @@ import ApprovalIcon from "@mui/icons-material/Approval";
 import CategoryIcon from "@mui/icons-material/Category";
 import TagIcon from "@mui/icons-material/Tag";
 import PersonIcon from "@mui/icons-material/Person";
+import MailIcon from "@mui/icons-material/MailOutlined";
+import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import Logo from "../../../assets/logo.png";
 
 const NAV_ITEMS = [
@@ -15,6 +17,8 @@ const NAV_ITEMS = [
     { to: "/category", label: "Catégories", icon: CategoryIcon },
     { to: "/tag", label: "Tags", icon: TagIcon },
     { to: "/user", label: "Utilisateurs", icon: PersonIcon },
+    { to: "/contact-messages", label: "Messages", icon: MailIcon },
+    { to: "/export", label: "Export", icon: CloudDownloadIcon },
 ];
 
 // Persistent sidebar shell for the admin area (dashboard + resource CRUD

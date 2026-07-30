@@ -1,19 +1,34 @@
+import { useState } from "react";
 import { Box, Button, Card, CardActions, CardContent, CardMedia, Chip, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import { API_URL } from "../../../config";
+import { LikeButton } from "./LikeButton";
 
 // Shared place listing card, used by the home page and the public places list.
 export function PlaceCard({ place }) {
-    const { id, place_name, place_image, category, address, tags } = place;
+    const { id, place_name, place_image, category, address, tags, is_liked, likes_count } = place;
+    const [like, setLike] = useState({ liked: !!is_liked, count: likes_count ?? 0 });
 
     return (
         <Card component="article">
-            <CardMedia
-                component="img"
-                height="150"
-                src={`${API_URL}/storage/uploads/places/${place_image}`}
-                alt={place_name}
-            />
+            <Box sx={{ position: "relative" }}>
+                <CardMedia
+                    component="img"
+                    height="150"
+                    src={`${API_URL}/storage/uploads/places/${place_image}`}
+                    alt={place_name}
+                />
+                <Box sx={{ position: "absolute", top: 6, right: 6, bgcolor: "background.paper", borderRadius: "50%", boxShadow: 1 }}>
+                    <LikeButton
+                        type="places"
+                        id={id}
+                        liked={like.liked}
+                        likesCount={like.count}
+                        size="small"
+                        onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
+                    />
+                </Box>
+            </Box>
             <CardContent>
                 {category ? (
                     <Chip size="small" label={category.category_name} sx={{ bgcolor: "sageSoft", color: "sageDark", mb: 1 }} />

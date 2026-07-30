@@ -1,10 +1,11 @@
-import {Box, Button, FormControl, Modal, Snackbar, TextField, Typography, Alert , Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, TextField, Alert} from "@mui/material";
 import {Edit} from "@mui/icons-material";
 import {useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 
@@ -43,26 +44,15 @@ function EditCategory(props) {
     }
 
     return(<Box >
-          <Button color='info' variant='contained' sx={{mx: 2}}
+          <RowActionButton
+            icon={<Edit fontSize="small"/>}
             onClick={() => {
                 setShowEdit(true)
                 setOneCategory({id: props.updateValue.id, category_name: props.updateValue.category_name})
             }}>
-              <Edit/>
-          </Button>
-         <Modal
-            id="modal-crud-container"
-            hideBackdrop
-            open={editCategory}
-            onClose={() => setShowEdit(false)}
-            aria-labelledby="edit-category-title"
-            aria-describedby="child-modal-description"
-        >
-            <Box className="modal-crud modal-crud-ballade" sx={{bgcolor: 'background.default'}}>
-            <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-            <Button variant="outlined"  color="secondary" onClick={() => setShowEdit(false)}><CloseIcon /></Button>
-            </Grid>
-                <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="edit-category-title">Editer une categorie</Typography>
+              Modifier
+          </RowActionButton>
+         <CrudModal open={editCategory} onClose={() => setShowEdit(false)} title="Éditer une catégorie" titleId="edit-category-title">
                 <form onSubmit={handleSubmit(editCategoryForm)}>
                     <FormControl>
                           <Controller
@@ -92,8 +82,7 @@ function EditCategory(props) {
                         </Box>
                     </FormControl>
                 </form>
-            </Box>
-        </Modal>
+        </CrudModal>
         <Snackbar
             open={toast}
             autoHideDuration={3000}

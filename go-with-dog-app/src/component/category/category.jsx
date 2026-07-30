@@ -1,24 +1,18 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
-    Container,
-    Paper,
-    Snackbar,
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
-    TablePagination,
     TableRow,
-    Typography,
-    Alert
 } from "@mui/material";
 import DeleteCategory from "./deleteCategory";
 import NewCategory from "./newCategory";
 import EditCategory from "./editCategory";
 import axios from "axios";
 import { API_URL } from "../../config";
+import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
 
 function Category() {
 
@@ -66,65 +60,49 @@ function Category() {
             setShowToast(true);
         }
     }
-    return <Container sx={{ width : '80%'}} id="category">
-        <Paper sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', py: 10}}>
-            <Typography variant="h3" sx={{textAlign: "center"}} gutterBottom>Categories</Typography>
-            {loading ? (
-                <Typography variant="h5" sx={{textAlign: "center"}} gutterBottom>Chargement des categories...</Typography>
-            ) : (
-                <Box sx={{ maxWidth: '90%' }}>
-                    <NewCategory newValue={{data}} handleDataChange={handleDataChange} />
-                    <TableContainer sx={{ mt:4 }}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell key={1}>ID</TableCell>
-                                    <TableCell key={2}>Nom</TableCell>
-                                    <TableCell key={3} align={'right'}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, category_name}) => {
-                                    return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={category_name+id}>
-                                            <TableCell>{id}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{category_name}</TableCell>
-                                            <TableCell>
-                                                <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                                    <EditCategory updateValue={{id, category_name, data}} handleDataChange={handleDataChange} />
-                                                    <DeleteCategory deleteValue={{id, category_name, data}} handleDataChange={handleDataChange}/>
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 100]}
-                        component="div"
-                        count={data.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Box>
-            )}
-        </Paper>
-
-        <Snackbar
-            open={toast}
-            autoHideDuration={3000}
-            onClose={() => setShowToast(false)}
-            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+    return <Box id="category">
+        <AdminResourceLayout
+            title="Catégories"
+            countLabel={data ? `${data.length} catégorie${data.length > 1 ? "s" : ""}` : undefined}
+            actions={<NewCategory newValue={{data}} handleDataChange={handleDataChange} />}
+            loading={loading}
+            loadingLabel="Chargement des categories..."
+            count={data ? data.length : 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            toast={toast}
+            toastMessage={toastMessage}
+            onCloseToast={() => setShowToast(false)}
         >
-            <Alert onClose={() => setShowToast(false)} severity={toastMessage.severity} sx={{width: '100%'}}>
-                {toastMessage.message}
-            </Alert>
-        </Snackbar>
-    </Container>
+            {data ? (
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Nom</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, category_name}) => {
+                            return (
+                                <TableRow hover role="checkbox" tabIndex={-1} key={category_name+id}>
+                                    <TableCell sx={{fontWeight: 'bold'}}>{category_name}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{display: 'flex', justifyContent: 'right'}}>
+                                            <EditCategory updateValue={{id, category_name, data}} handleDataChange={handleDataChange} />
+                                            <DeleteCategory deleteValue={{id, category_name, data}} handleDataChange={handleDataChange}/>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            ) : null}
+        </AdminResourceLayout>
+    </Box>
 }
 
 export default Category;

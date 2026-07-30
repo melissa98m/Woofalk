@@ -6,14 +6,19 @@ import {
     Container,
     Typography,
     Select , MenuItem , InputLabel,
-    Pagination
+    Pagination,
+    TextField,
+    InputAdornment,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import SearchIcon from "@mui/icons-material/Search";
+import { Link, useSearchParams } from "react-router-dom";
 
 import axios from "axios";
 import auth from "../../services/auth/token";
 import NewAddress from "../address/newAddress";
 import { PlaceCard } from "../_partials/_ui/PlaceCard";
+import { getReadableTextColor } from "../_partials/_ui/tagColor";
+import { normalizeText } from "../../services/search/searchIndex";
 import { API_URL } from "../../config";
 
 const PAGE_SIZE = 9;
@@ -22,6 +27,8 @@ function Places() {
 
     document.title = 'Tous les lieux';
 
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const [data, setData] = useState(null); // array of data
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null); // WIP
@@ -29,6 +36,7 @@ function Places() {
     const [availableTags, setAvailableTags] = useState([]);
     const [selectedTags, setSelectedTags] = useState([]);
     const [sortOrder, setSortOrder] = useState("");
+    const [searchText, setSearchText] = useState(searchParams.get("search") ?? "");
     const [page, setPage] = useState(1);
 
 
@@ -62,6 +70,7 @@ function Places() {
         : null;
 
     const filteredData = useMemo(() => {
+        const q = normalizeText(searchText);
         let result = data?.filter((place) => {
             if (selectedCategory && place.category.category_name !== selectedCategory) {
                 return false;
@@ -69,6 +78,12 @@ function Places() {
             if (selectedTags.length > 0) {
                 const placeTagIds = (place.tags ?? []).map((t) => t.id);
                 if (!selectedTags.every((id) => placeTagIds.includes(id))) {
+                    return false;
+                }
+            }
+            if (q.length > 0) {
+                const haystack = normalizeText([place.place_name, place.place_description, place.address?.city, place.address?.postal_code].filter(Boolean).join(" "));
+                if (!haystack.includes(q)) {
                     return false;
                 }
             }
@@ -89,7 +104,7 @@ function Places() {
             });
         }
         return result;
-    }, [data, selectedCategory, selectedTags, sortOrder]);
+    }, [data, selectedCategory, selectedTags, sortOrder, searchText]);
 
     const pageCount = Math.max(1, Math.ceil(filteredData.length / PAGE_SIZE));
     const pagedData = filteredData.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
@@ -97,6 +112,13 @@ function Places() {
     const handleFilterChange = (setter) => (e) => {
         setter(e.target.value);
         setPage(1);
+    };
+
+    const handleSearchChange = (e) => {
+        const value = e.target.value;
+        setSearchText(value);
+        setPage(1);
+        setSearchParams(value ? { search: value } : {}, { replace: true });
     };
 
     return <Container maxWidth="xl" id="place" sx={{ px: { xs: 2, md: 4 }, pb: "40px" }}>
@@ -116,13 +138,33 @@ function Places() {
                 ) : null}
             </Box>
 
+            <Box sx={{ marginTop: "18px", marginBottom: "14px", maxWidth: "360px" }}>
+                <TextField
+                    id="places-search-field"
+                    label="Rechercher un lieu"
+                    placeholder="Nom, ville, code postal…"
+                    value={searchText}
+                    onChange={handleSearchChange}
+                    size="small"
+                    fullWidth
+                    slotProps={{
+                        input: {
+                            startAdornment: (
+                                <InputAdornment position="start">
+                                    <SearchIcon fontSize="small" color="action" />
+                                </InputAdornment>
+                            ),
+                        },
+                    }}
+                />
+            </Box>
+
             <Box
                 sx={{
                     display: "flex",
                     gap: "10px",
                     alignItems: "center",
                     flexWrap: "wrap",
-                    marginTop: "18px",
                     marginBottom: "24px",
                 }}
             >
@@ -171,9 +213,17 @@ function Places() {
                                 size="small"
                                 clickable
                                 onClick={() => toggleTag(t.id)}
-                                color={selected ? "primary" : "default"}
                                 variant={selected ? "filled" : "outlined"}
                                 aria-pressed={selected}
+                                sx={selected ? {
+                                    bgcolor: t.color,
+                                    color: getReadableTextColor(t.color),
+                                    borderColor: t.color,
+                                    "&:hover": { bgcolor: t.color, opacity: 0.85 },
+                                } : {
+                                    color: t.color,
+                                    borderColor: t.color,
+                                }}
                             />
                         );
                     })}

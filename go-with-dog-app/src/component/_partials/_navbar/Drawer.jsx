@@ -53,7 +53,7 @@ function DrawerComponent() {
                     </IconButton>
                 </Box>
                 <Box sx={{ mb: 2 }}>
-                    <Search label="Recherche" />
+                    <Search label="Recherche" onNavigate={close} />
                 </Box>
                 <Box component="nav" aria-label="Navigation principale" sx={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                     {LINKS.map(({ to, label, icon: Icon }) => (

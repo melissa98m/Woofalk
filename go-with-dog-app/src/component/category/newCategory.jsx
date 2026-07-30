@@ -1,9 +1,9 @@
-import {Box, Button, FormControl, Modal, Snackbar, TextField, Typography, Alert, Input , Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, TextField, Alert} from "@mui/material";
 import {useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
 import { API_URL } from "../../config";
 
 function NewCategory(props) {
@@ -38,20 +38,8 @@ function NewCategory(props) {
     }
 
     return (<Box>
-        <Button variant="contained" onClick={() => setShowNew(true)}>Ajouter</Button>
-        <Modal
-            id="modal-crud-container"
-            hideBackdrop
-            open={newCategory}
-            onClose={() => setShowNew(false)}
-            aria-labelledby="new-category-title"
-            aria-describedby="child-modal-description"
-        >
-            <Box className="modal-crud modal-crud-ballade" sx={{bgcolor: 'background.default'}}>
-              <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-               <Button variant="outlined"  color="secondary" onClick={() => setShowNew(false)}><CloseIcon /></Button>
-                </Grid>
-                <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="new-category-title">Nouvelle categorie de vin</Typography>
+        <Button variant="contained" onClick={() => setShowNew(true)}>Ajouter une catégorie</Button>
+        <CrudModal open={newCategory} onClose={() => setShowNew(false)} title="Nouvelle catégorie" titleId="new-category-title">
                 <form onSubmit={handleSubmit(newCategoryForm)}>
                     <FormControl>
                         <Controller
@@ -82,9 +70,7 @@ function NewCategory(props) {
                         </Box>
                     </FormControl>
                 </form>
-
-            </Box>
-        </Modal>
+        </CrudModal>
 
         <Snackbar
             open={toast}

@@ -49,9 +49,12 @@ Si le SEO devient un enjeu prioritaire au-delà de ces mesures, envisager une so
 
 ```bash
 docker compose up --build          # api (nginx+php-fpm) :8000, web (vite) :3000, mysql :3306, mailhog UI :8025
-docker compose down -v             # stop and wipe the db volume
+docker compose down                # stop containers, KEEPS the db volume — the default for daily use
+docker compose down -v             # stop and WIPE the db volume — irreversible, real accounts and data are gone
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d   # prod-shaped: optimized images, no bind mounts
 ```
+
+> **`docker compose down -v` deletes every user, place, ballade, and like in the local dev database — permanently, no confirmation.** This has already happened once during development (a manually-created account was lost and silently replaced by `DatabaseSeeder`'s fake users). Default to `docker compose down` (no `-v`) day to day. `make up` / `make down` wrap these two safely; `make reset-db` is the only sanctioned way to wipe — it backs up to `./backups/` (gitignored, via `scripts/backup-db.sh`) and requires typing `reset` to confirm before running `-v`.
 
 - `api` (dev target) bind-mounts `./go-with-dog-api` and runs `composer install` at build time; `api-nginx` (plain `nginx:alpine`) reverse-proxies PHP to it over fastcgi using `go-with-dog-api/docker/nginx/api.conf`. The API's entrypoint (`go-with-dog-api/docker/entrypoint.sh`) bootstraps `.env` from `.env.example`, generates `APP_KEY`/`JWT_SECRET` if missing, waits for the db, runs migrations, and runs `storage:link` — all idempotent, safe on every `up`.
 - `web` (dev target) bind-mounts `./go-with-dog-app` and runs the Vite dev server; `node_modules` is kept in a named volume (`web_node_modules`) so the host's absence of `node_modules` doesn't shadow the container's.

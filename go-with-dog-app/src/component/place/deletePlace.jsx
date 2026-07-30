@@ -4,6 +4,7 @@ import update from "immutability-helper";
 import {DeleteForeverRounded} from "@mui/icons-material";
 import axios from "axios";
 import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 function DeletePlace(props) {
@@ -33,18 +34,17 @@ function DeletePlace(props) {
     }
 
     return(<Box>
-            <Button
-                variant='contained'
-                color="error"
+            <RowActionButton
+                danger
+                icon={<DeleteForeverRounded fontSize="small"/>}
                 aria-label="Supprimer le lieu"
-                sx={{mx: 2}}
                 onClick={ () => {
                     setShowDelete(true)
                     setOnePlace({id: props.deleteValue.id, place_name: props.deleteValue.place_name} )
                 } }
             >
-                <DeleteForeverRounded/>
-            </Button>
+                Supprimer
+            </RowActionButton>
             <CrudModal open={delPlace} onClose={() => setShowDelete(false)} title="Supprimer un lieu" titleId="delete-place-title">
                     <FormControl>
                         <Box>

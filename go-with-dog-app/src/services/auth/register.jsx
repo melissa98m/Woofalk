@@ -1,15 +1,17 @@
 import {useEffect, useRef, useState} from "react";
 import {useForm, Controller} from "react-hook-form";
-import {useLocation, useNavigate} from "react-router-dom";
+import {Link as RouterLink, useLocation, useNavigate} from "react-router-dom";
 import {
     Alert,
     Box,
     Button,
+    Checkbox,
     FormControl,
+    FormControlLabel,
     Grid,
     IconButton, Input,
     InputAdornment,
-    InputLabel, Snackbar,
+    InputLabel, Link, Snackbar,
     TextField,
     Typography
 } from "@mui/material";
@@ -24,13 +26,16 @@ function Register () {
     let navigate = useNavigate();
     let location = useLocation();
 
-    const { register, watch, control, handleSubmit, formState: { errors, isDirty, isValid } } = useForm({ mode: "onChange" });
+    const { register, watch, control, trigger, handleSubmit, formState: { errors, isDirty, isValid } } = useForm({ mode: "onChange" });
 
     const email = watch('email', "");
     const password = watch('password', "");
+    const confirmPassword = watch('confirmPassword', "");
     const username = watch('username', "");
+    const acceptTerms = watch('acceptTerms', false);
 
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [toast , setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState({});
     const [errMessage, setErrMessage] = useState("");
@@ -75,6 +80,8 @@ function Register () {
             spec.current.style.backgroundColor = "#ce0033"; // if not, bg red
         }
 
+        trigger('confirmPassword');
+
     }, [password])
 
     let registerForm = async () => {
@@ -84,6 +91,7 @@ function Register () {
             formData.append("email", email);
             formData.append("password", password);
             formData.append("username", username);
+            formData.append("accept_terms", acceptTerms ? "1" : "0");
 
             let res = await axios.post(`${API_URL}/api/register`, formData, {
                 "headers" : { "Content-Type":"multipart/form-data" }
@@ -118,6 +126,10 @@ function Register () {
         } else {
             setShowPassword(false)
         }
+    };
+
+    const handleClickShowConfirmPassword = () => {
+        setShowConfirmPassword((prev) => !prev)
     };
 
     return <Box>
@@ -213,6 +225,44 @@ function Register () {
                     {errors.password ? (
                         <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.password?.message}</Alert>
                     ) : ''}
+                    <Controller
+                        name="confirmPassword"
+                        control={control}
+                        defaultValue=""
+                        render={() => (<FormControl fullWidth sx={{mt: 5, height: 50}}>
+                                <InputLabel htmlFor="confirmPassword" sx={{ left: '-15px' }}>Confirmation du mot de passe</InputLabel>
+                                <Input
+                                    {...register(
+                                        'confirmPassword', {
+                                            required: 'Veuillez confirmer le mot de passe',
+                                            validate: (value) => value === password || 'Les mots de passe ne correspondent pas'
+                                        }
+                                    )}
+                                    id="confirmPassword"
+                                    type={showConfirmPassword ? 'text' : 'password'}
+                                    variant="standard"
+                                    value={confirmPassword}
+                                    aria-invalid={!!errors.confirmPassword}
+                                    aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
+                                    endAdornment={
+                                        <InputAdornment position="end" sx={{ color: "inherit" }}>
+                                            <IconButton
+                                                aria-label={showConfirmPassword ? 'Masquer la confirmation du mot de passe' : 'Afficher la confirmation du mot de passe'}
+                                                color="inherit"
+                                                onClick={handleClickShowConfirmPassword}
+                                                onMouseDown={(e) => e.preventDefault()}
+                                            >
+                                                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                                            </IconButton>
+                                        </InputAdornment>
+                                    }
+                                />
+                            </FormControl>
+                        )}
+                    />
+                    {errors.confirmPassword ? (
+                        <Alert id="confirmPassword-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.confirmPassword?.message}</Alert>
+                    ) : ''}
 
                     <Box className="regex">
                         <Box sx={{ display: 'flex', justifyContent: 'start', alignItems: 'center'}}>
@@ -233,6 +283,37 @@ function Register () {
                         </Box>
                     </Box>
                 </Grid>
+            </Grid>
+            <Grid item sx={{ minwidth: '100%',display: "flex" , flexColumn: "column" , alignItems: "center", justifyContent: "center" }}>
+                <Box sx={{ maxWidth: '400px' }}>
+                    <Controller
+                        name="acceptTerms"
+                        control={control}
+                        defaultValue={false}
+                        rules={{ required: "Vous devez accepter la politique de confidentialité" }}
+                        render={({ field }) => (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={field.value}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                    />
+                                }
+                                label={
+                                    <>
+                                        J'accepte la{" "}
+                                        <Link component={RouterLink} to="/politique-confidentialite" target="_blank">
+                                            politique de confidentialité
+                                        </Link>
+                                    </>
+                                }
+                            />
+                        )}
+                    />
+                    {errors.acceptTerms ? (
+                        <Alert sx={{mt:1, p:0, pl:2}} severity="error">{errors.acceptTerms?.message}</Alert>
+                    ) : ''}
+                </Box>
             </Grid>
             <Grid item sx={{ minwidth: '100%',display: "flex" , flexColumn: "column" , alignItems: "center", justifyContent: "center" }}>
                 <Button type="submit" disabled={!isDirty || !isValid} variant="contained" sx={{m: 8}}>VALIDER</Button>

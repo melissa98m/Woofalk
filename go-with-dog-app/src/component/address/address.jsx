@@ -1,24 +1,18 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
-    Container,
-    Paper,
-    Snackbar,
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
-    TablePagination,
     TableRow,
-    Typography,
-    Alert
 } from "@mui/material";
 import DeleteAddress from "./deleteAddress";
 import NewAddress from "./newAddress";
 import EditAddress from "./editAddress";
 import axios from "axios";
 import { API_URL } from "../../config";
+import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
 
 function Address() {
 
@@ -67,71 +61,55 @@ function Address() {
         }
     }
 
-    return <Container sx={{ width : '80%'}} id="address">
-        <Paper sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', py: 10}}>
-            <Typography variant="h3" sx={{textAlign: "center"}} gutterBottom>Adresses</Typography>
-            {loading ? (
-                <Typography variant="h5" sx={{textAlign: "center"}} gutterBottom>Chargement des adresses...</Typography>
-            ) : (
-                <Box sx={{ maxWidth: '100%' }}>
-                    <NewAddress newValue={{data}} handleDataChange={handleDataChange} />
-                    <TableContainer sx={{ mt:4 }}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell key={1}>ID</TableCell>
-                                    <TableCell key={2}>Nom</TableCell>
-                                    <TableCell key={3}>Ville</TableCell>
-                                    <TableCell key={4}>Code postal</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={5}>Coordonnées</TableCell>
-                                    <TableCell key={6} align={'right'}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, address , city , postal_code , latitude , longitude}) => {
-                                    return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={id}>
-                                            <TableCell>{id}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{address ?? '--'}</TableCell>
-                                            <TableCell>{city ?? '--'}</TableCell>
-                                            <TableCell>{postal_code ?? '--'}</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{latitude ?? '--'} , {longitude ?? '--'}</TableCell>
-                                            <TableCell>
-                                                <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                                    <EditAddress updateValue={{id, address, city, postal_code, latitude, longitude , data}} handleDataChange={handleDataChange} />
-                                                    <DeleteAddress deleteValue={{id, address, data}} handleDataChange={handleDataChange}/>
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 100]}
-                        component="div"
-                        count={data.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Box>
-            )}
-        </Paper>
-
-        <Snackbar
-            open={toast}
-            autoHideDuration={3000}
-            onClose={() => setShowToast(false)}
-            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+    return <Box id="address">
+        <AdminResourceLayout
+            title="Adresses"
+            countLabel={data ? `${data.length} adresse${data.length > 1 ? "s" : ""}` : undefined}
+            actions={<NewAddress newValue={{data}} handleDataChange={handleDataChange} />}
+            loading={loading}
+            loadingLabel="Chargement des adresses..."
+            count={data ? data.length : 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            toast={toast}
+            toastMessage={toastMessage}
+            onCloseToast={() => setShowToast(false)}
         >
-            <Alert onClose={() => setShowToast(false)} severity={toastMessage.severity} sx={{width: '100%'}}>
-                {toastMessage.message}
-            </Alert>
-        </Snackbar>
-    </Container>
+            {data ? (
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Nom</TableCell>
+                            <TableCell>Ville</TableCell>
+                            <TableCell>Code postal</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Coordonnées</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, address , city , postal_code , latitude , longitude}) => {
+                            return (
+                                <TableRow hover role="checkbox" tabIndex={-1} key={id}>
+                                    <TableCell sx={{fontWeight: 'bold'}}>{address ?? '--'}</TableCell>
+                                    <TableCell>{city ?? '--'}</TableCell>
+                                    <TableCell>{postal_code ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{latitude ?? '--'} , {longitude ?? '--'}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{display: 'flex', justifyContent: 'right'}}>
+                                            <EditAddress updateValue={{id, address, city, postal_code, latitude, longitude , data}} handleDataChange={handleDataChange} />
+                                            <DeleteAddress deleteValue={{id, address, data}} handleDataChange={handleDataChange}/>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            ) : null}
+        </AdminResourceLayout>
+    </Box>
 }
 
 export default Address;

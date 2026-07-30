@@ -1,9 +1,10 @@
-import {Box, Button, FormControl, Modal, Snackbar, Typography, Alert , Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, Alert} from "@mui/material";
 import {useEffect, useState} from "react";
 import update from "immutability-helper";
 import {DeleteForeverRounded} from "@mui/icons-material";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 function DeleteUser(props) {
@@ -33,39 +34,27 @@ function DeleteUser(props) {
     }
 
     return(<Box>
-            <Button
-                variant='contained'
-                sx={{mx: 2}}
+            <RowActionButton
+                danger
+                icon={<DeleteForeverRounded fontSize="small"/>}
+                aria-label="Supprimer l'utilisateur"
                 onClick={ () => {
                     setShowDelete(true)
                     setOneUser({id: props.deleteValue.id, username: props.deleteValue.username} )
                 } }
             >
-                <DeleteForeverRounded/>
-            </Button>
-            <Modal
-                id="modal-crud-container"
-                hideBackdrop
-                open={delUser}
-                onClose={() => setShowDelete(false)}
-                aria-labelledby="delete-user-title"
-                aria-describedby="child-modal-description"
-            >
-                <Box className="modal-crud modal-crud-user" sx={{bgcolor: 'background.default'}}>
-                 <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-                 <Button variant="outlined"  color="secondary" onClick={() => setShowDelete(false)}><CloseIcon /></Button>
-                  </Grid>
-                    <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="delete-user-title">Supprimer l'utilisateur</Typography>
+                Supprimer
+            </RowActionButton>
+            <CrudModal open={delUser} onClose={() => setShowDelete(false)} title="Supprimer l'utilisateur" titleId="delete-user-title">
                     <FormControl>
                         <Box>
-                            êtes vous sur de vouloir supprimer le lieu : {oneUser.username} ?
+                            êtes vous sur de vouloir supprimer l'utilisateur : {oneUser.username} ?
                         </Box>
                         <Box className="action-button">
-                            <Button sx={{m: 3}} type="submit" variant="contained" onClick={deleteUser}>Supprimer</Button>
+                            <Button sx={{m: 3}} type="submit" variant="contained" color="error" onClick={deleteUser}>Supprimer</Button>
                         </Box>
                     </FormControl>
-                </Box>
-            </Modal>
+            </CrudModal>
 
             <Snackbar
                 open={toast}

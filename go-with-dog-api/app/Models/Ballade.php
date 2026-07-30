@@ -10,12 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Ballade extends Model
 {
     use HasFactory;
+
     protected $casts = [
         'ballade_latitude' => 'float',
         'ballade_longitude' => 'float',
     ];
+
     protected $fillable = [
-        'ballade_name' ,
+        'ballade_name',
         'distance',
         'denivele',
         'ballade_description',
@@ -23,15 +25,21 @@ class Ballade extends Model
         'ballade_latitude',
         'ballade_longitude',
         'user',
-        'status'
+        'status',
     ];
 
     public function user(): BelongsTo
     {
         return $this->BelongsTo(User::class, 'user');
     }
+
     public function tags(): BelongsToMany
     {
         return $this->belongsToMany(Tag::class);
+    }
+
+    public function likedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'ballade_likes')->withTimestamps();
     }
 }

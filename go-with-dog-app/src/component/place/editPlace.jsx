@@ -18,6 +18,7 @@ import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
 import { CrudModal } from "../_partials/_ui/CrudModal";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
 
 function EditPlace(props) {
@@ -33,9 +34,9 @@ function EditPlace(props) {
     const [address, setAddress] = useState(undefined);
     const [tags, setTags] = useState((props.updateValue.tags ?? []).map((t) => t.id));
     // List All
-    const [categories, setCategories] = useState({});
-    const [addresses, setAddresses] = useState({});
-    const [availableTags, setAvailableTags] = useState({});
+    const [categories, setCategories] = useState([]);
+    const [addresses, setAddresses] = useState([]);
+    const [availableTags, setAvailableTags] = useState([]);
 
     const [onePlace, setOnePlace] = useState("");
     const [editPlace, setShowEdit] = useState(false);
@@ -106,7 +107,8 @@ function EditPlace(props) {
     }
 
     return(<Box >
-          <Button color='info' variant='contained' sx={{mx: 2}}
+          <RowActionButton
+            icon={<Edit fontSize="small"/>}
             onClick={() => {
                 setShowEdit(true)
                 setOnePlace({
@@ -119,8 +121,8 @@ function EditPlace(props) {
                 })
                 setCImage(props.updateValue.place_image);
             }}>
-              <Edit/>
-          </Button>
+              Modifier
+          </RowActionButton>
          <CrudModal open={editPlace} onClose={() => setShowEdit(false)} title="Editer un lieu" titleId="edit-place-title">
                 <form onSubmit={handleSubmit(editPlaceForm)}>
                     <Grid container spacing={8}>

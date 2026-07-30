@@ -58,9 +58,9 @@ services:
   db:
     image: mysql:8.0
     environment:
-      MYSQL_DATABASE: laravel
-      MYSQL_USER: laravel
-      MYSQL_PASSWORD: laravel
+      MYSQL_DATABASE: gowithdog
+      MYSQL_USER: gowithdog
+      MYSQL_PASSWORD: gowithdog
       MYSQL_ROOT_PASSWORD: root
     volumes:
       - db_data:/var/lib/mysql

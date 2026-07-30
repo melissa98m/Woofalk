@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { Link as RouterLink } from "react-router-dom";
 import axios from "axios";
 import { FieldLabel } from "../_partials/_ui/FieldLabel";
 import { API_URL } from "../../config";
@@ -235,6 +236,11 @@ function Contact() {
                         <Button type="submit" variant="contained" disabled={submitting} sx={{ alignSelf: "flex-start" }}>
                             {submitting ? "Envoi…" : "Envoyer le message"}
                         </Button>
+
+                        <Typography variant="caption" color="text.secondary">
+                            Vos données sont utilisées uniquement pour répondre à votre message. En savoir plus dans notre{" "}
+                            <Link component={RouterLink} to="/politique-confidentialite">politique de confidentialité</Link>.
+                        </Typography>
                     </Box>
                 </Card>
             </Box>

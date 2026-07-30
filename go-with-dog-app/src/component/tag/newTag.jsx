@@ -1,9 +1,9 @@
-import {Box, Button, FormControl, Modal, Snackbar, TextField, Typography, Alert, Input , Grid} from "@mui/material";
+import {Box, Button, FormControl, Snackbar, TextField, Typography, Alert} from "@mui/material";
 import {useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
-import CloseIcon from '@mui/icons-material/Close';
+import { CrudModal } from "../_partials/_ui/CrudModal";
 import { API_URL } from "../../config";
 
 function NewTag(props) {
@@ -43,20 +43,8 @@ function NewTag(props) {
     }
 
     return (<Box>
-        <Button variant="contained" onClick={() => setShowNew(true)}>Ajouter</Button>
-        <Modal
-            id="modal-crud-container"
-            hideBackdrop
-            open={newTag}
-            onClose={() => setShowNew(false)}
-            aria-labelledby="new-tag-title"
-            aria-describedby="child-modal-description"
-        >
-            <Box className="modal-crud modal-crud-tag" sx={{bgcolor: 'background.default'}}>
-             <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' }}>
-               <Button variant="outlined"  color="secondary" onClick={() => setShowNew(false)}><CloseIcon /></Button>
-              </Grid>
-                <Typography variant="h4" sx={{textAlign: 'center', mb: 4}} id="new-tag-title">Nouveau tag de lieux</Typography>
+        <Button variant="contained" onClick={() => setShowNew(true)}>Ajouter un tag</Button>
+        <CrudModal open={newTag} onClose={() => setShowNew(false)} title="Nouveau tag" titleId="new-tag-title">
                 <form onSubmit={handleSubmit(newTagForm)} className="tagForm">
                     <FormControl>
                         <Controller
@@ -91,9 +79,7 @@ function NewTag(props) {
                         </Box>
                     </FormControl>
                 </form>
-
-            </Box>
-        </Modal>
+        </CrudModal>
 
         <Snackbar
             open={toast}

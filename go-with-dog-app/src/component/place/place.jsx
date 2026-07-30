@@ -1,24 +1,21 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
-    Container,
-    Paper,
-    Snackbar,
+    Button,
     Table,
     TableBody,
     TableCell,
-    TableContainer,
     TableHead,
-    TablePagination,
     TableRow,
-    Typography,
-    Alert, Avatar, Chip
+    Chip
 } from "@mui/material";
+import { Link } from "react-router-dom";
 import DeletePlace from "./deletePlace";
-import NewPlace from "./newPlace";
 import EditPlace from "./editPlace";
 import axios from "axios";
 import { API_URL } from "../../config";
+import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
+import { StatusChip } from "../_partials/_ui/StatusChip";
 
 
 function Place() {
@@ -68,89 +65,67 @@ function Place() {
         }
     }
 
-    return <Container sx={{ width : '80%'}} id="place">
-        <Paper sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', py: 10}}>
-            <Typography variant="h3" sx={{textAlign: "center"}} gutterBottom>Places</Typography>
-            {loading ? (
-                <Typography variant="h5" sx={{textAlign: "center"}} gutterBottom>Chargement des places...</Typography>
-            ) : (
-                <Box sx={{ maxWidth: '90%' }}>
-                    <NewPlace newValue={{data}} handleDataChange={handleDataChange} />
-                    <TableContainer sx={{ mt:4 }}>
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell key={1}>ID</TableCell>
-                                    <TableCell key={2}>Nom</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={3}>Description</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={4}>Image</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={5}>Adresse</TableCell>
-                                    <TableCell key={6}>Categorie</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={7}>Tags</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }} key={8}>Créateur</TableCell>
-                                    <TableCell key={9} align={'right'}>Actions</TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, place_name, place_description, place_image, category, address , user, tags}) => {
-                                    return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={place_name+id}>
-                                            <TableCell>{id}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{place_name ?? '--'}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{place_description.slice(0,30) ?? '--'}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>
-                                                { place_image ? (
-                                                    <Box component="img" src={`${API_URL}/storage/uploads/places/${place_image}`} alt={place_image} sx={{ width: "80px" }}/>
-                                                ) : (
-                                                    '--'
-                                                ) }
-                                            </TableCell>
-                                            <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{address.address ?? '--'} {address.city ?? '--'} {address.postal_code ?? '--'}</TableCell>
-                                            <TableCell sx={{fontWeight: 'bold'}}>{category.category_name ?? '--'}</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                                    {(tags ?? []).map((t) => (
-                                                        <Chip key={t.id} size="small" label={t.tag_name} />
-                                                    ))}
-                                                </Box>
-                                            </TableCell>
-                                             <TableCell sx={{fontWeight: 'bold' , display: { xs: 'none', lg: 'table-cell' } }}>{user.username ?? '--'}</TableCell>
-                                            <TableCell>
-                                                <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                                    <EditPlace updateValue={{id, place_name, place_description, place_image, category, address, tags, data}} handleDataChange={handleDataChange} />
-                                                    <DeletePlace deleteValue={{id, place_name, place_description, place_image, category, address, data}} handleDataChange={handleDataChange}/>
-                                                </Box>
-                                            </TableCell>
-                                        </TableRow>
-                                    )
-                                })}
-                            </TableBody>
-                        </Table>
-                    </TableContainer>
-                    <TablePagination
-                        rowsPerPageOptions={[10, 25, 100]}
-                        component="div"
-                        count={data.length}
-                        rowsPerPage={rowsPerPage}
-                        page={page}
-                        onPageChange={handleChangePage}
-                        onRowsPerPageChange={handleChangeRowsPerPage}
-                    />
-                </Box>
-            )}
-        </Paper>
-
-        <Snackbar
-            open={toast}
-            autoHideDuration={3000}
-            onClose={() => setShowToast(false)}
-            anchorOrigin={{vertical: 'bottom', horizontal: 'center'}}
+    return <Box id="place">
+        <AdminResourceLayout
+            title="Lieux"
+            countLabel={data ? `${data.length} lieu${data.length > 1 ? "x" : ""} référencé${data.length > 1 ? "s" : ""}` : undefined}
+            actions={<Button component={Link} to="/places/new" variant="contained">Ajouter un lieu</Button>}
+            loading={loading}
+            loadingLabel="Chargement des places..."
+            count={data ? data.length : 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            toast={toast}
+            toastMessage={toastMessage}
+            onCloseToast={() => setShowToast(false)}
         >
-            <Alert onClose={() => setShowToast(false)} severity={toastMessage.severity} sx={{width: '100%'}}>
-                {toastMessage.message}
-            </Alert>
-        </Snackbar>
-    </Container>
+            {data ? (
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Nom</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Adresse</TableCell>
+                            <TableCell>Categorie</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Tags</TableCell>
+                            <TableCell>Statut</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Date</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créateur</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, place_name, place_description, place_image, status, category, address , user, tags, created_at}) => {
+                            return (
+                                <TableRow hover role="checkbox" tabIndex={-1} key={place_name+id}>
+                                    <TableCell sx={{fontWeight: 'bold'}}>{place_name ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{address.address ?? '--'} {address.city ?? '--'} {address.postal_code ?? '--'}</TableCell>
+                                    <TableCell>{category.category_name ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                                            {(tags ?? []).map((t) => (
+                                                <Chip key={t.id} size="small" label={t.tag_name} />
+                                            ))}
+                                        </Box>
+                                    </TableCell>
+                                    <TableCell><StatusChip status={status ?? 'publie'} /></TableCell>
+                                    <TableCell sx={{ color: 'text.secondary', fontSize: '13px', display: { xs: 'none', md: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{user.username ?? '--'}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{display: 'flex', justifyContent: 'right'}}>
+                                            <EditPlace updateValue={{id, place_name, place_description, place_image, status, category, address, tags, data}} handleDataChange={handleDataChange} />
+                                            <DeletePlace deleteValue={{id, place_name, place_description, place_image, category, address, data}} handleDataChange={handleDataChange}/>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            ) : null}
+        </AdminResourceLayout>
+    </Box>
 }
 
 export default Place;

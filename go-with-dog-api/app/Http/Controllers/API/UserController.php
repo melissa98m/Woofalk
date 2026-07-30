@@ -4,9 +4,10 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Dotenv\Validator;
+use App\Support\Roles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
@@ -20,46 +21,100 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
+
         return response()->json([
             'status' => 'Success',
-            'data' => $users
+            'data' => $users,
         ]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param User $user
      * @return JsonResponse
      */
-    public function show(User $user)
+    public function show(Request $request, User $user)
     {
+        if (! $this->canActOn($request, $user)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
         return response()->json($user);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
+     * On account deletion the user's own data (profile, likes) is fully
+     * erased, but places/ballades they authored are anonymized rather than
+     * deleted: the content stays public (its value to other users), only
+     * detached from the now-deleted account (GDPR right to erasure covers
+     * the user's personal data, not independently-created public content).
+     *
+     * @return Response
      */
-    public function destroy(User $user)
+    public function destroy(Request $request, User $user)
     {
+        if (! $this->canActOn($request, $user)) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $user->places()->update(['user' => null]);
+        $user->ballades()->update(['user' => null]);
         $user->delete();
+
         return response()->json(['status' => 'Supprimer avec succès']);
+    }
+
+    /**
+     * Export the authenticated user's own personal data (GDPR right to
+     * data portability) as a downloadable JSON file.
+     *
+     * @return JsonResponse
+     */
+    public function exportMyData(Request $request)
+    {
+        $user = $request->user();
+
+        $payload = [
+            'account' => $user->only(['id', 'username', 'email', 'email_verified_at', 'created_at', 'terms_accepted_at']),
+            'places_created' => $user->places()->get(['id', 'place_name', 'place_description', 'status', 'created_at']),
+            'ballades_created' => $user->ballades()->get(['id', 'ballade_name', 'ballade_description', 'status', 'created_at']),
+            'liked_places' => $user->likedPlaces()->get(['places.id', 'places.place_name']),
+            'liked_ballades' => $user->likedBallades()->get(['ballades.id', 'ballades.ballade_name']),
+        ];
+
+        $filename = 'mes-donnees-gowithdog-'.now()->format('Ymd-His').'.json';
+
+        return response()->json($payload, 200, [
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * Whether the authenticated request is allowed to view/modify $user:
+     * either the account owner acting on themselves, or an admin.
+     */
+    private function canActOn(Request $request, User $user): bool
+    {
+        $current = $request->user();
+
+        return $current->id === $user->id || Roles::isAdmin($current);
     }
 
     public function Current()
     {
         $current = Auth::id();
+
         return response()->json(
             ['status' => 'Success',
-            'data' => $current
+                'data' => $current,
             ]);
     }
+
     public function updatePassword(Request $request)
     {
-        # Validation
+        // Validation
         $request->validate(
             [
                 'old_password' => 'required',
@@ -67,22 +122,21 @@ class UserController extends Controller
                 'confirm_password' => 'required|same:new_password',
             ]);
 
-
-        #Match The Old Password
+        // Match The Old Password
         $user = $request->user();
         if (Hash::check($request->old_password, auth()->user()->password)) {
             $user->update([
-                'password' => Hash::make($request->new_password)
+                'password' => Hash::make($request->new_password),
             ]);
+
             return response()->json([
-                'message' => "Password successfully updated",
+                'message' => 'Password successfully updated',
             ], 200);
         } else {
             return response()->json([
-                'message' => "Old password does not matched",
+                'message' => 'Old password does not matched',
             ], 400);
         }
 
     }
-
 }

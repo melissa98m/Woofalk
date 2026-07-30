@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, Suspense, lazy} from 'react';
 import ReactDOM from 'react-dom/client';
 import reportWebVitals from './reportWebVitals';
 
@@ -11,36 +11,46 @@ import {useTheme, useMediaQuery} from "@mui/material";
 import {lightTheme} from "./component/_partials/_theme/_lightTheme";
 import {darkTheme} from "./component/_partials/_theme/_darkTheme";
 import {ColorContext, setThemeToStorage} from "./component/_partials/_theme/_colorContext";
-import {createTheme, CssBaseline, ThemeProvider , Button} from "@mui/material";
+import {createTheme, CssBaseline, ThemeProvider , Button, Box, CircularProgress} from "@mui/material";
 
 import App from './App';
+// Home reste en import direct : c'est la page d'atterrissage la plus visitée et le
+// fallback utilisé inline par plusieurs routes ci-dessous (auth requise/déjà connecté).
 import Home from "./component/home/home";
-import Contact from "./component/contact/contact";
-import Category from "./component/category/category";
-import Places from "./component/place/places";
-import Place from "./component/place/place";
-import PlaceDetail from "./component/place/placeDetail";
-import NewPlace from "./component/place/newPlace";
-import Ballades from "./component/ballade/ballades";
-import Ballade from "./component/ballade/ballade";
-import BalladeDetail from "./component/ballade/balladeDetail";
-import NewBallade from "./component/ballade/newBallade";
-import Address from "./component/address/address";
-import Tag from "./component/tag/tag";
-import User from "./component/user/user";
-import Dashboard from "./component/dashboard/dashboard";
-import {AdminLayout} from "./component/_partials/_admin/AdminLayout";
+// Le reste des pages passe par React.lazy : sans ça, un visiteur qui arrive sur "/"
+// téléchargeait aussi le code de l'admin, des cartes Leaflet, des formulaires, etc.
+// avant même de voir la home — c'était une grosse partie de la lenteur au chargement.
+const Contact = lazy(() => import("./component/contact/contact"));
+const ContactMessages = lazy(() => import("./component/contact/contactMessages"));
+const Category = lazy(() => import("./component/category/category"));
+const Places = lazy(() => import("./component/place/places"));
+const Place = lazy(() => import("./component/place/place"));
+const PlaceDetail = lazy(() => import("./component/place/placeDetail"));
+const NewPlace = lazy(() => import("./component/place/newPlace"));
+const SearchResults = lazy(() => import("./component/search/searchResults"));
+const Ballades = lazy(() => import("./component/ballade/ballades"));
+const Ballade = lazy(() => import("./component/ballade/ballade"));
+const BalladeDetail = lazy(() => import("./component/ballade/balladeDetail"));
+const NewBallade = lazy(() => import("./component/ballade/newBallade"));
+const Address = lazy(() => import("./component/address/address"));
+const Tag = lazy(() => import("./component/tag/tag"));
+const User = lazy(() => import("./component/user/user"));
+const Dashboard = lazy(() => import("./component/dashboard/dashboard"));
+const Export = lazy(() => import("./component/export/export"));
+const AdminLayout = lazy(() => import("./component/_partials/_admin/AdminLayout"));
+import {ScrollToTop} from "./component/_partials/ScrollToTop";
 import {Navbar} from "./component/_partials/_navbar/_navbar";
 import {Footer} from "./component/_partials/_footer/_footer";
-import Login from "./services/auth/login";
-import Logout from "./services/auth/logout";
-import Register from "./services/auth/register";
-import ForgotPassword from "./services/auth/forgotPassword";
-import ResetPassword from './/services/auth/resetPassword';
-import Account from "./component/account/account";
-import ChangePassword from "./component/account/changePassword";
-import MentionsLegales from "./component/legal/mentionsLegales";
-import PolitiqueConfidentialite from "./component/legal/politiqueConfidentialite";
+const Login = lazy(() => import("./services/auth/login"));
+const Logout = lazy(() => import("./services/auth/logout"));
+const Register = lazy(() => import("./services/auth/register"));
+const ForgotPassword = lazy(() => import("./services/auth/forgotPassword"));
+const ResetPassword = lazy(() => import('.//services/auth/resetPassword'));
+const Account = lazy(() => import("./component/account/account"));
+const ChangePassword = lazy(() => import("./component/account/changePassword"));
+const MentionsLegales = lazy(() => import("./component/legal/mentionsLegales"));
+const PolitiqueConfidentialite = lazy(() => import("./component/legal/politiqueConfidentialite"));
+const Faq = lazy(() => import("./component/faq/faq"));
 
 import auth from "./services/auth/token"
 
@@ -76,6 +86,7 @@ function CustomTheme() {
         <ThemeProvider theme={theme}>
             <CssBaseline enableColorScheme/>
             <BrowserRouter>
+                <ScrollToTop/>
                 <Navbar/>
                 {isMobile ? null : (
                  <Button id="back"
@@ -88,6 +99,11 @@ function CustomTheme() {
                                 </Button>
                  )}
                 <App/>
+                <Suspense fallback={
+                    <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
+                        <CircularProgress color="secondary" aria-label="Chargement de la page" />
+                    </Box>
+                }>
                 <Routes>
                     <Route exact path="/" element={<Home/>}>Accueil</Route>
                     <Route exact path="login" element={auth.getToken() ? <Home adminMessage='alreadyLogged'/> : <Login/> }>Login</Route>
@@ -100,6 +116,7 @@ function CustomTheme() {
                     <Route exact path="ballades" element={<Ballades/>}>Ballades</Route>
                     <Route exact path="ballades/new" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <NewBallade/> : <Home adminMessage='Non connecté'/>}>NewBallade</Route>
                     <Route exact path="ballades/:id" element={<BalladeDetail/>}>BalladeDetail</Route>
+                    <Route exact path="recherche" element={<SearchResults/>}>Recherche</Route>
                     <Route exact path="logout" element={<Logout/>}>Logout</Route>
                     <Route element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
                         <Route exact path="address" element={<Address/>}>Address</Route>
@@ -108,11 +125,14 @@ function CustomTheme() {
                         <Route exact path="category" element={<Category/>}>Categorie</Route>
                         <Route exact path="tag" element={<Tag/>}>Tag</Route>
                         <Route exact path="user" element={<User/>}>User</Route>
+                        <Route exact path="contact-messages" element={<ContactMessages/>}>ContactMessages</Route>
                         <Route exact path="dashboard" element={<Dashboard/>}>Dashboard</Route>
+                        <Route exact path="export" element={<Export/>}>Export</Route>
                     </Route>
                     <Route exact path="mon-compte" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <Account/> : <Home adminMessage='Non connecté'/> }>Account</Route>
                     <Route exact path="change-password" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <ChangePassword/> : <Home adminMessage='Non connecté'/> }>Change Password</Route>
                     <Route exact path="contact" element={<Contact/>}>Contact</Route>
+                    <Route exact path="faq" element={<Faq/>}>FAQ</Route>
                     <Route exact path="mentions-legales" element={<MentionsLegales/>}>MentionsLegales</Route>
                     <Route exact path="politique-confidentialite" element={<PolitiqueConfidentialite/>}>PolitiqueConfidentialite</Route>
                     <Route path="*" element={
@@ -131,6 +151,7 @@ function CustomTheme() {
 
                     }/>
                 </Routes>
+                </Suspense>
                 <Footer />
             </BrowserRouter>
         </ThemeProvider>
