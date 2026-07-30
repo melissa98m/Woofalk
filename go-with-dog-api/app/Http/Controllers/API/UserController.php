@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Ballade;
+use App\Models\Place;
 use App\Models\User;
 use App\Support\Roles;
 use Illuminate\Http\JsonResponse;
@@ -62,6 +64,34 @@ class UserController extends Controller
         $user->places()->update(['user' => null]);
         $user->ballades()->update(['user' => null]);
         $user->delete();
+
+        return response()->json(['status' => 'Supprimer avec succès']);
+    }
+
+    /**
+     * Bulk-delete several users at once, used by the admin dashboard's
+     * "select all / delete" toolbar. The authenticated admin's own account
+     * is silently excluded so an admin can never accidentally delete
+     * themselves via a broad selection.
+     *
+     * @return JsonResponse
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:users,id',
+        ]);
+
+        $ids = array_values(array_diff($validated['ids'], [$request->user()->id]));
+
+        if (empty($ids)) {
+            return response()->json(['status' => 'Aucun utilisateur à supprimer'], 422);
+        }
+
+        Place::whereIn('user', $ids)->update(['user' => null]);
+        Ballade::whereIn('user', $ids)->update(['user' => null]);
+        User::whereIn('id', $ids)->delete();
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

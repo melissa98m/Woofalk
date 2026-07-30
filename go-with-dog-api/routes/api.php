@@ -34,6 +34,8 @@ Route::controller(AuthController::class)->group(function () {
 
 Route::controller(AddressController::class)->group(function () {
     Route::get('addresses', 'index');
+    // Must precede addresses/{address} below, or "bulk" gets swallowed as a {address} id.
+    Route::delete('addresses/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('addresses/{address}', 'show');
     Route::post('addresses', 'store')->middleware('auth:api');
     Route::patch('addresses/{address}', 'update')->middleware('auth:api');
@@ -43,6 +45,9 @@ Route::controller(BalladeController::class)->group(function () {
     Route::get('ballades', 'index');
     Route::get('ballades-user', 'byUser')->middleware('auth:api');
     Route::get('ballades-liked', 'likedByUser')->middleware('auth:api');
+    // Must precede ballades/{ballade} below, or "bulk*" gets swallowed as a {ballade} id.
+    Route::patch('ballades/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
+    Route::delete('ballades/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('ballades/{ballade}', 'show');
     Route::get('ballades/sortDateDesc', 'sortByDateDesc');
     Route::post('ballades', 'store')->middleware(['auth:api', 'throttle:api']);
@@ -53,6 +58,8 @@ Route::controller(BalladeController::class)->group(function () {
 });
 Route::controller(CategoryController::class)->group(function () {
     Route::get('categories', 'index');
+    // Must precede categories/{category} below, or "bulk" gets swallowed as a {category} id.
+    Route::delete('categories/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('categories/{category}', 'show');
     Route::post('categories', 'store')->middleware('auth:api');
     Route::patch('categories/{category}', 'update')->middleware('auth:api');
@@ -62,6 +69,9 @@ Route::controller(PlaceController::class)->group(function () {
     Route::get('places', 'index');
     Route::get('places-user', 'byUser')->middleware('auth:api');
     Route::get('places-liked', 'likedByUser')->middleware('auth:api');
+    // Must precede places/{place} below, or "bulk*" gets swallowed as a {place} id.
+    Route::patch('places/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
+    Route::delete('places/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('places/{place}', 'show');
     Route::post('places', 'store')->middleware(['auth:api', 'throttle:api']);
     Route::post('places/{place}/like', 'like')->middleware('auth:api');
@@ -71,6 +81,8 @@ Route::controller(PlaceController::class)->group(function () {
 });
 Route::controller(TagController::class)->group(function () {
     Route::get('tags', 'index');
+    // Must precede tags/{tag} below, or "bulk" gets swallowed as a {tag} id.
+    Route::delete('tags/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('tags/{tag}', 'show');
     Route::post('tags', 'store')->middleware('auth:api');
     Route::patch('tags/{tag}', 'update')->middleware('auth:api');
@@ -87,6 +99,8 @@ Route::controller(UserController::class)->group(function () {
     // Must precede users/{user} below, or "me" gets swallowed as a {user} id.
     Route::get('users/me/export', 'exportMyData')->middleware('auth:api');
     Route::get('users', 'index')->middleware(['auth:api', 'admin']);
+    // Must precede users/{user} below, or "bulk" gets swallowed as a {user} id.
+    Route::delete('users/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('users/{user}', 'show')->middleware('auth:api');
     Route::post('users/change-password', 'updatePassword')->middleware('auth:api');
     Route::delete('users/{user}', 'destroy')->middleware('auth:api');

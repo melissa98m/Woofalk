@@ -15,6 +15,7 @@ class Place extends Model
         'place_name',
         'place_description',
         'place_image',
+        'place_website',
         'user',
         'address',
         'category',

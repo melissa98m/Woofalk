@@ -28,6 +28,15 @@ Pour **chaque changement** (front `go-with-dog-app` ou back `go-with-dog-api`), 
 
 Si une vérification ne peut pas être automatisée (ex. rendu visuel, accessibilité manuelle), le dire explicitement plutôt que de prétendre que c'est validé.
 
+## Workflow de fin de tâche (commit / push)
+
+Dès qu'une fonctionnalité ou une tâche est considérée comme terminée :
+
+1. **Tester d'abord** : la tâche doit fonctionner et être vérifiée (tests automatisés concernés — `vendor/bin/phpunit` côté API, `npm test` côté web — et/ou test manuel si aucune vérification automatisée n'existe) avant d'être annoncée comme terminée.
+2. **Pas de régression** : s'assurer que le comportement existant n'est pas cassé (voir la section qualité ci-dessus) avant de committer.
+3. **Commit** : proposer un message de commit et **attendre la validation explicite de l'utilisateur** avant de committer — ne jamais committer un message non validé.
+4. **Push** : ne jamais pousser (`git push`) sans confirmation explicite de l'utilisateur, même après un commit validé.
+
 ## SEO (à appliquer sur toutes les pages publiques de `go-with-dog-app`)
 
 Le front est un SPA React (Vite) rendu côté client, sans SSR/prerendering : `index.html` ne contient qu'un titre/description/canonical **statiques et identiques sur toutes les routes** (pas de gestion par page). C'est la limite structurelle numéro un du SEO actuel — tout crawler ou réseau social qui n'exécute pas le JS ne voit que ce HTML générique. Tant qu'aucune solution de SSR/prerendering n'est mise en place, en tenir compte dans toute estimation d'impact SEO.

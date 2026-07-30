@@ -128,6 +128,7 @@ class PlaceController extends Controller
             'place_name' => 'required|max:200',
             'place_description' => 'required',
             'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'place_website' => 'nullable|url|max:255',
             'category' => 'required',
             'address' => 'required',
             'status' => 'nullable|in:publie,en_attente',
@@ -146,6 +147,7 @@ class PlaceController extends Controller
             'place_name' => $request->place_name,
             'place_description' => $request->place_description,
             'place_image' => $filename,
+            'place_website' => $request->place_website,
             'address' => $request->address,
             'category' => $request->category,
             'user' => $current,
@@ -194,6 +196,7 @@ class PlaceController extends Controller
             'place_name' => 'required|max:200',
             'place_description' => 'required',
             'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'place_website' => 'nullable|url|max:255',
             'category' => 'required',
             'address' => 'required',
             'status' => 'nullable|in:publie,en_attente',
@@ -217,6 +220,7 @@ class PlaceController extends Controller
             'place_name' => $request->place_name,
             'place_description' => $request->place_description,
             'place_image' => $request->place_image,
+            'place_website' => $request->place_website,
             'address' => $request->address,
             'category' => $request->category,
             'user' => $current,
@@ -247,6 +251,43 @@ class PlaceController extends Controller
         return response()->json([
             'status' => 'Supprimer avec succès',
         ]);
+    }
+
+    /**
+     * Bulk-update the moderation status of several places at once, used by
+     * the admin dashboard's "select all / publish / set pending" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => ['integer', Rule::exists('places', 'id')],
+            'status' => 'required|in:publie,en_attente',
+        ]);
+
+        Place::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+
+        return response()->json(['status' => 'Success']);
+    }
+
+    /**
+     * Bulk-delete several places at once, used by the admin dashboard's
+     * "select all / delete" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => ['integer', Rule::exists('places', 'id')],
+        ]);
+
+        Place::whereIn('id', $validated['ids'])->delete();
+
+        return response()->json(['status' => 'Supprimer avec succès']);
     }
 
     public function getFilename(Request $request): string

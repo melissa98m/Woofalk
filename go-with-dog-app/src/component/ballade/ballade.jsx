@@ -2,6 +2,7 @@ import React, {useEffect, useState} from "react";
 import {
     Box,
     Button,
+    Checkbox,
     Table,
     TableBody,
     TableCell,
@@ -16,6 +17,11 @@ import axios from "axios";
 import { API_URL } from "../../config";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
 import { StatusChip } from "../_partials/_ui/StatusChip";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
+import { useRowSelection } from "../_partials/_ui/useRowSelection";
+import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
+import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 
 
 function Ballade() {
@@ -30,6 +36,10 @@ function Ballade() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+    const selection = useRowSelection();
+    const [showBulkDelete, setShowBulkDelete] = useState(false);
+    const [bulkLoading, setBulkLoading] = useState(false);
 
     const handleChangePage = (ballade, newPage) => {
         setPage(newPage);
@@ -65,6 +75,48 @@ function Ballade() {
         }
     }
 
+    const authHeaders = { headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') } };
+
+    const handleBulkStatus = async (status) => {
+        const ids = Array.from(selection.selected);
+        setBulkLoading(true);
+        try {
+            await axios.patch(`${API_URL}/api/ballades/bulk-status`, { ids, status }, authHeaders);
+            setData(data.map((b) => (selection.isSelected(b.id) ? { ...b, status } : b)));
+            selection.clear();
+            setToastMessage({ message: status === 'publie' ? "Balades publiées !" : "Balades mises en attente !", severity: "success" });
+            setShowToast(true);
+        } catch (err) {
+            setToastMessage({ message: "Une erreur est survenue", severity: "error" });
+            setShowToast(true);
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selection.selected);
+        setBulkLoading(true);
+        try {
+            await axios.delete(`${API_URL}/api/ballades/bulk`, { ...authHeaders, data: { ids } });
+            setData(data.filter((b) => !selection.isSelected(b.id)));
+            selection.clear();
+            setShowBulkDelete(false);
+            setToastMessage({ message: "Balades supprimées !", severity: "success" });
+            setShowToast(true);
+        } catch (err) {
+            setToastMessage({ message: "Une erreur est survenue", severity: "error" });
+            setShowToast(true);
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const pageIds = pageRows.map((b) => b.id);
+    const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+    const somePageSelected = pageIds.some((id) => selection.isSelected(id));
+
     return <Box id="ballade">
         <AdminResourceLayout
             title="Balades"
@@ -80,11 +132,31 @@ function Ballade() {
             toast={toast}
             toastMessage={toastMessage}
             onCloseToast={() => setShowToast(false)}
+            bulkBar={data ? (
+                <BulkActionsBar
+                    count={selection.count}
+                    total={data.length}
+                    onSelectAll={() => selection.selectAll(data.map((b) => b.id))}
+                    onClear={selection.clear}
+                >
+                    <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('publie')}>Publier</RowActionButton>
+                    <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('en_attente')}>Mettre en attente</RowActionButton>
+                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                </BulkActionsBar>
+            ) : null}
         >
             {data ? (
                 <Table size="small">
                     <TableHead>
                         <TableRow>
+                            <TableCell padding="checkbox">
+                                <Checkbox
+                                    indeterminate={somePageSelected && !allPageSelected}
+                                    checked={allPageSelected}
+                                    onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
+                                    inputProps={{ "aria-label": "Sélectionner toutes les balades de la page" }}
+                                />
+                            </TableCell>
                             <TableCell>Nom</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Distance</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Denivelé</TableCell>
@@ -96,16 +168,23 @@ function Ballade() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, ballade_name, ballade_description, ballade_image, status, tags, ballade_latitude , ballade_longitude , distance , denivele , user, created_at}) => {
+                        {pageRows.map(({id, ballade_name, ballade_description, ballade_image, status, tags, ballade_latitude , ballade_longitude , distance , denivele , user, created_at}) => {
                             return (
-                                <TableRow hover role="checkbox" tabIndex={-1} key={ballade_name+id}>
+                                <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={ballade_name+id}>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={selection.isSelected(id)}
+                                            onChange={() => selection.toggle(id)}
+                                            inputProps={{ "aria-label": `Sélectionner ${ballade_name ?? 'la balade'}` }}
+                                        />
+                                    </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{ballade_name ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{ distance ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{ denivele ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                             {(tags ?? []).map((t) => (
-                                                <Chip key={t.id} size="small" label={t.tag_name} sx={{ color: t.color }} />
+                                                <Chip key={t.id} size="small" label={truncateLabel(t.tag_name)} title={t.tag_name} sx={{ color: t.color }} />
                                             ))}
                                         </Box>
                                     </TableCell>
@@ -125,6 +204,13 @@ function Ballade() {
                 </Table>
             ) : null}
         </AdminResourceLayout>
+        <BulkDeleteConfirm
+            open={showBulkDelete}
+            onClose={() => setShowBulkDelete(false)}
+            count={selection.count}
+            itemLabel="balade"
+            onConfirm={handleBulkDelete}
+        />
     </Box>
 }
 

@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
+    Checkbox,
     Table,
     TableBody,
     TableCell,
@@ -14,6 +15,10 @@ import EditTag from "./editTag";
 import axios from "axios";
 import { API_URL } from "../../config";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
+import { useRowSelection } from "../_partials/_ui/useRowSelection";
+import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
+import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 
 function Tag() {
 
@@ -27,6 +32,10 @@ function Tag() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+    const selection = useRowSelection();
+    const [showBulkDelete, setShowBulkDelete] = useState(false);
+    const [bulkLoading, setBulkLoading] = useState(false);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -64,6 +73,32 @@ function Tag() {
 
     const scopeLabels = {place: 'Lieux', ballade: 'Balades', both: 'Lieux et balades'};
 
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selection.selected);
+        setBulkLoading(true);
+        try {
+            await axios.delete(`${API_URL}/api/tags/bulk`, {
+                headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') },
+                data: { ids },
+            });
+            setData(data.filter((t) => !selection.isSelected(t.id)));
+            selection.clear();
+            setShowBulkDelete(false);
+            setToastMessage({ message: "Tags supprimés !", severity: "success" });
+            setShowToast(true);
+        } catch (err) {
+            setToastMessage({ message: "Une erreur est survenue", severity: "error" });
+            setShowToast(true);
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const pageIds = pageRows.map((t) => t.id);
+    const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+    const somePageSelected = pageIds.some((id) => selection.isSelected(id));
+
     return <Box id="tag">
         <AdminResourceLayout
             title="Tags des ballades"
@@ -79,11 +114,29 @@ function Tag() {
             toast={toast}
             toastMessage={toastMessage}
             onCloseToast={() => setShowToast(false)}
+            bulkBar={data ? (
+                <BulkActionsBar
+                    count={selection.count}
+                    total={data.length}
+                    onSelectAll={() => selection.selectAll(data.map((t) => t.id))}
+                    onClear={selection.clear}
+                >
+                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                </BulkActionsBar>
+            ) : null}
         >
             {data ? (
                 <Table size="small">
                     <TableHead>
                         <TableRow>
+                            <TableCell padding="checkbox">
+                                <Checkbox
+                                    indeterminate={somePageSelected && !allPageSelected}
+                                    checked={allPageSelected}
+                                    onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
+                                    inputProps={{ "aria-label": "Sélectionner tous les tags de la page" }}
+                                />
+                            </TableCell>
                             <TableCell>Nom</TableCell>
                             <TableCell>Couleur</TableCell>
                             <TableCell>S'applique à</TableCell>
@@ -91,9 +144,16 @@ function Tag() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, tag_name , color, scope}) => {
+                        {pageRows.map(({id, tag_name , color, scope}) => {
                             return (
-                                <TableRow hover role="checkbox" tabIndex={-1} key={id}>
+                                <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={id}>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={selection.isSelected(id)}
+                                            onChange={() => selection.toggle(id)}
+                                            inputProps={{ "aria-label": `Sélectionner ${tag_name}` }}
+                                        />
+                                    </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{tag_name}</TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -115,6 +175,13 @@ function Tag() {
                 </Table>
             ) : null}
         </AdminResourceLayout>
+        <BulkDeleteConfirm
+            open={showBulkDelete}
+            onClose={() => setShowBulkDelete(false)}
+            count={selection.count}
+            itemLabel="tag"
+            onConfirm={handleBulkDelete}
+        />
     </Box>
 }
 

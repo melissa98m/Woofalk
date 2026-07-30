@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
+    Checkbox,
     Chip,
     Table,
     TableBody,
@@ -12,6 +13,11 @@ import DeleteUser from "./deleteUser";
 import axios from "axios";
 import { API_URL } from "../../config";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
+import { useRowSelection } from "../_partials/_ui/useRowSelection";
+import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
+import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import auth from "../../services/auth/token";
 
 // The API stores `roles` as a JSON-encoded string column with no model cast,
 // so it comes back over the wire as a raw string like '["ROLE_ADMIN"]' rather
@@ -41,6 +47,11 @@ function User() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+    const selection = useRowSelection();
+    const [showBulkDelete, setShowBulkDelete] = useState(false);
+    const [bulkLoading, setBulkLoading] = useState(false);
+    const currentUserId = Number(auth.getUserId());
 
     const handleChangePage = (user, newPage) => {
         setPage(newPage);
@@ -79,6 +90,36 @@ function User() {
         }
     }
 
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selection.selected);
+        setBulkLoading(true);
+        try {
+            await axios.delete(`${API_URL}/api/users/bulk`, {
+                headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') },
+                data: { ids },
+            });
+            setData(data.filter((u) => !selection.isSelected(u.id)));
+            selection.clear();
+            setShowBulkDelete(false);
+            setToastMessage({ message: "Utilisateurs supprimés !", severity: "success" });
+            setShowToast(true);
+        } catch (err) {
+            setToastMessage({ message: "Une erreur est survenue", severity: "error" });
+            setShowToast(true);
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    // Admins can never select their own account for a bulk action — the API
+    // silently excludes it too, but disabling the checkbox avoids a
+    // confusing "N sélectionnés" count that includes an account that won't
+    // actually be deleted.
+    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const selectablePageIds = pageRows.filter((u) => u.id !== currentUserId).map((u) => u.id);
+    const allPageSelected = selectablePageIds.length > 0 && selectablePageIds.every((id) => selection.isSelected(id));
+    const somePageSelected = selectablePageIds.some((id) => selection.isSelected(id));
+
     return <Box id="user">
         <AdminResourceLayout
             title="Utilisateurs"
@@ -93,11 +134,29 @@ function User() {
             toast={toast}
             toastMessage={toastMessage}
             onCloseToast={() => setShowToast(false)}
+            bulkBar={data ? (
+                <BulkActionsBar
+                    count={selection.count}
+                    total={data.filter((u) => u.id !== currentUserId).length}
+                    onSelectAll={() => selection.selectAll(data.filter((u) => u.id !== currentUserId).map((u) => u.id))}
+                    onClear={selection.clear}
+                >
+                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                </BulkActionsBar>
+            ) : null}
         >
             {data ? (
                 <Table size="small">
                     <TableHead>
                         <TableRow>
+                            <TableCell padding="checkbox">
+                                <Checkbox
+                                    indeterminate={somePageSelected && !allPageSelected}
+                                    checked={allPageSelected}
+                                    onChange={(e) => selection.toggleMany(selectablePageIds, e.target.checked)}
+                                    inputProps={{ "aria-label": "Sélectionner tous les utilisateurs de la page" }}
+                                />
+                            </TableCell>
                             <TableCell>Username</TableCell>
                             <TableCell>Email</TableCell>
                             <TableCell>Rôles</TableCell>
@@ -106,9 +165,18 @@ function User() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, username, email, roles, created_at  }) => {
+                        {pageRows.map(({id, username, email, roles, created_at  }) => {
+                            const isSelf = id === currentUserId;
                             return (
-                                <TableRow hover role="checkbox" tabIndex={-1} key={username+id}>
+                                <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={username+id}>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={selection.isSelected(id)}
+                                            disabled={isSelf}
+                                            onChange={() => selection.toggle(id)}
+                                            inputProps={{ "aria-label": `Sélectionner ${username ?? "l'utilisateur"}` }}
+                                        />
+                                    </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{username ?? '--'}</TableCell>
                                     <TableCell>{email ?? '--'}</TableCell>
                                     <TableCell>
@@ -131,6 +199,13 @@ function User() {
                 </Table>
             ) : null}
         </AdminResourceLayout>
+        <BulkDeleteConfirm
+            open={showBulkDelete}
+            onClose={() => setShowBulkDelete(false)}
+            count={selection.count}
+            itemLabel="utilisateur"
+            onConfirm={handleBulkDelete}
+        />
     </Box>
 }
 

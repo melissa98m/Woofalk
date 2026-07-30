@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {
     Box,
+    Checkbox,
     Table,
     TableBody,
     TableCell,
@@ -13,6 +14,10 @@ import EditCategory from "./editCategory";
 import axios from "axios";
 import { API_URL } from "../../config";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
+import { useRowSelection } from "../_partials/_ui/useRowSelection";
+import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
+import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
 
 function Category() {
 
@@ -26,6 +31,10 @@ function Category() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+    const selection = useRowSelection();
+    const [showBulkDelete, setShowBulkDelete] = useState(false);
+    const [bulkLoading, setBulkLoading] = useState(false);
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -60,6 +69,33 @@ function Category() {
             setShowToast(true);
         }
     }
+
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selection.selected);
+        setBulkLoading(true);
+        try {
+            await axios.delete(`${API_URL}/api/categories/bulk`, {
+                headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') },
+                data: { ids },
+            });
+            setData(data.filter((c) => !selection.isSelected(c.id)));
+            selection.clear();
+            setShowBulkDelete(false);
+            setToastMessage({ message: "Catégories supprimées !", severity: "success" });
+            setShowToast(true);
+        } catch (err) {
+            setToastMessage({ message: "Une erreur est survenue", severity: "error" });
+            setShowToast(true);
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const pageIds = pageRows.map((c) => c.id);
+    const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+    const somePageSelected = pageIds.some((id) => selection.isSelected(id));
+
     return <Box id="category">
         <AdminResourceLayout
             title="Catégories"
@@ -75,19 +111,44 @@ function Category() {
             toast={toast}
             toastMessage={toastMessage}
             onCloseToast={() => setShowToast(false)}
+            bulkBar={data ? (
+                <BulkActionsBar
+                    count={selection.count}
+                    total={data.length}
+                    onSelectAll={() => selection.selectAll(data.map((c) => c.id))}
+                    onClear={selection.clear}
+                >
+                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                </BulkActionsBar>
+            ) : null}
         >
             {data ? (
                 <Table size="small">
                     <TableHead>
                         <TableRow>
+                            <TableCell padding="checkbox">
+                                <Checkbox
+                                    indeterminate={somePageSelected && !allPageSelected}
+                                    checked={allPageSelected}
+                                    onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
+                                    inputProps={{ "aria-label": "Sélectionner toutes les catégories de la page" }}
+                                />
+                            </TableCell>
                             <TableCell>Nom</TableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, category_name}) => {
+                        {pageRows.map(({id, category_name}) => {
                             return (
-                                <TableRow hover role="checkbox" tabIndex={-1} key={category_name+id}>
+                                <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={category_name+id}>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={selection.isSelected(id)}
+                                            onChange={() => selection.toggle(id)}
+                                            inputProps={{ "aria-label": `Sélectionner ${category_name}` }}
+                                        />
+                                    </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{category_name}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
@@ -102,6 +163,14 @@ function Category() {
                 </Table>
             ) : null}
         </AdminResourceLayout>
+        <BulkDeleteConfirm
+            open={showBulkDelete}
+            onClose={() => setShowBulkDelete(false)}
+            count={selection.count}
+            itemLabel="catégorie"
+            itemLabelPlural="catégories"
+            onConfirm={handleBulkDelete}
+        />
     </Box>
 }
 

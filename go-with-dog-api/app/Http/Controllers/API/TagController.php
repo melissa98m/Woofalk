@@ -101,4 +101,22 @@ class TagController extends Controller
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }
+
+    /**
+     * Bulk-delete several tags at once, used by the admin dashboard's
+     * "select all / delete" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:tags,id',
+        ]);
+
+        tag::whereIn('id', $validated['ids'])->delete();
+
+        return response()->json(['status' => 'Supprimer avec succès']);
+    }
 }

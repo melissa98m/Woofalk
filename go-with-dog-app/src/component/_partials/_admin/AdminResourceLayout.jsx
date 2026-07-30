@@ -17,6 +17,7 @@ export function AdminResourceLayout({
     toast,
     toastMessage,
     onCloseToast,
+    bulkBar,
     children,
 }) {
     return (
@@ -34,6 +35,7 @@ export function AdminResourceLayout({
                 <Typography role="status" aria-live="polite" color="text.secondary">{loadingLabel}</Typography>
             ) : (
                 <Card sx={{ borderRadius: "16px" }}>
+                    {bulkBar}
                     <TableContainer>{children}</TableContainer>
                     <TablePagination
                         rowsPerPageOptions={[10, 25, 100]}

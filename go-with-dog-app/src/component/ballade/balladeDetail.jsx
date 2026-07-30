@@ -49,7 +49,7 @@ function BalladeDetail() {
 
     const { ballade_name, ballade_description, ballade_image, tags, ballade_latitude, ballade_longitude, denivele, distance } = ballade;
 
-    return <Container maxWidth="md" id="ballade-detail" sx={{ px: { xs: 2, md: 4 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
+    return <Container maxWidth="xl" id="ballade-detail" sx={{ px: { xs: 1, sm: 1.5, md: 2 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
             <Typography component={Link} to="/ballades" color="text.secondary" sx={{ textDecoration: "none", fontSize: "13px" }}>Balades</Typography>
             <Typography color="text.primary" sx={{ fontSize: "13px" }}>{ballade_name}</Typography>
@@ -99,7 +99,7 @@ function BalladeDetail() {
                 <Typography variant="h2" sx={{ fontSize: "20px", marginBottom: "12px" }}>Description</Typography>
                 <Typography variant="body1" sx={{ fontSize: "15px", lineHeight: 1.7 }}>{ballade_description}</Typography>
             </Box>
-            <Box sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "20px", padding: "20px", height: "fit-content" }}>
+            <Box sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "20px", padding: "20px", display: "flex", flexDirection: "column" }}>
                 <Typography variant="h3" sx={{ fontSize: "16px", marginBottom: "14px" }}>Infos pratiques</Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "16px" }}>
                     <div><strong>Distance :</strong> {distance} km</div>
@@ -109,7 +109,7 @@ function BalladeDetail() {
                 <Box
                     role="img"
                     aria-label={`Carte de localisation de la balade ${ballade_name}`}
-                    sx={{ borderRadius: "14px", overflow: "hidden", "& .leaflet-container": { height: "220px", width: "100%" } }}
+                    sx={{ borderRadius: "14px", overflow: "hidden", flexGrow: 1, minHeight: "220px", "& .leaflet-container": { height: "100%", width: "100%" } }}
                 >
                     <MapContainer center={[ballade_latitude, ballade_longitude]} zoom={12} scrollWheelZoom={false}>
                         <TileLayer

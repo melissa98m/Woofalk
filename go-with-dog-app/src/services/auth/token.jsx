@@ -32,6 +32,14 @@ let getRoles = () => {
     }
 }
 
+let getUserId = () => {
+    // On teste si il y a un token décodé et si il n'a pas expiré
+    if (getExpiryTime()){
+        return getDecodedToken().sub;
+    } else {
+        return false
+    }
+}
 let getEmail = () => {
     // On teste si il y a un token décodé et si il n'a pas expiré
     if (getExpiryTime()){
@@ -57,4 +65,4 @@ let loggedAndUser = () => {
     return !!(getExpiryTime() && getRoles() === 'ROLE_USER');
 }
 
-export default {getToken, getDecodedToken, getRoles, getEmail,getUsername, loggedAndAdmin,loggedAndUser, getExpiryTime}
+export default {getToken, getDecodedToken, getRoles, getEmail,getUsername, getUserId, loggedAndAdmin,loggedAndUser, getExpiryTime}

@@ -19,6 +19,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { FieldLabel } from "../_partials/_ui/FieldLabel";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { API_URL } from "../../config";
 
 function NewBallade() {
@@ -158,9 +159,10 @@ function NewBallade() {
                                 <Typography component="span" color="text.secondary">Aucun tag</Typography>
                             ) : (
                                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                                    {selected.map((id) => (
-                                        <Chip key={id} size="small" label={availableTags.find((t) => t.id === id)?.tag_name} />
-                                    ))}
+                                    {selected.map((id) => {
+                                        const tagName = availableTags.find((t) => t.id === id)?.tag_name;
+                                        return <Chip key={id} size="small" label={truncateLabel(tagName)} title={tagName} />;
+                                    })}
                                 </Box>
                             )}
                         >

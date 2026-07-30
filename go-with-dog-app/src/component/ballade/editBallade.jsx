@@ -19,6 +19,7 @@ import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
 import { CrudModal } from "../_partials/_ui/CrudModal";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { API_URL } from "../../config";
 
 function EditBallade(props) {
@@ -254,9 +255,10 @@ function EditBallade(props) {
                                         variant="outlined"
                                         renderValue={(selected) => (
                                             <Box sx={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                                                {selected.map((id) => (
-                                                    <Chip key={id} size="small" label={availableTags.find((t) => t.id === id)?.tag_name} />
-                                                ))}
+                                                {selected.map((id) => {
+                                                    const tagName = availableTags.find((t) => t.id === id)?.tag_name;
+                                                    return <Chip key={id} size="small" label={truncateLabel(tagName)} title={tagName} />;
+                                                })}
                                             </Box>
                                         )}
                                       >

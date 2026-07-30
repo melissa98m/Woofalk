@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
@@ -12,21 +13,21 @@ class CategoryController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
         $categories = DB::table('categories')
             ->get()
             ->toArray();
+
         return response()->json(['status' => 'Success', 'data' => $categories]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -36,14 +37,14 @@ class CategoryController extends Controller
         $category = Category::create([
             'category_name' => $request->category_name,
         ]);
+
         return response()->json(['status' => 'Success', 'data' => $category]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Category $category)
     {
@@ -53,9 +54,7 @@ class CategoryController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, Category $category)
     {
@@ -66,18 +65,37 @@ class CategoryController extends Controller
         $category->update([
             'category_name' => $request->category_name,
         ]);
+
         return response()->json(['status' => 'Success', 'data' => $category]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Category  $category
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Category $category)
     {
         $category->delete();
+
+        return response()->json(['status' => 'Supprimer avec succès']);
+    }
+
+    /**
+     * Bulk-delete several categories at once, used by the admin dashboard's
+     * "select all / delete" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:categories,id',
+        ]);
+
+        Category::whereIn('id', $validated['ids'])->delete();
+
         return response()->json(['status' => 'Supprimer avec succès']);
     }
 }

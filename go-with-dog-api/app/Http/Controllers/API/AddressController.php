@@ -5,28 +5,29 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AddressController extends Controller
 {
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function index()
     {
         $addresses = Address::all();
+
         return response()->json([
             'status' => 'Success',
-            'data' => $addresses
+            'data' => $addresses,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
@@ -46,6 +47,7 @@ class AddressController extends Controller
             'longitude' => $request->longitude,
 
         ]);
+
         return response()->json([
             'status' => 'Success',
             'data' => $address,
@@ -55,8 +57,7 @@ class AddressController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Address  $address
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function show(Address $address)
     {
@@ -66,9 +67,7 @@ class AddressController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Address  $address
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function update(Request $request, Address $address)
     {
@@ -87,24 +86,43 @@ class AddressController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
         ]);
+
         return response()->json([
             'status' => 'Success',
-            'data' => $address
+            'data' => $address,
         ]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Address  $address
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function destroy(Address $address)
     {
         $address->delete();
+
         // On retourne la réponse JSON
         return response()->json([
-            'status' => 'Supprimer avec succès avec succèss'
+            'status' => 'Supprimer avec succès avec succèss',
         ]);
+    }
+
+    /**
+     * Bulk-delete several addresses at once, used by the admin dashboard's
+     * "select all / delete" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'integer|exists:addresses,id',
+        ]);
+
+        Address::whereIn('id', $validated['ids'])->delete();
+
+        return response()->json(['status' => 'Supprimer avec succès']);
     }
 }

@@ -19,6 +19,7 @@ import {useForm, Controller} from "react-hook-form";
 import axios from "axios";
 import { CrudModal } from "../_partials/_ui/CrudModal";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { API_URL } from "../../config";
 
 function EditPlace(props) {
@@ -27,6 +28,7 @@ function EditPlace(props) {
     const [place_description, setDescription] = useState(props.updateValue.place_description);
     const [place_image, setImage] = useState('');
     const [cImage, setCImage] = useState(props.updateValue.place_image);
+    const [place_website, setWebsite] = useState(props.updateValue.place_website || '');
     const [status, setStatus] = useState(props.updateValue.status || 'publie');
 
     // One of ...
@@ -47,6 +49,7 @@ function EditPlace(props) {
         place_name: props.updateValue.place_name,
         place_description: props.updateValue.place_description,
         place_image: props.updateValue.place_image,
+        place_website: props.updateValue.place_website,
         category: props.updateValue.category,
         address: props.updateValue.address,
     } });
@@ -67,6 +70,7 @@ function EditPlace(props) {
             let formData = new FormData();
             formData.append("place_name",  place_name);
             formData.append("place_description", place_description);
+            formData.append("place_website", place_website);
             formData.append("category",  category ? `${category}` : `${props.updateValue.category.id}`);
             formData.append("address", address ? `${address}` : `${props.updateValue.address.id}`);
             formData.append("status", status);
@@ -81,6 +85,7 @@ function EditPlace(props) {
                 place_name: place_name ? place_name : onePlace.place_name,
                 place_description: place_description ? place_description : onePlace.place_description,
                 place_image: place_image ? place_image : onePlace.place_image,
+                place_website: place_website,
                 category: category ? category : onePlace.category.id,
                 address: address ? address : onePlace.address.id,
                 status: status,
@@ -116,10 +121,12 @@ function EditPlace(props) {
                     place_name: props.updateValue.place_name,
                     place_description: props.updateValue.place_description,
                     place_image: props.updateValue.place_image,
+                    place_website: props.updateValue.place_website,
                     category: props.updateValue.category,
                     address: props.updateValue.address
                 })
                 setCImage(props.updateValue.place_image);
+                setWebsite(props.updateValue.place_website || '');
             }}>
               Modifier
           </RowActionButton>
@@ -148,6 +155,30 @@ function EditPlace(props) {
                             />
                             {errors.place_name ? (
                                 <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_name?.message}</Alert>
+                            ) : ''}
+
+                            <Controller
+                              name="place_website"
+                              control={control}
+                              render={() => (
+                                  <TextField
+                                   {...register(
+                                       'place_website',
+                                       {
+                                           pattern: {value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://"}
+                                       }
+                                   )}
+                                   type="url"
+                                   onChange={(e) => setWebsite(e.target.value)}
+                                   sx={{mt: 5, height: 50}}
+                                   label="Site web (optionnel)"
+                                   variant="standard"
+                                   defaultValue={place_website}
+                                />
+                              )}
+                            />
+                            {errors.place_website ? (
+                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_website?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -257,9 +288,10 @@ function EditPlace(props) {
                                     variant="outlined"
                                     renderValue={(selected) => (
                                         <Box sx={{ display: "flex", flexWrap: "wrap", gap: "4px" }}>
-                                            {selected.map((id) => (
-                                                <Chip key={id} size="small" label={availableTags.find((t) => t.id === id)?.tag_name} />
-                                            ))}
+                                            {selected.map((id) => {
+                                                const tagName = availableTags.find((t) => t.id === id)?.tag_name;
+                                                return <Chip key={id} size="small" label={truncateLabel(tagName)} title={tagName} />;
+                                            })}
                                         </Box>
                                     )}
                                 >

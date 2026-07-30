@@ -274,6 +274,50 @@ class BalladeController extends Controller
         ]);
     }
 
+    /**
+     * Bulk-update the moderation status of several ballades at once, used by
+     * the admin dashboard's "select all / publish / set pending" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => ['integer', Rule::exists('ballades', 'id')],
+            'status' => 'required|in:publie,en_attente',
+        ]);
+
+        Ballade::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+
+        return response()->json(['status' => 'Success']);
+    }
+
+    /**
+     * Bulk-delete several ballades at once, used by the admin dashboard's
+     * "select all / delete" toolbar.
+     *
+     * @return Response
+     */
+    public function bulkDestroy(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => ['integer', Rule::exists('ballades', 'id')],
+        ]);
+
+        $ballades = Ballade::whereIn('id', $validated['ids'])->get(['id', 'ballade_image']);
+        foreach ($ballades as $ballade) {
+            if ($ballade->ballade_image) {
+                Storage::delete('/public/uploads/ballades'.$ballade->ballade_image);
+            }
+        }
+
+        Ballade::whereIn('id', $validated['ids'])->delete();
+
+        return response()->json(['status' => 'Supprimer avec succès']);
+    }
+
     public function getFilename(Request $request): string
     {
         $filenameWithExt = $request->file('ballade_image')->getClientOriginalName();
