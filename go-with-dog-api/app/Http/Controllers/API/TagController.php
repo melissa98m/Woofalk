@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use App\Models\tag;
+use App\Models\Tag;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
@@ -43,7 +43,7 @@ class TagController extends Controller
             'color' => 'required|max:10',
             'scope' => 'nullable|in:place,ballade,both',
         ]);
-        $tag = tag::create([
+        $tag = Tag::create([
             'tag_name' => $request->tag_name,
             'color' => $request->color,
             'scope' => $request->scope ?? 'both',
@@ -57,7 +57,7 @@ class TagController extends Controller
      *
      * @return Response
      */
-    public function show(tag $tag)
+    public function show(Tag $tag)
     {
         return response()->json($tag);
     }
@@ -67,7 +67,7 @@ class TagController extends Controller
      *
      * @return Response
      */
-    public function update(Request $request, tag $tag)
+    public function update(Request $request, Tag $tag)
     {
         $this->validate($request, [
             'tag_name' => 'required|max:50',
@@ -95,7 +95,7 @@ class TagController extends Controller
      *
      * @return Response
      */
-    public function destroy(tag $tag)
+    public function destroy(Tag $tag)
     {
         $tag->delete();
 
@@ -115,7 +115,7 @@ class TagController extends Controller
             'ids.*' => 'integer|exists:tags,id',
         ]);
 
-        tag::whereIn('id', $validated['ids'])->delete();
+        Tag::whereIn('id', $validated['ids'])->delete();
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

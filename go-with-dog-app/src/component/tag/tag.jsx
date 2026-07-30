@@ -134,7 +134,7 @@ function Tag() {
                                     indeterminate={somePageSelected && !allPageSelected}
                                     checked={allPageSelected}
                                     onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
-                                    inputProps={{ "aria-label": "Sélectionner tous les tags de la page" }}
+                                    slotProps={{ input: { "aria-label": "Sélectionner tous les tags de la page" } }}
                                 />
                             </TableCell>
                             <TableCell>Nom</TableCell>
@@ -151,7 +151,7 @@ function Tag() {
                                         <Checkbox
                                             checked={selection.isSelected(id)}
                                             onChange={() => selection.toggle(id)}
-                                            inputProps={{ "aria-label": `Sélectionner ${tag_name}` }}
+                                            slotProps={{ input: { "aria-label": `Sélectionner ${tag_name}` } }}
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{tag_name}</TableCell>

@@ -131,7 +131,7 @@ function Category() {
                                     indeterminate={somePageSelected && !allPageSelected}
                                     checked={allPageSelected}
                                     onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
-                                    inputProps={{ "aria-label": "Sélectionner toutes les catégories de la page" }}
+                                    slotProps={{ input: { "aria-label": "Sélectionner toutes les catégories de la page" } }}
                                 />
                             </TableCell>
                             <TableCell>Nom</TableCell>
@@ -146,7 +146,7 @@ function Category() {
                                         <Checkbox
                                             checked={selection.isSelected(id)}
                                             onChange={() => selection.toggle(id)}
-                                            inputProps={{ "aria-label": `Sélectionner ${category_name}` }}
+                                            slotProps={{ input: { "aria-label": `Sélectionner ${category_name}` } }}
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{category_name}</TableCell>

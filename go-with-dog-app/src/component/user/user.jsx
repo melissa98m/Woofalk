@@ -154,7 +154,7 @@ function User() {
                                     indeterminate={somePageSelected && !allPageSelected}
                                     checked={allPageSelected}
                                     onChange={(e) => selection.toggleMany(selectablePageIds, e.target.checked)}
-                                    inputProps={{ "aria-label": "Sélectionner tous les utilisateurs de la page" }}
+                                    slotProps={{ input: { "aria-label": "Sélectionner tous les utilisateurs de la page" } }}
                                 />
                             </TableCell>
                             <TableCell>Username</TableCell>
@@ -174,7 +174,7 @@ function User() {
                                             checked={selection.isSelected(id)}
                                             disabled={isSelf}
                                             onChange={() => selection.toggle(id)}
-                                            inputProps={{ "aria-label": `Sélectionner ${username ?? "l'utilisateur"}` }}
+                                            slotProps={{ input: { "aria-label": `Sélectionner ${username ?? "l'utilisateur"}` } }}
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{username ?? '--'}</TableCell>

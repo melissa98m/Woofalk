@@ -23,6 +23,7 @@ import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
 
+const MAX_VISIBLE_TAGS = 3;
 
 function Place() {
 
@@ -154,7 +155,7 @@ function Place() {
                                     indeterminate={somePageSelected && !allPageSelected}
                                     checked={allPageSelected}
                                     onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
-                                    inputProps={{ "aria-label": "Sélectionner tous les lieux de la page" }}
+                                    slotProps={{ input: { "aria-label": "Sélectionner tous les lieux de la page" } }}
                                 />
                             </TableCell>
                             <TableCell>Nom</TableCell>
@@ -175,7 +176,7 @@ function Place() {
                                         <Checkbox
                                             checked={selection.isSelected(id)}
                                             onChange={() => selection.toggle(id)}
-                                            inputProps={{ "aria-label": `Sélectionner ${place_name ?? 'le lieu'}` }}
+                                            slotProps={{ input: { "aria-label": `Sélectionner ${place_name ?? 'le lieu'}` } }}
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{place_name ?? '--'}</TableCell>
@@ -183,14 +184,22 @@ function Place() {
                                     <TableCell>{category.category_name ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                            {(tags ?? []).map((t) => (
+                                            {(tags ?? []).slice(0, MAX_VISIBLE_TAGS).map((t) => (
                                                 <Chip key={t.id} size="small" label={truncateLabel(t.tag_name)} title={t.tag_name} />
                                             ))}
+                                            {(tags ?? []).length > MAX_VISIBLE_TAGS ? (
+                                                <Chip
+                                                    size="small"
+                                                    variant="outlined"
+                                                    label={`+${tags.length - MAX_VISIBLE_TAGS}`}
+                                                    title={tags.slice(MAX_VISIBLE_TAGS).map((t) => t.tag_name).join(", ")}
+                                                />
+                                            ) : null}
                                         </Box>
                                     </TableCell>
                                     <TableCell><StatusChip status={status ?? 'publie'} /></TableCell>
                                     <TableCell sx={{ color: 'text.secondary', fontSize: '13px', display: { xs: 'none', md: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : '--'}</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{user.username ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{user?.username ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
                                             <EditPlace updateValue={{id, place_name, place_description, place_image, status, category, address, tags, data}} handleDataChange={handleDataChange} />

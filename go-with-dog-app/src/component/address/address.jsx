@@ -131,7 +131,7 @@ function Address() {
                                     indeterminate={somePageSelected && !allPageSelected}
                                     checked={allPageSelected}
                                     onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
-                                    inputProps={{ "aria-label": "Sélectionner toutes les adresses de la page" }}
+                                    slotProps={{ input: { "aria-label": "Sélectionner toutes les adresses de la page" } }}
                                 />
                             </TableCell>
                             <TableCell>Nom</TableCell>
@@ -149,7 +149,7 @@ function Address() {
                                         <Checkbox
                                             checked={selection.isSelected(id)}
                                             onChange={() => selection.toggle(id)}
-                                            inputProps={{ "aria-label": `Sélectionner ${address ?? "l'adresse"}` }}
+                                            slotProps={{ input: { "aria-label": `Sélectionner ${address ?? "l'adresse"}` } }}
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{address ?? '--'}</TableCell>
