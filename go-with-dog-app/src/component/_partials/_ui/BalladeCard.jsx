@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { API_URL } from "../../../config";
 import { LikeButton } from "./LikeButton";
 import { truncateLabel } from "./truncateLabel";
+import { formatDistance } from "./formatDistance";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -48,7 +49,7 @@ export function BalladeCard({ ballade }) {
                     <Chip
                         size="small"
                         variant="outlined"
-                        label={distance != null ? `${distance} km` : "Distance non renseignée"}
+                        label={formatDistance(distance) ?? "Distance non renseignée"}
                         title={distanceTag?.tag_name}
                         sx={distanceTag ? { borderColor: distanceTag.color, borderWidth: 2 } : undefined}
                     />

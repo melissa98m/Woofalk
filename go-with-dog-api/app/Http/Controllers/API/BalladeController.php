@@ -164,7 +164,7 @@ class BalladeController extends Controller
         $request->validate([
             'ballade_name' => 'required|max:200',
             'ballade_description' => 'required',
-            'distance' => 'nullable|integer',
+            'distance' => 'nullable|numeric',
             'denivele' => 'nullable|integer',
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
             'ballade_website' => 'nullable|url|max:255',
@@ -232,7 +232,7 @@ class BalladeController extends Controller
         $this->validate($request, [
             'ballade_name' => 'required|max:200',
             'ballade_description' => 'required',
-            'distance' => 'nullable|integer',
+            'distance' => 'nullable|numeric',
             'denivele' => 'nullable|integer',
             'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
             'ballade_website' => 'nullable|url|max:255',

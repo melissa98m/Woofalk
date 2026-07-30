@@ -14,6 +14,7 @@ class Ballade extends Model
     protected $casts = [
         'ballade_latitude' => 'float',
         'ballade_longitude' => 'float',
+        'distance' => 'float',
     ];
 
     protected $fillable = [
@@ -61,7 +62,7 @@ class Ballade extends Model
      *
      * @return list<string>
      */
-    public static function difficultyAndLengthTagNames(?int $distanceKm, ?int $deniveleM): array
+    public static function difficultyAndLengthTagNames(?float $distanceKm, ?int $deniveleM): array
     {
         $tags = [];
 

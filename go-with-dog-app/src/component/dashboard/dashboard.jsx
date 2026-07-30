@@ -17,6 +17,7 @@ import axios from "axios";
 import { API_URL } from "../../config";
 import { StatCard } from "../_partials/_ui/StatCard";
 import { StatusChip } from "../_partials/_ui/StatusChip";
+import { formatDistance } from "../_partials/_ui/formatDistance";
 import EditPlace from "../place/editPlace";
 import DeletePlace from "../place/deletePlace";
 import EditBallade from "../ballade/editBallade";
@@ -220,7 +221,7 @@ function Dashboard() {
                             ) : latestBallades.map(({id, ballade_name, ballade_description, ballade_image, ballade_latitude, ballade_longitude, ballade_website, distance, denivele, status, tags, user, created_at}) => (
                                 <TableRow hover key={id}>
                                     <TableCell sx={{ fontWeight: "bold" }}>{ballade_name ?? "--"}</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{distance != null ? `${distance} km` : "--"}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{formatDistance(distance) ?? "--"}</TableCell>
                                     <TableCell><StatusChip status={status ?? "publie"} /></TableCell>
                                     <TableCell sx={{ color: "text.secondary", fontSize: "13px", display: { xs: 'none', sm: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : "--"}</TableCell>
                                     <TableCell>

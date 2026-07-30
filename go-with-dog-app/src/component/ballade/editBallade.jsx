@@ -74,7 +74,7 @@ function EditBallade(props) {
             formData.append("ballade_latitude", ballade_latitude);
             formData.append("ballade_longitude", ballade_longitude);
             formData.append("denivele", denivele);
-            formData.append("distance", distance);
+            formData.append("distance", distance ? String(distance).replace(",", ".") : "");
             formData.append("status", status);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
             formData.append("ballade_website", ballade_website);
@@ -309,13 +309,15 @@ function EditBallade(props) {
                                   {...register(
                                   'distance',
                                    {
-                                     required: 'Ce champ est requis'
+                                     required: 'Ce champ est requis',
+                                     pattern: { value: /^\d+([.,]\d+)?$/, message: 'Distance invalide (ex. 8,4)' },
                                      }
                                     )}
-                                    type="number"
+                                    inputMode="decimal"
                                      onChange={(e) => setDistance(e.target.value)}
                                       sx={{mt: 5, height: 50}}
                                       label="Distance en km"
+                                      placeholder="Ex. 8,4"
                                       variant="standard"
                                        defaultValue={distance}
                                        />

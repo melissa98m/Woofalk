@@ -173,7 +173,7 @@ class ScrapeBalladeRando extends Command
     }
 
     /**
-     * @return array{name: string, description: string, street: string, postal_code: string, city: ?string, country: string, website: ?string, distance: ?int, denivele: ?int, tags: list<string>}|null
+     * @return array{name: string, description: string, street: string, postal_code: string, city: ?string, country: string, website: ?string, distance: ?float, denivele: ?int, tags: list<string>}|null
      */
     private function scrapeDetailPage(string $url, int $delay): ?array
     {
@@ -232,13 +232,13 @@ class ScrapeBalladeRando extends Command
      * Best-effort: matches "9,6km", "9 kms", "Distance : 12 km", etc.
      * Returns null (not 0) when no confident match is found.
      */
-    private function extractDistanceKm(string $description): ?int
+    private function extractDistanceKm(string $description): ?float
     {
         if (! preg_match('/(\d+(?:[.,]\d+)?)\s*kms?\b/iu', $description, $m)) {
             return null;
         }
 
-        return (int) round((float) str_replace(',', '.', $m[1]));
+        return round((float) str_replace(',', '.', $m[1]), 1);
     }
 
     /**

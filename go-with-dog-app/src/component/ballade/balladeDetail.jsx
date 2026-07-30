@@ -10,6 +10,7 @@ import marker from "../../assets/icon.svg";
 import { DetailStat } from "../_partials/_ui/DetailStat";
 import { LikeButton } from "../_partials/_ui/LikeButton";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
+import { formatDistance } from "../_partials/_ui/formatDistance";
 import { API_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
@@ -91,7 +92,7 @@ function BalladeDetail() {
         </Box>
 
         <Box sx={{ display: "flex", gap: "14px", flexWrap: "wrap", marginBottom: "32px" }}>
-            <DetailStat dotColor="sageDark" value={distance != null ? `${distance} km` : "Non renseignée"} label="Distance" />
+            <DetailStat dotColor="sageDark" value={formatDistance(distance) ?? "Non renseignée"} label="Distance" />
             <DetailStat dotColor="terracottaDark" value={denivele != null ? `+${denivele} m` : "Non renseigné"} label="Dénivelé" />
         </Box>
 
@@ -103,7 +104,7 @@ function BalladeDetail() {
             <Box sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "20px", padding: "20px", display: "flex", flexDirection: "column" }}>
                 <Typography variant="h3" sx={{ fontSize: "16px", marginBottom: "14px" }}>Infos pratiques</Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "16px" }}>
-                    <div><strong>Distance :</strong> {distance != null ? `${distance} km` : "non renseignée"}</div>
+                    <div><strong>Distance :</strong> {formatDistance(distance) ?? "non renseignée"}</div>
                     <div><strong>Dénivelé :</strong> {denivele != null ? `+${denivele} m` : "non renseigné"}</div>
                     {tags && tags.length > 0 ? <div><strong>Tags :</strong> {tags.map((t) => t.tag_name).join(", ")}</div> : null}
                     {ballade_website ? (

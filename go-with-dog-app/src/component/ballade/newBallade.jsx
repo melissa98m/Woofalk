@@ -81,7 +81,7 @@ function NewBallade() {
             formData.append("ballade_latitude", ballade_latitude);
             formData.append("ballade_longitude", ballade_longitude);
             formData.append("denivele", denivele);
-            formData.append("distance", distance);
+            formData.append("distance", distance ? String(distance).replace(",", ".") : "");
             formData.append("ballade_image", ballade_image);
             formData.append("ballade_website", ballade_website);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
@@ -239,7 +239,10 @@ function NewBallade() {
                                 control={control}
                                 render={() => (
                                     <TextField
-                                        {...register("distance", { required: "Ce champ est requis" })}
+                                        {...register("distance", {
+                                        required: "Ce champ est requis",
+                                        pattern: { value: /^\d+([.,]\d+)?$/, message: "Distance invalide (ex. 8,4)" },
+                                    })}
                                         id="distance"
                                         onChange={(e) => setDistance(e.target.value)}
                                         hiddenLabel
