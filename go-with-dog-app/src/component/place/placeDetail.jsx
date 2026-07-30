@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Breadcrumbs, Chip, Container, Typography } from "@mui/material";
 import { Link, useParams } from "react-router-dom";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
@@ -77,7 +78,14 @@ function PlaceDetail() {
             {tags && tags.length > 0 ? (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mt: 1.5 }}>
                     {tags.map((t) => (
-                        <Chip key={t.id} size="small" variant="outlined" label={`#${t.tag_name}`} />
+                        <Chip
+                            key={t.id}
+                            size="small"
+                            variant="outlined"
+                            label={`#${truncateLabel(t.tag_name)}`}
+                            title={t.tag_name}
+                            sx={{ color: t.color, borderColor: t.color }}
+                        />
                     ))}
                 </Box>
             ) : null}

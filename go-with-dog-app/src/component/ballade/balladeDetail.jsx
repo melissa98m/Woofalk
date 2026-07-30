@@ -8,6 +8,7 @@ import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { DetailStat } from "../_partials/_ui/DetailStat";
 import { LikeButton } from "../_partials/_ui/LikeButton";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { API_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
@@ -67,7 +68,14 @@ function BalladeDetail() {
                 {tags && tags.length > 0 ? (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                         {tags.map((t) => (
-                            <Chip key={t.id} label={`#${t.tag_name}`} sx={{ bgcolor: "coralSoft", color: "coral", fontWeight: 700 }} />
+                            <Chip
+                                key={t.id}
+                                size="small"
+                                variant="outlined"
+                                label={`#${truncateLabel(t.tag_name)}`}
+                                title={t.tag_name}
+                                sx={{ color: t.color, borderColor: t.color }}
+                            />
                         ))}
                     </Box>
                 ) : null}

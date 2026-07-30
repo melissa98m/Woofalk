@@ -18,10 +18,12 @@ import auth from "../../services/auth/token";
 import NewAddress from "../address/newAddress";
 import { PlaceCard } from "../_partials/_ui/PlaceCard";
 import { getReadableTextColor } from "../_partials/_ui/tagColor";
+import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { normalizeText } from "../../services/search/searchIndex";
 import { API_URL } from "../../config";
 
 const PAGE_SIZE = 9;
+const MAX_VISIBLE_FILTER_TAGS = 15;
 
 function Places() {
 
@@ -35,6 +37,7 @@ function Places() {
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [availableTags, setAvailableTags] = useState([]);
     const [selectedTags, setSelectedTags] = useState([]);
+    const [showAllTags, setShowAllTags] = useState(false);
     const [sortOrder, setSortOrder] = useState("");
     const [searchText, setSearchText] = useState(searchParams.get("search") ?? "");
     const [page, setPage] = useState(1);
@@ -202,14 +205,15 @@ function Places() {
                 <Box
                     role="group"
                     aria-label="Filtrer par tags"
-                    sx={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "24px" }}
+                    sx={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center", marginBottom: "24px" }}
                 >
-                    {availableTags.map((t) => {
+                    {(showAllTags ? availableTags : availableTags.slice(0, MAX_VISIBLE_FILTER_TAGS)).map((t) => {
                         const selected = selectedTags.includes(t.id);
                         return (
                             <Chip
                                 key={t.id}
-                                label={`#${t.tag_name}`}
+                                label={`#${truncateLabel(t.tag_name)}`}
+                                title={t.tag_name}
                                 size="small"
                                 clickable
                                 onClick={() => toggleTag(t.id)}
@@ -227,6 +231,15 @@ function Places() {
                             />
                         );
                     })}
+                    {availableTags.length > MAX_VISIBLE_FILTER_TAGS ? (
+                        <Button
+                            size="small"
+                            onClick={() => setShowAllTags((current) => !current)}
+                            aria-expanded={showAllTags}
+                        >
+                            {showAllTags ? "Voir moins" : `Voir plus (${availableTags.length - MAX_VISIBLE_FILTER_TAGS})`}
+                        </Button>
+                    ) : null}
                 </Box>
             ) : null}
 

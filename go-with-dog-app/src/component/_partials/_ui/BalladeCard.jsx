@@ -3,6 +3,9 @@ import { Box, Button, Card, CardActions, CardContent, CardMedia, Chip, Typograph
 import { Link } from "react-router-dom";
 import { API_URL } from "../../../config";
 import { LikeButton } from "./LikeButton";
+import { truncateLabel } from "./truncateLabel";
+
+const MAX_VISIBLE_TAGS = 3;
 
 // Shared walk ("ballade") listing card, used by the home page and the public ballades list.
 export function BalladeCard({ ballade }) {
@@ -39,9 +42,19 @@ export function BalladeCard({ ballade }) {
                 </Box>
                 {tags && tags.length > 0 ? (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mt: 1.5 }}>
-                        {tags.map((t) => (
-                            <Chip key={t.id} size="small" variant="outlined" label={`#${t.tag_name}`} />
+                        {tags.slice(0, MAX_VISIBLE_TAGS).map((t) => (
+                            <Chip
+                                key={t.id}
+                                size="small"
+                                variant="outlined"
+                                label={`#${truncateLabel(t.tag_name)}`}
+                                title={t.tag_name}
+                                sx={{ color: t.color, borderColor: t.color }}
+                            />
                         ))}
+                        {tags.length > MAX_VISIBLE_TAGS ? (
+                            <Chip size="small" variant="outlined" label={`+${tags.length - MAX_VISIBLE_TAGS}`} title={tags.slice(MAX_VISIBLE_TAGS).map((t) => t.tag_name).join(", ")} />
+                        ) : null}
                     </Box>
                 ) : null}
             </CardContent>
