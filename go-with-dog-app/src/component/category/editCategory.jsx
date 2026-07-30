@@ -1,4 +1,4 @@
-import {Box, Button, FormControl, Snackbar, TextField, Alert} from "@mui/material";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, TextField, Alert} from "@mui/material";
 import {Edit} from "@mui/icons-material";
 import {useState} from "react";
 import update from "immutability-helper";
@@ -12,6 +12,7 @@ import { API_URL } from "../../config";
 function EditCategory(props) {
     const [id, setID] = useState("");
     const [category_name, setName] = useState("");
+    const [scope, setScope] = useState(props.updateValue.scope ?? 'place');
     const [oneCategory, setOneCategory] = useState("");
     const [editCategory, setShowEdit] = useState(false);
     const [toast, setShowToast] = useState(false);
@@ -24,8 +25,9 @@ function EditCategory(props) {
             let updatedCategory = {
                 id: id ? id : parseInt(oneCategory.id),
                 category_name: oneCategory.category_name ? category_name : oneCategory.category_name,
+                scope: scope ? scope : oneCategory.scope,
             }
-            let res = await axios.patch(`${API_URL}/api/categories/`+oneCategory.id, {category_name}, {
+            let res = await axios.patch(`${API_URL}/api/categories/`+oneCategory.id, {category_name, scope}, {
                 "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
             });
             if (res.status === 200) {
@@ -48,7 +50,8 @@ function EditCategory(props) {
             icon={<Edit fontSize="small"/>}
             onClick={() => {
                 setShowEdit(true)
-                setOneCategory({id: props.updateValue.id, category_name: props.updateValue.category_name})
+                setOneCategory({id: props.updateValue.id, category_name: props.updateValue.category_name, scope: props.updateValue.scope})
+                setScope(props.updateValue.scope ?? 'place')
             }}>
               Modifier
           </RowActionButton>
@@ -77,6 +80,17 @@ function EditCategory(props) {
                             {errors.category_name ? (
                                 <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.category_name?.message}</Alert>
                             ) : ''}
+                        <InputLabel id="edit-category-scope-label" sx={{mt: 3}}>S'applique à</InputLabel>
+                        <Select
+                            labelId="edit-category-scope-label"
+                            id="edit-category-scope"
+                            value={scope}
+                            onChange={(e) => setScope(e.target.value)}
+                        >
+                            <MenuItem value="place">Lieux uniquement</MenuItem>
+                            <MenuItem value="hebergement">Hébergements uniquement</MenuItem>
+                            <MenuItem value="both">Lieux et hébergements</MenuItem>
+                        </Select>
                         <Box className="action-button">
                             <Button type="submit" sx={{m: 3}} variant="contained">Envoyer</Button>
                         </Box>

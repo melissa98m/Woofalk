@@ -1,4 +1,4 @@
-import {Box, Button, FormControl, Snackbar, TextField, Alert} from "@mui/material";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, TextField, Alert} from "@mui/material";
 import {useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
@@ -10,6 +10,7 @@ function NewCategory(props) {
 
     const [id, setID] = useState("");
     const [category_name, setName] = useState("");
+    const [scope, setScope] = useState("place");
     const [newCategory, setShowNew] = useState(false);
     // Handle Toast event
     const [toast, setShowToast] = useState(false);
@@ -18,15 +19,16 @@ function NewCategory(props) {
 
     let newCategoryForm = async () => {
         try {
-            let res = await axios.post(`${API_URL}/api/categories`, {category_name}, {
+            let res = await axios.post(`${API_URL}/api/categories`, {category_name, scope}, {
                 "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
             });
             if (res.status === 200) {
                 let tab = {};
                 await Object.assign(tab, res.data.data);
-                let data = update(props.newValue.data, {$push: [{id : tab.id, category_name: tab.category_name}]})
+                let data = update(props.newValue.data, {$push: [{id : tab.id, category_name: tab.category_name, scope: tab.scope}]})
                 props.handleDataChange(data);
                 setName("");
+                setScope("place");
                 setToastMessage({message: "Marque ajouté ! Vous pouvez en ajouter un autre", severity: "success"});
                 setShowToast(true);
             } else {
@@ -65,6 +67,17 @@ function NewCategory(props) {
                         {errors.category_name ? (
                             <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.category_name?.message}</Alert>
                         ) : ''}
+                        <InputLabel id="new-category-scope-label" sx={{mt: 3}}>S'applique à</InputLabel>
+                        <Select
+                            labelId="new-category-scope-label"
+                            id="new-category-scope"
+                            value={scope}
+                            onChange={(e) => setScope(e.target.value)}
+                        >
+                            <MenuItem value="place">Lieux uniquement</MenuItem>
+                            <MenuItem value="hebergement">Hébergements uniquement</MenuItem>
+                            <MenuItem value="both">Lieux et hébergements</MenuItem>
+                        </Select>
                         <Box className="action-button">
                             <Button type="submit" sx={{m: 3}} variant="contained">Envoyer</Button>
                         </Box>

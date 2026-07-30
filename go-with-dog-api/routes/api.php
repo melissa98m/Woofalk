@@ -6,6 +6,7 @@ use App\Http\Controllers\API\BalladeController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\ContactController;
 use App\Http\Controllers\API\ExportController;
+use App\Http\Controllers\API\HebergementController;
 use App\Http\Controllers\API\PlaceController;
 use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\UserController;
@@ -78,6 +79,20 @@ Route::controller(PlaceController::class)->group(function () {
     Route::delete('places/{place}/like', 'unlike')->middleware('auth:api');
     Route::patch('places/{place}', 'update')->middleware('auth:api');
     Route::delete('places/{place}', 'destroy')->middleware('auth:api');
+});
+Route::controller(HebergementController::class)->group(function () {
+    Route::get('hebergements', 'index');
+    Route::get('hebergements-user', 'byUser')->middleware('auth:api');
+    Route::get('hebergements-liked', 'likedByUser')->middleware('auth:api');
+    // Must precede hebergements/{hebergement} below, or "bulk*" gets swallowed as a {hebergement} id.
+    Route::patch('hebergements/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
+    Route::delete('hebergements/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
+    Route::get('hebergements/{hebergement}', 'show');
+    Route::post('hebergements', 'store')->middleware(['auth:api', 'throttle:api']);
+    Route::post('hebergements/{hebergement}/like', 'like')->middleware('auth:api');
+    Route::delete('hebergements/{hebergement}/like', 'unlike')->middleware('auth:api');
+    Route::patch('hebergements/{hebergement}', 'update')->middleware('auth:api');
+    Route::delete('hebergements/{hebergement}', 'destroy')->middleware('auth:api');
 });
 Route::controller(TagController::class)->group(function () {
     Route::get('tags', 'index');

@@ -23,7 +23,7 @@ import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
 import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
 
-const scopeLabels = {place: 'Lieux', ballade: 'Balades', both: 'Lieux et balades'};
+const scopeLabels = {place: 'Lieux', ballade: 'Balades', hebergement: 'Hébergements', both: 'Tout'};
 
 const getSortValue = (tag, key) => {
     switch (key) {

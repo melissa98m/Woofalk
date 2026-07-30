@@ -85,7 +85,8 @@ function NewTag(props) {
                         >
                             <MenuItem value="place">Lieux uniquement</MenuItem>
                             <MenuItem value="ballade">Balades uniquement</MenuItem>
-                            <MenuItem value="both">Lieux et balades</MenuItem>
+                            <MenuItem value="hebergement">Hébergements uniquement</MenuItem>
+                            <MenuItem value="both">Tout</MenuItem>
                         </Select>
                         <Box className="action-button">
                             <Button type="submit" sx={{m: 3}} variant="contained">Envoyer</Button>

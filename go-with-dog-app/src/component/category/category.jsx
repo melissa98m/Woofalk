@@ -22,7 +22,15 @@ import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
 import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
 
-const getSortValue = (category, key) => (key === "category_name" ? category.category_name : null);
+const scopeLabels = {place: 'Lieux', hebergement: 'Hébergements', both: 'Lieux et hébergements'};
+
+const getSortValue = (category, key) => {
+    switch (key) {
+        case "category_name": return category.category_name;
+        case "scope": return scopeLabels[category.scope] ?? scopeLabels.place;
+        default: return null;
+    }
+};
 
 function Category() {
 
@@ -161,15 +169,16 @@ function Category() {
                                 />
                             </TableCell>
                             <SortableTableCell sortKey="category_name" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
+                            <SortableTableCell sortKey="scope" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>S'applique à</SortableTableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {pageRows.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={3} sx={{ textAlign: "center", color: "text.secondary" }}>Aucune catégorie trouvée</TableCell>
+                                <TableCell colSpan={4} sx={{ textAlign: "center", color: "text.secondary" }}>Aucune catégorie trouvée</TableCell>
                             </TableRow>
-                        ) : pageRows.map(({id, category_name}) => {
+                        ) : pageRows.map(({id, category_name, scope}) => {
                             return (
                                 <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={category_name+id}>
                                     <TableCell padding="checkbox">
@@ -180,9 +189,10 @@ function Category() {
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{category_name}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{scopeLabels[scope] ?? scopeLabels.place}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                            <EditCategory updateValue={{id, category_name, data}} handleDataChange={handleDataChange} />
+                                            <EditCategory updateValue={{id, category_name, scope, data}} handleDataChange={handleDataChange} />
                                             <DeleteCategory deleteValue={{id, category_name, data}} handleDataChange={handleDataChange}/>
                                         </Box>
                                     </TableCell>

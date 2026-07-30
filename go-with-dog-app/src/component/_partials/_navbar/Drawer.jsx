@@ -11,6 +11,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import ApprovalIcon from "@mui/icons-material/Approval";
 import PushPinIcon from "@mui/icons-material/PushPin";
+import HotelOutlinedIcon from "@mui/icons-material/HotelOutlined";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ContactsIcon from "@mui/icons-material/Contacts";
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
@@ -19,6 +20,7 @@ const LINKS = [
     { to: "/", label: "Accueil", icon: HomeOutlinedIcon },
     { to: "/places", label: "Places", icon: PushPinIcon },
     { to: "/ballades", label: "Ballades", icon: ApprovalIcon },
+    { to: "/hebergements", label: "Hébergements", icon: HotelOutlinedIcon },
 ];
 
 function DrawerComponent() {

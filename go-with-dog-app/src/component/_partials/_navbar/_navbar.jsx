@@ -13,6 +13,7 @@ const NAV_LINKS = [
     { to: "/", label: "Accueil" },
     { to: "/places", label: "Places" },
     { to: "/ballades", label: "Ballades" },
+    { to: "/hebergements", label: "Hébergements" },
 ];
 
 export function Navbar() {

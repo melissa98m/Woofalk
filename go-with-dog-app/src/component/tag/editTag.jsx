@@ -103,7 +103,8 @@ const handleChange = (color) => {
                             >
                                 <MenuItem value="place">Lieux uniquement</MenuItem>
                                 <MenuItem value="ballade">Balades uniquement</MenuItem>
-                                <MenuItem value="both">Lieux et balades</MenuItem>
+                                <MenuItem value="hebergement">Hébergements uniquement</MenuItem>
+                                <MenuItem value="both">Tout</MenuItem>
                             </Select>
                        </FormControl>
                         </Grid>

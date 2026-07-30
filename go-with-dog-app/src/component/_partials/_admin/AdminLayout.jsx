@@ -3,6 +3,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import ApprovalIcon from "@mui/icons-material/Approval";
+import HotelOutlinedIcon from "@mui/icons-material/HotelOutlined";
 import CategoryIcon from "@mui/icons-material/Category";
 import TagIcon from "@mui/icons-material/Tag";
 import PersonIcon from "@mui/icons-material/Person";
@@ -14,6 +15,7 @@ const NAV_ITEMS = [
     { to: "/admin/dashboard", label: "Tableau de bord", icon: DashboardIcon },
     { to: "/admin/place", label: "Lieux", icon: PushPinIcon },
     { to: "/admin/ballade", label: "Balades", icon: ApprovalIcon },
+    { to: "/admin/hebergement", label: "Hébergements", icon: HotelOutlinedIcon },
     { to: "/admin/category", label: "Catégories", icon: CategoryIcon },
     { to: "/admin/tag", label: "Tags", icon: TagIcon },
     { to: "/admin/user", label: "Utilisateurs", icon: PersonIcon },

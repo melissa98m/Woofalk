@@ -15,11 +15,18 @@ class CategoryController extends Controller
      *
      * @return Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = DB::table('categories')
-            ->get()
-            ->toArray();
+        $request->validate([
+            'scope' => 'nullable|in:place,hebergement,both',
+        ]);
+
+        $query = DB::table('categories');
+        if ($request->filled('scope')) {
+            $query->whereIn('scope', [$request->scope, 'both']);
+        }
+
+        $categories = $query->get()->toArray();
 
         return response()->json(['status' => 'Success', 'data' => $categories]);
     }
@@ -33,9 +40,11 @@ class CategoryController extends Controller
     {
         $request->validate([
             'category_name' => 'required|max:50',
+            'scope' => 'nullable|in:place,hebergement,both',
         ]);
         $category = Category::create([
             'category_name' => $request->category_name,
+            'scope' => $request->scope ?? 'place',
         ]);
 
         return response()->json(['status' => 'Success', 'data' => $category]);
@@ -60,10 +69,15 @@ class CategoryController extends Controller
     {
         $this->validate($request, [
             'category_name' => 'required|max:50',
-
+            'scope' => 'nullable|in:place,hebergement,both',
         ]);
+        // Unlike tags.scope (a many-to-many pivot, safe to detach), category
+        // is a required single FK on places/hebergements — narrowing scope
+        // deliberately does NOT touch existing rows still pointing at this
+        // category, since nulling a NOT NULL column would break them.
         $category->update([
             'category_name' => $request->category_name,
+            'scope' => $request->scope ?? $category->scope,
         ]);
 
         return response()->json(['status' => 'Success', 'data' => $category]);

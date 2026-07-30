@@ -11,9 +11,11 @@ function loadIndex() {
         cachedIndexPromise = Promise.all([
             axios.get(`${API_URL}/api/places`),
             axios.get(`${API_URL}/api/ballades`),
-        ]).then(([placesRes, balladesRes]) => ({
+            axios.get(`${API_URL}/api/hebergements`),
+        ]).then(([placesRes, balladesRes, hebergementsRes]) => ({
             places: placesRes.data.data ?? [],
             ballades: balladesRes.data.data ?? [],
+            hebergements: hebergementsRes.data.data ?? [],
         })).catch((err) => {
             cachedIndexPromise = null; // allow a retry on the next call
             throw err;
@@ -25,7 +27,7 @@ function loadIndex() {
 // Loads the catalog lazily (on first focus of a search field, not on mount)
 // so pages that never touch search don't pay for it.
 export function useSearchIndex() {
-    const [index, setIndex] = useState({ places: [], ballades: [] });
+    const [index, setIndex] = useState({ places: [], ballades: [], hebergements: [] });
     const [loading, setLoading] = useState(false);
     const requestedRef = useRef(false);
 
@@ -77,5 +79,16 @@ export function buildSuggestions(query, index, limitPerType = 5) {
             to: `/ballades/${ballade.id}`,
         }));
 
-    return [...places, ...ballades];
+    const hebergements = (index.hebergements ?? [])
+        .filter((hebergement) => normalizeText([hebergement.hebergement_name, hebergement.category?.category_name, hebergement.address?.city].filter(Boolean).join(" ")).includes(q))
+        .slice(0, limitPerType)
+        .map((hebergement) => ({
+            type: "hebergement",
+            id: hebergement.id,
+            label: hebergement.hebergement_name,
+            secondary: [hebergement.category?.category_name, hebergement.address?.city].filter(Boolean).join(" · ") || undefined,
+            to: `/hebergements/${hebergement.id}`,
+        }));
+
+    return [...places, ...ballades, ...hebergements];
 }

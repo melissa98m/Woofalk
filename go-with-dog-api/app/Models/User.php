@@ -47,6 +47,16 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsToMany(Ballade::class, 'ballade_likes')->withTimestamps();
     }
 
+    public function hebergements()
+    {
+        return $this->hasMany(Hebergement::class, 'user');
+    }
+
+    public function likedHebergements()
+    {
+        return $this->belongsToMany(Hebergement::class, 'hebergement_likes')->withTimestamps();
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *

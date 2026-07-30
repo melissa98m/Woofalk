@@ -15,3 +15,6 @@ export const getLikedPlaces = () =>
 
 export const getLikedBallades = () =>
     axios.get(`${API_URL}/api/ballades-liked`, { headers: authHeaders() });
+
+export const getLikedHebergements = () =>
+    axios.get(`${API_URL}/api/hebergements-liked`, { headers: authHeaders() });

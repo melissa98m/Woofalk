@@ -32,6 +32,10 @@ const Ballades = lazy(() => import("./component/ballade/ballades"));
 const Ballade = lazy(() => import("./component/ballade/ballade"));
 const BalladeDetail = lazy(() => import("./component/ballade/balladeDetail"));
 const NewBallade = lazy(() => import("./component/ballade/newBallade"));
+const Hebergements = lazy(() => import("./component/hebergement/hebergements"));
+const Hebergement = lazy(() => import("./component/hebergement/hebergement"));
+const HebergementDetail = lazy(() => import("./component/hebergement/hebergementDetail"));
+const NewHebergement = lazy(() => import("./component/hebergement/newHebergement"));
 const Address = lazy(() => import("./component/address/address"));
 const Tag = lazy(() => import("./component/tag/tag"));
 const User = lazy(() => import("./component/user/user"));
@@ -79,12 +83,16 @@ function AppRoutes() {
             <Route exact path="ballades" element={<Ballades/>}>Ballades</Route>
             <Route exact path="ballades/new" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <NewBallade/> : <Home adminMessage='Non connecté'/>}>NewBallade</Route>
             <Route exact path="ballades/:id" element={<BalladeDetail/>}>BalladeDetail</Route>
+            <Route exact path="hebergements" element={<Hebergements/>}>Hebergements</Route>
+            <Route exact path="hebergements/new" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <NewHebergement/> : <Home adminMessage='Non connecté'/>}>NewHebergement</Route>
+            <Route exact path="hebergements/:id" element={<HebergementDetail/>}>HebergementDetail</Route>
             <Route exact path="recherche" element={<SearchResults/>}>Recherche</Route>
             <Route exact path="logout" element={<Logout/>}>Logout</Route>
             <Route path="admin" element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
                 <Route exact path="address" element={<Address/>}>Address</Route>
                 <Route exact path="place" element={<Place/>}>Place</Route>
                 <Route exact path="ballade" element={<Ballade/>}>Ballade</Route>
+                <Route exact path="hebergement" element={<Hebergement/>}>Hebergement</Route>
                 <Route exact path="category" element={<Category/>}>Categorie</Route>
                 <Route exact path="tag" element={<Tag/>}>Tag</Route>
                 <Route exact path="user" element={<User/>}>User</Route>

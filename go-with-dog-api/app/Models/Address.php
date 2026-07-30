@@ -8,19 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 class Address extends Model
 {
     use HasFactory;
+
     protected $casts = [
         'latitude' => 'float',
         'longitude' => 'float',
     ];
+
     protected $fillable = [
         'address',
         'postal_code',
         'city',
-        'latitude' ,
+        'latitude',
         'longitude'];
 
     public function places()
     {
         return $this->hasMany(Place::class);
+    }
+
+    public function hebergements()
+    {
+        return $this->hasMany(Hebergement::class);
     }
 }

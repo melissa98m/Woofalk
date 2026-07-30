@@ -18,7 +18,7 @@ class TagController extends Controller
     public function index(Request $request)
     {
         $request->validate([
-            'scope' => 'nullable|in:place,ballade,both',
+            'scope' => 'nullable|in:place,ballade,hebergement,both',
         ]);
 
         $query = DB::table('tags');
@@ -41,7 +41,7 @@ class TagController extends Controller
         $request->validate([
             'tag_name' => 'required|max:50',
             'color' => 'required|max:10',
-            'scope' => 'nullable|in:place,ballade,both',
+            'scope' => 'nullable|in:place,ballade,hebergement,both',
         ]);
         $tag = Tag::create([
             'tag_name' => $request->tag_name,
@@ -72,7 +72,7 @@ class TagController extends Controller
         $this->validate($request, [
             'tag_name' => 'required|max:50',
             'color' => 'required|max:10',
-            'scope' => 'nullable|in:place,ballade,both',
+            'scope' => 'nullable|in:place,ballade,hebergement,both',
 
         ]);
         $tag->update([
@@ -81,10 +81,14 @@ class TagController extends Controller
             'scope' => $request->scope ?? $tag->scope,
         ]);
 
-        if ($tag->scope === 'ballade') {
+        if ($tag->scope !== 'place' && $tag->scope !== 'both') {
             $tag->places()->detach();
-        } elseif ($tag->scope === 'place') {
+        }
+        if ($tag->scope !== 'ballade' && $tag->scope !== 'both') {
             $tag->ballades()->detach();
+        }
+        if ($tag->scope !== 'hebergement' && $tag->scope !== 'both') {
+            $tag->hebergements()->detach();
         }
 
         return response()->json(['status' => 'Success', 'data' => $tag]);

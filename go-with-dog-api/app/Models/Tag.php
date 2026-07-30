@@ -21,6 +21,11 @@ class Tag extends Model
         return $this->belongsToMany(Ballade::class);
     }
 
+    public function hebergements()
+    {
+        return $this->belongsToMany(Hebergement::class);
+    }
+
     /**
      * Find a tag by name, or create it with a random color for the given
      * scope. Shared by the import scrapers and any server-side auto-tagging
