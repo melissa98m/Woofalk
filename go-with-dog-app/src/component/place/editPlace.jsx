@@ -58,7 +58,7 @@ function EditPlace(props) {
     let getAlls = async () => {
         await axios.get(`${API_URL}/api/categories`).then((actualData) => { setCategories(actualData.data.data) });
         await axios.get(`${API_URL}/api/addresses`).then((actualData) => { setAddresses(actualData.data.data) });
-        await axios.get(`${API_URL}/api/tags`).then((actualData) => { setAvailableTags(actualData.data.data) });
+        await axios.get(`${API_URL}/api/tags?scope=place`).then((actualData) => { setAvailableTags(actualData.data.data) });
     }
 
     let editPlaceForm = async () => {

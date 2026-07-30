@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\tag;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
@@ -12,42 +13,51 @@ class TagController extends Controller
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tags = DB::table('tags')
-            ->get()
-            ->toArray();
+        $request->validate([
+            'scope' => 'nullable|in:place,ballade,both',
+        ]);
+
+        $query = DB::table('tags');
+        if ($request->filled('scope')) {
+            $query->whereIn('scope', [$request->scope, 'both']);
+        }
+
+        $tags = $query->get()->toArray();
+
         return response()->json(['status' => 'Success', 'data' => $tags]);
     }
 
     /**
      * Store a newly created resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
     public function store(Request $request)
     {
         $request->validate([
             'tag_name' => 'required|max:50',
-            'color' => 'required|max:10'
+            'color' => 'required|max:10',
+            'scope' => 'nullable|in:place,ballade,both',
         ]);
-        $tag = Tag::create([
+        $tag = tag::create([
             'tag_name' => $request->tag_name,
             'color' => $request->color,
+            'scope' => $request->scope ?? 'both',
         ]);
+
         return response()->json(['status' => 'Success', 'data' => $tag]);
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function show(Tag $tag)
+    public function show(tag $tag)
     {
         return response()->json($tag);
     }
@@ -55,33 +65,40 @@ class TagController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function update(Request $request, Tag $tag)
+    public function update(Request $request, tag $tag)
     {
         $this->validate($request, [
             'tag_name' => 'required|max:50',
-            'color' => 'required|max:10'
+            'color' => 'required|max:10',
+            'scope' => 'nullable|in:place,ballade,both',
 
         ]);
         $tag->update([
             'tag_name' => $request->tag_name,
-            'color' =>$request->color,
+            'color' => $request->color,
+            'scope' => $request->scope ?? $tag->scope,
         ]);
+
+        if ($tag->scope === 'ballade') {
+            $tag->places()->detach();
+        } elseif ($tag->scope === 'place') {
+            $tag->ballades()->detach();
+        }
+
         return response()->json(['status' => 'Success', 'data' => $tag]);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\Tag  $tag
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function destroy(Tag $tag)
+    public function destroy(tag $tag)
     {
         $tag->delete();
+
         return response()->json(['status' => 'Supprimer avec succès']);
     }
 }

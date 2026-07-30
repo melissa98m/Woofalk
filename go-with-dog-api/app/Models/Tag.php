@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Tag extends Model
 {
     use HasFactory;
-    protected $fillable = ['tag_name' , 'color'];
+
+    protected $fillable = ['tag_name', 'color', 'scope'];
 
     public function places()
     {

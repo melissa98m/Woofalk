@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PlaceController extends Controller
 {
@@ -131,7 +132,10 @@ class PlaceController extends Controller
             'address' => 'required',
             'status' => 'nullable|in:publie,en_attente',
             'tags' => 'nullable|array',
-            'tags.*' => 'integer|exists:tags,id',
+            'tags.*' => [
+                'integer',
+                Rule::exists('tags', 'id')->where(fn ($query) => $query->whereIn('scope', ['place', 'both'])),
+            ],
         ]);
         if ($request->hasFile('place_image')) {
             $filename = $this->getFilename($request);
@@ -194,7 +198,10 @@ class PlaceController extends Controller
             'address' => 'required',
             'status' => 'nullable|in:publie,en_attente',
             'tags' => 'nullable|array',
-            'tags.*' => 'integer|exists:tags,id',
+            'tags.*' => [
+                'integer',
+                Rule::exists('tags', 'id')->where(fn ($query) => $query->whereIn('scope', ['place', 'both'])),
+            ],
         ]);
         if ($request->hasFile('place_image')) {
             if (Place::findOrFail($place->id)->place_image) {

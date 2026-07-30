@@ -53,7 +53,7 @@ function Places() {
         }).finally(() => {
             setLoading(false);
         });
-        axios.get(`${API_URL}/api/tags`).then((res) => setAvailableTags(res.data.data));
+        axios.get(`${API_URL}/api/tags?scope=place`).then((res) => setAvailableTags(res.data.data));
     }, []);
 
     const handleDataChange = async (dataChange) => {

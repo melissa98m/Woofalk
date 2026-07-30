@@ -1,4 +1,4 @@
-import {Box, Button, FormControl, Snackbar, TextField, Typography, Alert , Grid} from "@mui/material";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, TextField, Typography, Alert , Grid} from "@mui/material";
 import {Edit} from "@mui/icons-material";
 import {useState} from "react";
 import update from "immutability-helper";
@@ -12,6 +12,7 @@ function EditTag(props) {
     const [id, setID] = useState("");
     const [tag_name, setName] = useState("");
     const [color, setColor] = useState('#ffffff');
+    const [scope, setScope] = useState(props.updateValue.scope ?? 'both');
     const [oneTag, setOneTag] = useState("");
     const [editTag, setShowEdit] = useState(false);
     const [toast, setShowToast] = useState(false);
@@ -27,9 +28,10 @@ function EditTag(props) {
             let updatedTag = {
                 id: id ? id : parseInt(oneTag.id),
                 tag_name:tag_name ? tag_name : oneTag.tag_name,
-                color: color ? color : oneTag.color
+                color: color ? color : oneTag.color,
+                scope: scope ? scope : oneTag.scope
             }
-            let res = await axios.patch(`${API_URL}/api/tags/` + oneTag.id, {tag_name, color} , {
+            let res = await axios.patch(`${API_URL}/api/tags/` + oneTag.id, {tag_name, color, scope} , {
                 "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
             })
             if (res.status === 200) {
@@ -56,7 +58,8 @@ const handleChange = (color) => {
             icon={<Edit fontSize="small"/>}
             onClick={() => {
                 setShowEdit(true)
-                setOneTag({id: props.updateValue.id, tag_name: props.updateValue.tag_name , color: props.updateValue.color})
+                setOneTag({id: props.updateValue.id, tag_name: props.updateValue.tag_name , color: props.updateValue.color, scope: props.updateValue.scope})
+                setScope(props.updateValue.scope ?? 'both')
             }}>
               Modifier
           </RowActionButton>
@@ -91,6 +94,17 @@ const handleChange = (color) => {
                             <Typography variant="body1">Couleur :</Typography>
                             <input type="color" id="color" name="color" required className="color-picker"
                             value={color} onChange={(e) => setColor(e.target.value)} label="Couleur"/>
+                            <InputLabel id="edit-tag-scope-label" sx={{mt: 3}}>S'applique à</InputLabel>
+                            <Select
+                                labelId="edit-tag-scope-label"
+                                id="edit-tag-scope"
+                                value={scope}
+                                onChange={(e) => setScope(e.target.value)}
+                            >
+                                <MenuItem value="place">Lieux uniquement</MenuItem>
+                                <MenuItem value="ballade">Balades uniquement</MenuItem>
+                                <MenuItem value="both">Lieux et balades</MenuItem>
+                            </Select>
                        </FormControl>
                         </Grid>
                         <Grid item xs={12} className="action-button" sx={{ minwidth: '100%' , textAlign: 'center'}}>

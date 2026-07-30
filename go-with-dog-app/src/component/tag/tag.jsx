@@ -62,6 +62,8 @@ function Tag() {
         }
     }
 
+    const scopeLabels = {place: 'Lieux', ballade: 'Balades', both: 'Lieux et balades'};
+
     return <Box id="tag">
         <AdminResourceLayout
             title="Tags des ballades"
@@ -84,11 +86,12 @@ function Tag() {
                         <TableRow>
                             <TableCell>Nom</TableCell>
                             <TableCell>Couleur</TableCell>
+                            <TableCell>S'applique à</TableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, tag_name , color}) => {
+                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(({id, tag_name , color, scope}) => {
                             return (
                                 <TableRow hover role="checkbox" tabIndex={-1} key={id}>
                                     <TableCell sx={{fontWeight: 'bold'}}>{tag_name}</TableCell>
@@ -98,9 +101,10 @@ function Tag() {
                                             <Typography variant="body2" color="text.secondary">{color}</Typography>
                                         </Box>
                                     </TableCell>
+                                    <TableCell>{scopeLabels[scope] ?? scopeLabels.both}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                            <EditTag updateValue={{id, tag_name,color, data}} handleDataChange={handleDataChange} />
+                                            <EditTag updateValue={{id, tag_name,color, scope, data}} handleDataChange={handleDataChange} />
                                             <DeleteTag deleteValue={{id, tag_name, data}} handleDataChange={handleDataChange}/>
                                         </Box>
                                     </TableCell>

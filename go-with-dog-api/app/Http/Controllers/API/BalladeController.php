@@ -10,6 +10,7 @@ use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class BalladeController extends Controller
 {
@@ -149,7 +150,10 @@ class BalladeController extends Controller
             'ballade_longitude' => 'required|numeric|between:-180,180',
             'status' => 'nullable|in:publie,en_attente',
             'tags' => 'nullable|array',
-            'tags.*' => 'integer|exists:tags,id',
+            'tags.*' => [
+                'integer',
+                Rule::exists('tags', 'id')->where(fn ($query) => $query->whereIn('scope', ['ballade', 'both'])),
+            ],
         ]);
         if ($request->hasFile('ballade_image')) {
             $filename = $this->getFilename($request);
@@ -212,7 +216,10 @@ class BalladeController extends Controller
             'ballade_longitude' => 'required|numeric|between:-180,180',
             'status' => 'nullable|in:publie,en_attente',
             'tags' => 'nullable|array',
-            'tags.*' => 'integer|exists:tags,id',
+            'tags.*' => [
+                'integer',
+                Rule::exists('tags', 'id')->where(fn ($query) => $query->whereIn('scope', ['ballade', 'both'])),
+            ],
         ]);
 
         if ($request->hasFile('ballade_image')) {

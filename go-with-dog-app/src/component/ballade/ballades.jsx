@@ -52,7 +52,7 @@ function Ballades() {
         }).finally(() => {
             setLoading(false);
         });
-        axios.get(`${API_URL}/api/tags`).then((res) => setAvailableTags(res.data.data));
+        axios.get(`${API_URL}/api/tags?scope=ballade`).then((res) => setAvailableTags(res.data.data));
     }, []);
 
     const toggleTag = (tagId) => {

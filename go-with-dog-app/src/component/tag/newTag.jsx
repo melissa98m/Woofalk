@@ -1,4 +1,4 @@
-import {Box, Button, FormControl, Snackbar, TextField, Typography, Alert} from "@mui/material";
+import {Box, Button, FormControl, InputLabel, MenuItem, Select, Snackbar, TextField, Typography, Alert} from "@mui/material";
 import {useState} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
@@ -11,6 +11,7 @@ function NewTag(props) {
     const [id, setID] = useState("");
     const [ tag_name, setName] = useState("");
     const [color , setColor] = useState("")
+    const [scope, setScope] = useState("both");
     const [newTag, setShowNew] = useState(false);
     // Handle Toast event
     const [toast, setShowToast] = useState(false);
@@ -22,16 +23,17 @@ function NewTag(props) {
 
     let newTagForm = async () => {
         try {
-            let res = await axios.post(`${API_URL}/api/tags`, {tag_name , color} , {
+            let res = await axios.post(`${API_URL}/api/tags`, {tag_name , color, scope} , {
                 "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
             })
             if (res.status === 200) {
                 let tab = {};
                 await Object.assign(tab, res.data.data);
-                let data = update(props.newValue.data, {$push: [{id : tab.id, tag_name: tab.tag_name , color: tab.color}]})
+                let data = update(props.newValue.data, {$push: [{id : tab.id, tag_name: tab.tag_name , color: tab.color, scope: tab.scope}]})
                 props.handleDataChange(data);
                 setName("");
                 setColor("");
+                setScope("both");
                 setToastMessage({message: "Tag ajouté ! Vous pouvez en ajouter un autre", severity: "success"});
                 setShowToast(true);
             } else {
@@ -74,6 +76,17 @@ function NewTag(props) {
                          <Typography variant="body1">Couleur :</Typography>
                         <input type="color" id="color" name="color" required className="color-picker"
                              value={color} onChange={(e) => setColor(e.target.value)} label="Couleur"/>
+                        <InputLabel id="new-tag-scope-label" sx={{mt: 3}}>S'applique à</InputLabel>
+                        <Select
+                            labelId="new-tag-scope-label"
+                            id="new-tag-scope"
+                            value={scope}
+                            onChange={(e) => setScope(e.target.value)}
+                        >
+                            <MenuItem value="place">Lieux uniquement</MenuItem>
+                            <MenuItem value="ballade">Balades uniquement</MenuItem>
+                            <MenuItem value="both">Lieux et balades</MenuItem>
+                        </Select>
                         <Box className="action-button">
                             <Button type="submit" sx={{m: 3}} variant="contained">Envoyer</Button>
                         </Box>

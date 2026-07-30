@@ -59,7 +59,7 @@ function NewPlace() {
     useEffect(() => {
         axios.get(`${API_URL}/api/categories`).then((res) => setCategories(res.data.data));
         axios.get(`${API_URL}/api/addresses`).then((res) => setAddresses(res.data.data));
-        axios.get(`${API_URL}/api/tags`).then((res) => setAvailableTags(res.data.data));
+        axios.get(`${API_URL}/api/tags?scope=place`).then((res) => setAvailableTags(res.data.data));
     }, []);
 
     let reset = () => {
