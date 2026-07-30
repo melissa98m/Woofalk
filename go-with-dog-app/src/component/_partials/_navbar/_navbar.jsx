@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, useTheme, useMediaQuery } from "@mui/material";
+import { AppBar, Box, Button, Typography, useTheme, useMediaQuery } from "@mui/material";
 import { Link, useLocation } from "react-router-dom";
 import { SwitchModeButton } from "../_theme/_switchModeButton";
 import "../../../assets/css/component/_partials/_navbar.scss";
@@ -62,8 +62,21 @@ export function Navbar() {
                     padding: "10px 24px",
                 }}
             >
-                <Box component={Link} to="/" aria-label="Accueil Go with dog" sx={{ display: "flex", alignItems: "center", flexShrink: 0, justifySelf: "start" }}>
+                <Box component={Link} to="/" aria-label="Accueil Go with dog" sx={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, justifySelf: "start", textDecoration: "none" }}>
                     <Box component="img" alt="Go with dog" src={Logo} id="logo" />
+                    <Typography
+                        component="span"
+                        sx={{
+                            fontFamily: "'Fredoka', sans-serif",
+                            fontWeight: 600,
+                            fontSize: { xs: "1.15rem", sm: "1.4rem" },
+                            color: "terracottaDark",
+                            letterSpacing: "0.02em",
+                            whiteSpace: "nowrap",
+                        }}
+                    >
+                        Go with dog
+                    </Typography>
                 </Box>
 
                 {isMobile ? (

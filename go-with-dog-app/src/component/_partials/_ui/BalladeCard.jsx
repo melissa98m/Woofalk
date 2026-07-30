@@ -7,10 +7,18 @@ import { truncateLabel } from "./truncateLabel";
 
 const MAX_VISIBLE_TAGS = 3;
 
+// Difficulty/length tags are auto-assigned server-side (see Ballade::difficultyAndLengthTagNames)
+// from dénivelé/distance; reuse their color to tint the corresponding chip's border.
+const DENIVELE_TAG_NAMES = ["Facile", "Moyen", "Difficile"];
+const DISTANCE_TAG_NAMES = ["Court", "Long"];
+
 // Shared walk ("ballade") listing card, used by the home page and the public ballades list.
 export function BalladeCard({ ballade }) {
     const { id, ballade_name, ballade_image, tags, denivele, distance, is_liked, likes_count } = ballade;
     const [like, setLike] = useState({ liked: !!is_liked, count: likes_count ?? 0 });
+
+    const deniveleTag = tags?.find((t) => DENIVELE_TAG_NAMES.includes(t.tag_name));
+    const distanceTag = tags?.find((t) => DISTANCE_TAG_NAMES.includes(t.tag_name));
 
     return (
         <Card component="article">
@@ -37,8 +45,20 @@ export function BalladeCard({ ballade }) {
                     {ballade_name}
                 </Typography>
                 <Box sx={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-                    <Chip size="small" variant="outlined" label={`${distance} km`} />
-                    <Chip size="small" variant="outlined" label={`+${denivele} m`} />
+                    <Chip
+                        size="small"
+                        variant="outlined"
+                        label={distance != null ? `${distance} km` : "Distance non renseignée"}
+                        title={distanceTag?.tag_name}
+                        sx={distanceTag ? { borderColor: distanceTag.color, borderWidth: 2 } : undefined}
+                    />
+                    <Chip
+                        size="small"
+                        variant="outlined"
+                        label={denivele != null ? `+${denivele} m` : "Dénivelé non renseigné"}
+                        title={deniveleTag?.tag_name}
+                        sx={deniveleTag ? { borderColor: deniveleTag.color, borderWidth: 2 } : undefined}
+                    />
                 </Box>
                 {tags && tags.length > 0 ? (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: "6px", mt: 1.5 }}>

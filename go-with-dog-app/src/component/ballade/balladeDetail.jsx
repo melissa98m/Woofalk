@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Box, Breadcrumbs, Chip, Container, Typography } from "@mui/material";
+import { Language } from "@mui/icons-material";
 import { Link, useParams } from "react-router-dom";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -47,7 +48,7 @@ function BalladeDetail() {
         </Container>;
     }
 
-    const { ballade_name, ballade_description, ballade_image, tags, ballade_latitude, ballade_longitude, denivele, distance } = ballade;
+    const { ballade_name, ballade_description, ballade_image, ballade_website, tags, ballade_latitude, ballade_longitude, denivele, distance } = ballade;
 
     return <Container maxWidth="xl" id="ballade-detail" sx={{ px: { xs: 1, sm: 1.5, md: 2 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
@@ -90,8 +91,8 @@ function BalladeDetail() {
         </Box>
 
         <Box sx={{ display: "flex", gap: "14px", flexWrap: "wrap", marginBottom: "32px" }}>
-            <DetailStat dotColor="sageDark" value={`${distance} km`} label="Distance" />
-            <DetailStat dotColor="terracottaDark" value={`+${denivele} m`} label="Dénivelé" />
+            <DetailStat dotColor="sageDark" value={distance != null ? `${distance} km` : "Non renseignée"} label="Distance" />
+            <DetailStat dotColor="terracottaDark" value={denivele != null ? `+${denivele} m` : "Non renseigné"} label="Dénivelé" />
         </Box>
 
         <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", md: "1.5fr 1fr" }, gap: "32px" }}>
@@ -102,9 +103,24 @@ function BalladeDetail() {
             <Box sx={{ bgcolor: "background.paper", border: "1px solid", borderColor: "divider", borderRadius: "20px", padding: "20px", display: "flex", flexDirection: "column" }}>
                 <Typography variant="h3" sx={{ fontSize: "16px", marginBottom: "14px" }}>Infos pratiques</Typography>
                 <Box sx={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "14px", marginBottom: "16px" }}>
-                    <div><strong>Distance :</strong> {distance} km</div>
-                    <div><strong>Dénivelé :</strong> +{denivele} m</div>
+                    <div><strong>Distance :</strong> {distance != null ? `${distance} km` : "non renseignée"}</div>
+                    <div><strong>Dénivelé :</strong> {denivele != null ? `+${denivele} m` : "non renseigné"}</div>
                     {tags && tags.length > 0 ? <div><strong>Tags :</strong> {tags.map((t) => t.tag_name).join(", ")}</div> : null}
+                    {ballade_website ? (
+                        <div>
+                            <strong>Site web :</strong>{" "}
+                            <Typography
+                                component="a"
+                                href={ballade_website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                aria-label={`Visiter le site officiel de ${ballade_name} (nouvel onglet)`}
+                                sx={{ color: "primary.main", display: "inline-flex", alignItems: "center", gap: "4px" }}
+                            >
+                                Visiter le site <Language fontSize="inherit" aria-hidden="true" />
+                            </Typography>
+                        </div>
+                    ) : null}
                 </Box>
                 <Box
                     role="img"

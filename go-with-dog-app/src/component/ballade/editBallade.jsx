@@ -32,6 +32,7 @@ function EditBallade(props) {
     const [distance , setDistance] = useState(props.updateValue.distance);
     const [ denivele , setDenivele] = useState(props.updateValue.denivele);
     const [cImage, setCImage] = useState(props.updateValue.ballade_image);
+    const [ballade_website, setWebsite] = useState(props.updateValue.ballade_website || '');
     const [status, setStatus] = useState(props.updateValue.status || 'publie');
 
     // One of ...
@@ -53,6 +54,7 @@ function EditBallade(props) {
         distance: props.updateValue.distance,
         denivele: props.updateValue.denivele,
         ballade_image: props.updateValue.ballade_image,
+        ballade_website: props.updateValue.ballade_website,
     } });
 
     useEffect( () => {
@@ -75,6 +77,7 @@ function EditBallade(props) {
             formData.append("distance", distance);
             formData.append("status", status);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
+            formData.append("ballade_website", ballade_website);
             if (ballade_image){
                 formData.append("ballade_image", ballade_image);
             }
@@ -114,9 +117,11 @@ function EditBallade(props) {
                     denivele: props.updateValue.denivele,
                     distance: props.updateValue.distance,
                     ballade_image: props.updateValue.ballade_image,
+                    ballade_website: props.updateValue.ballade_website,
                     tags: props.updateValue.tags,
                 })
                 setCImage(props.updateValue.ballade_image);
+                setWebsite(props.updateValue.ballade_website || '');
             }}>
               Modifier
           </RowActionButton>
@@ -235,6 +240,30 @@ function EditBallade(props) {
                             />
                             {errors.ballade_image ? (
                                 <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_image?.message}</Alert>
+                            ) : ''}
+
+                            <Controller
+                              name="ballade_website"
+                              control={control}
+                              render={() => (
+                                  <TextField
+                                   {...register(
+                                       'ballade_website',
+                                       {
+                                           pattern: {value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://"}
+                                       }
+                                   )}
+                                   type="url"
+                                   onChange={(e) => setWebsite(e.target.value)}
+                                   sx={{mt: 5, height: 50}}
+                                   label="Site web (optionnel)"
+                                   variant="standard"
+                                   defaultValue={ballade_website}
+                                />
+                              )}
+                            />
+                            {errors.ballade_website ? (
+                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_website?.message}</Alert>
                             ) : ''}
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex',flexDirection: 'column'}}>

@@ -3,39 +3,42 @@
 namespace App\Console\Commands;
 
 use App\Console\Commands\Concerns\ScrapesEmmeneTonChien;
-use App\Models\Address;
-use App\Models\Category;
-use App\Models\Place;
+use App\Models\Ballade;
 use App\Models\Tag;
 use Illuminate\Console\Command;
 use Symfony\Component\DomCrawler\Crawler;
 
 /**
- * One-off/rerunnable import: scrapes the public "visite-chien-accepte" listing
- * directory on emmenetonchien.com and inserts matching places into our own
- * `places`/`addresses` table.
+ * One-off/rerunnable import: scrapes the public "balade-rando-avec-un-chien"
+ * listing directory on emmenetonchien.com and inserts matching walks into our
+ * own `ballades` table.
  *
- * Deliberately does NOT copy photos (potential copyright issue — the images
- * belong to the listed venues or to emmenetonchien.com, not to us) and does
- * NOT import places outside France (our only geocoder, the BAN API, only
- * covers France, so we'd have no reliable lat/lng for them).
+ * Unlike the place fiches, distance/dénivelé are never structured data here —
+ * they only ever show up (inconsistently, and often not at all) as free text
+ * inside the description ("Boucle de 9 kms", "dénivelé positif est de 128m",
+ * or nothing at all for a park/viewpoint). Best-effort regex extraction is
+ * used and left null when not confidently found, rather than skipping the
+ * ballade or guessing a misleading 0.
+ *
+ * Same policy as the place scraper otherwise: no photos copied, no listings
+ * outside France (BAN geocoder is France-only).
  */
-class ScrapeEmmeneTonChien extends Command
+class ScrapeBalladeRando extends Command
 {
     use ScrapesEmmeneTonChien;
 
-    protected $signature = 'scrape:emmenetonchien
+    protected $signature = 'scrape:balade-rando
         {--pages= : Max number of listing pages to crawl (default: all of them)}
-        {--limit= : Max number of places to actually import}
+        {--limit= : Max number of ballades to actually import}
         {--delay=1 : Seconds to wait between requests to emmenetonchien.com}
         {--publish : Import with status=publie instead of the default en_attente (pending review)}
         {--dry-run : Parse and report what would be imported, without writing to the database}';
 
-    protected $description = "Import dog-friendly places from emmenetonchien.com's visite-chien-accepte directory";
+    protected $description = "Import dog-friendly walks from emmenetonchien.com's balade-rando-avec-un-chien directory";
 
     protected function baseUrl(): string
     {
-        return 'https://emmenetonchien.com/fiches/visite-chien-accepte/';
+        return 'https://emmenetonchien.com/fiches/balade-rando-avec-un-chien/';
     }
 
     private int $imported = 0;
@@ -101,7 +104,7 @@ class ScrapeEmmeneTonChien extends Command
                 continue;
             }
 
-            if ($this->placeAlreadyExists($data['name'])) {
+            if ($this->balladeAlreadyExists($data['name'])) {
                 $this->line('  ignoré (déjà importé précédemment)');
                 $this->skippedDuplicate++;
 
@@ -123,47 +126,38 @@ class ScrapeEmmeneTonChien extends Command
                 continue;
             }
 
+            $tags = array_values(array_unique(array_merge(
+                $data['tags'],
+                Ballade::difficultyAndLengthTagNames($data['distance'], $data['denivele'])
+            )));
+
             if ($dryRun) {
                 $website = $data['website'] ? " site: {$data['website']}" : '';
-                $tags = $data['tags'] ? ' tags: '.implode(', ', $data['tags']) : '';
-                $this->line("  -> importerait « {$data['name']} » [{$data['category']}] ({$data['city']}, {$coords['lat']}, {$coords['lng']}){$website}{$tags}");
+                $tagList = $tags ? ' tags: '.implode(', ', $tags) : '';
+                $distance = $data['distance'] !== null ? "{$data['distance']} km" : 'non renseignée';
+                $denivele = $data['denivele'] !== null ? "+{$data['denivele']} m" : 'non renseigné';
+                $this->line("  -> importerait « {$data['name']} » ({$data['city']}, {$coords['lat']}, {$coords['lng']}) distance: {$distance} dénivelé: {$denivele}{$website}{$tagList}");
                 $this->imported++;
 
                 continue;
             }
 
-            $address = Address::create([
-                'address' => $data['street'],
-                'postal_code' => $data['postal_code'],
-                'city' => $data['city'],
-                'latitude' => $coords['lat'],
-                'longitude' => $coords['lng'],
-            ]);
-
-            $category = Category::firstOrCreate(['category_name' => $data['category']]);
-
-            $place = Place::create([
-                'place_name' => $data['name'],
-                'place_description' => $data['description'],
-                'place_image' => null,
-                'place_website' => $data['website'],
+            $ballade = Ballade::create([
+                'ballade_name' => $data['name'],
+                'ballade_description' => $data['description'],
+                'distance' => $data['distance'],
+                'denivele' => $data['denivele'],
+                'ballade_image' => null,
+                'ballade_website' => $data['website'],
+                'ballade_latitude' => $coords['lat'],
+                'ballade_longitude' => $coords['lng'],
                 'user' => null,
-                'address' => $address->id,
-                'category' => $category->id,
                 'status' => $this->option('publish') ? 'publie' : 'en_attente',
             ]);
 
-            if ($data['tags']) {
-                $tagIds = array_map(
-                    // scope 'place': these amenities only ever come from this
-                    // place scraper, never from a ballade one.
-                    fn (string $tagName) => Tag::firstOrCreate(
-                        ['tag_name' => $tagName],
-                        ['color' => $this->randomHexColor(), 'scope' => 'place']
-                    )->id,
-                    $data['tags']
-                );
-                $place->tags()->sync($tagIds);
+            if ($tags) {
+                $tagIds = array_map(fn (string $tagName) => Tag::firstOrCreateForScope($tagName, 'ballade')->id, $tags);
+                $ballade->tags()->sync($tagIds);
             }
 
             $this->imported++;
@@ -179,7 +173,7 @@ class ScrapeEmmeneTonChien extends Command
     }
 
     /**
-     * @return array{name: string, description: string, street: string, postal_code: string, city: ?string, country: string, website: ?string, category: string, tags: list<string>}|null
+     * @return array{name: string, description: string, street: string, postal_code: string, city: ?string, country: string, website: ?string, distance: ?int, denivele: ?int, tags: list<string>}|null
      */
     private function scrapeDetailPage(string $url, int $delay): ?array
     {
@@ -190,20 +184,16 @@ class ScrapeEmmeneTonChien extends Command
             ? trim($crawler->filter('h1.title')->first()->text())
             : null;
 
-        $category = $crawler->filter('.cat-name')->count() > 0
-            ? trim($crawler->filter('.cat-name')->first()->text())
-            : null;
-
         $street = $this->firstItempropText($crawler, 'streetAddress');
         $postalCode = $this->firstItempropText($crawler, 'postalCode');
-        // addressLocality (city) is absent on some foreign (Belgian) listings —
-        // kept optional here so those are reported as "hors France", not a
+        // addressLocality (city) is absent on some foreign listings — kept
+        // optional here so those are reported as "hors France", not a
         // generic parsing error; France listings always carry it.
         $city = $this->firstItempropText($crawler, 'addressLocality');
         $country = $this->firstItempropText($crawler, 'addressCountry');
         $website = $this->firstItempropText($crawler, 'url');
 
-        if (! $name || ! $street || ! $postalCode || ! $country || ! $category) {
+        if (! $name || ! $street || ! $postalCode || ! $country) {
             return null;
         }
 
@@ -218,8 +208,8 @@ class ScrapeEmmeneTonChien extends Command
             $description = $name;
         }
 
-        // Each amenity ("Les critères Qualidog", "Autres services sur place", …)
-        // becomes one of our tags.
+        // Some balades also carry the "Qualidog criteria" amenities block
+        // seen on place fiches; most don't, in which case this is just empty.
         $tags = $crawler->filter('.amenities-list.clearfix .name')
             ->each(fn (Crawler $n) => trim($n->text()));
         $tags = array_values(array_unique(array_filter($tags, fn (string $t) => $t !== '')));
@@ -232,13 +222,47 @@ class ScrapeEmmeneTonChien extends Command
             'city' => $city,
             'country' => $country,
             'website' => $website,
-            'category' => $category,
+            'distance' => $this->extractDistanceKm($description),
+            'denivele' => $this->extractDeniveleM($description),
             'tags' => $tags,
         ];
     }
 
-    private function placeAlreadyExists(string $name): bool
+    /**
+     * Best-effort: matches "9,6km", "9 kms", "Distance : 12 km", etc.
+     * Returns null (not 0) when no confident match is found.
+     */
+    private function extractDistanceKm(string $description): ?int
     {
-        return Place::whereRaw('LOWER(place_name) = ?', [mb_strtolower(trim($name))])->exists();
+        if (! preg_match('/(\d+(?:[.,]\d+)?)\s*kms?\b/iu', $description, $m)) {
+            return null;
+        }
+
+        return (int) round((float) str_replace(',', '.', $m[1]));
+    }
+
+    /**
+     * Best-effort: matches "dénivelé positif est de 184m", "dénivelé: 128m",
+     * or the reversed "171 m de dénivelé". Deliberately anchored on the word
+     * "dénivelé" itself, not just any "X m" (a waterfall height or a statue
+     * height in the same description would otherwise false-positive).
+     * Returns null (not 0) when no confident match is found.
+     */
+    private function extractDeniveleM(string $description): ?int
+    {
+        if (preg_match('/d[ée]nivel[ée]?\s*(?:positif|n[ée]gatif)?\s*(?:est\s*(?:de\s*)?|:\s*|de\s*)?\+?\s*(\d+)\s*m\b/iu', $description, $m)) {
+            return (int) $m[1];
+        }
+
+        if (preg_match('/(\d+)\s*m\s*de\s*d[ée]nivel[ée]?/iu', $description, $m)) {
+            return (int) $m[1];
+        }
+
+        return null;
+    }
+
+    private function balladeAlreadyExists(string $name): bool
+    {
+        return Ballade::whereRaw('LOWER(ballade_name) = ?', [mb_strtolower(trim($name))])->exists();
     }
 }

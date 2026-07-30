@@ -91,9 +91,19 @@ function Ballades() {
         } else if (sortOrder === "nom-desc") {
             result = [...result].sort((a, b) => b.ballade_name.localeCompare(a.ballade_name));
         } else if (sortOrder === "distance-asc") {
-            result = [...result].sort((a, b) => a.distance - b.distance);
+            result = [...result].sort((a, b) => {
+                if (a.distance == null && b.distance == null) return 0;
+                if (a.distance == null) return 1;
+                if (b.distance == null) return -1;
+                return a.distance - b.distance;
+            });
         } else if (sortOrder === "denivele-asc") {
-            result = [...result].sort((a, b) => a.denivele - b.denivele);
+            result = [...result].sort((a, b) => {
+                if (a.denivele == null && b.denivele == null) return 0;
+                if (a.denivele == null) return 1;
+                if (b.denivele == null) return -1;
+                return a.denivele - b.denivele;
+            });
         } else if (sortOrder === "tags-asc") {
             result = [...result].sort((a, b) => {
                 const ta = firstTagName(a);

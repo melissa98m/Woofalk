@@ -35,6 +35,7 @@ function NewBallade() {
     const [ballade_longitude, setLongitude] = useState("");
     const [distance, setDistance] = useState("");
     const [denivele, setDenivele] = useState("");
+    const [ballade_website, setWebsite] = useState("");
     const [tags, setTags] = useState([]);
 
     const [availableTags, setAvailableTags] = useState([]);
@@ -51,6 +52,7 @@ function NewBallade() {
             distance: "",
             denivele: "",
             ballade_image: "",
+            ballade_website: "",
         },
     });
 
@@ -67,6 +69,7 @@ function NewBallade() {
         setDenivele("");
         setLatitude("");
         setDistance("");
+        setWebsite("");
     };
 
     let newBalladeForm = async () => {
@@ -80,6 +83,7 @@ function NewBallade() {
             formData.append("denivele", denivele);
             formData.append("distance", distance);
             formData.append("ballade_image", ballade_image);
+            formData.append("ballade_website", ballade_website);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
 
             let res = await axios.post(`${API_URL}/api/ballades`, formData, {
@@ -304,6 +308,32 @@ function NewBallade() {
                         />
                         {errors.ballade_description ? (
                             <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_description?.message}</Alert>
+                        ) : null}
+                    </Box>
+
+                    <Box sx={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                        <FieldLabel htmlFor="ballade_website">Site web (optionnel)</FieldLabel>
+                        <Controller
+                            name="ballade_website"
+                            control={control}
+                            render={() => (
+                                <TextField
+                                    {...register("ballade_website", {
+                                        pattern: { value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://" },
+                                    })}
+                                    id="ballade_website"
+                                    type="url"
+                                    onChange={(e) => setWebsite(e.target.value)}
+                                    hiddenLabel
+                                    placeholder="https://exemple.fr"
+                                    variant="outlined"
+                                    value={ballade_website}
+                                    error={!!errors.ballade_website}
+                                />
+                            )}
+                        />
+                        {errors.ballade_website ? (
+                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_website?.message}</Alert>
                         ) : null}
                     </Box>
 
