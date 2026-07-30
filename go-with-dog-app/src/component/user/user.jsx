@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Checkbox,
@@ -18,6 +18,7 @@ import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import auth from "../../services/auth/token";
+import { normalizeText } from "../../services/search/searchIndex";
 
 // The API stores `roles` as a JSON-encoded string column with no model cast,
 // so it comes back over the wire as a raw string like '["ROLE_ADMIN"]' rather
@@ -47,6 +48,7 @@ function User() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -59,6 +61,11 @@ function User() {
 
     const handleChangeRowsPerPage = (user) => {
         setRowsPerPage(+user.target.value);
+        setPage(0);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
         setPage(0);
     };
 
@@ -115,7 +122,13 @@ function User() {
     // silently excludes it too, but disabling the checkbox avoids a
     // confusing "N sélectionnés" count that includes an account that won't
     // actually be deleted.
-    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const filteredData = useMemo(() => {
+        const q = normalizeText(search);
+        if (q.length === 0) return data ?? [];
+        return (data ?? []).filter((u) => normalizeText([u.username, u.email].filter(Boolean).join(" ")).includes(q));
+    }, [data, search]);
+
+    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const selectablePageIds = pageRows.filter((u) => u.id !== currentUserId).map((u) => u.id);
     const allPageSelected = selectablePageIds.length > 0 && selectablePageIds.every((id) => selection.isSelected(id));
     const somePageSelected = selectablePageIds.some((id) => selection.isSelected(id));
@@ -123,10 +136,14 @@ function User() {
     return <Box id="user">
         <AdminResourceLayout
             title="Utilisateurs"
-            countLabel={data ? `${data.length} utilisateur${data.length > 1 ? "s" : ""}` : undefined}
+            countLabel={data ? `${filteredData.length} utilisateur${filteredData.length > 1 ? "s" : ""}` : undefined}
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Rechercher un utilisateur…"
+            searchAriaLabel="Rechercher un utilisateur par nom ou email"
             loading={loading}
             loadingLabel="Chargement des utilisateurs..."
-            count={data ? data.length : 0}
+            count={filteredData.length}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
@@ -137,8 +154,8 @@ function User() {
             bulkBar={data ? (
                 <BulkActionsBar
                     count={selection.count}
-                    total={data.filter((u) => u.id !== currentUserId).length}
-                    onSelectAll={() => selection.selectAll(data.filter((u) => u.id !== currentUserId).map((u) => u.id))}
+                    total={filteredData.filter((u) => u.id !== currentUserId).length}
+                    onSelectAll={() => selection.selectAll(filteredData.filter((u) => u.id !== currentUserId).map((u) => u.id))}
                     onClear={selection.clear}
                 >
                     <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
@@ -165,7 +182,11 @@ function User() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {pageRows.map(({id, username, email, roles, created_at  }) => {
+                        {pageRows.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={6} sx={{ textAlign: "center", color: "text.secondary" }}>Aucun utilisateur trouvé</TableCell>
+                            </TableRow>
+                        ) : pageRows.map(({id, username, email, roles, created_at  }) => {
                             const isSelf = id === currentUserId;
                             return (
                                 <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={username+id}>

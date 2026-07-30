@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     Box,
     Chip,
@@ -16,6 +16,7 @@ import { API_URL } from "../../config";
 import auth from "../../services/auth/token";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
 import ReplyContact from "./replyContact";
+import { normalizeText } from "../../services/search/searchIndex";
 
 // Admin listing of every contact-form submission. The API already returns
 // them sorted subject-first with reports ("Signaler un lieu", is_report)
@@ -33,6 +34,7 @@ function ContactMessages() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [search, setSearch] = useState("");
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -40,6 +42,11 @@ function ContactMessages() {
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
         setPage(0);
     };
 
@@ -59,7 +66,13 @@ function ContactMessages() {
         });
     }, []);
 
-    const reportCount = data ? data.filter((contact) => contact.is_report).length : 0;
+    const filteredData = useMemo(() => {
+        const q = normalizeText(search);
+        if (q.length === 0) return data ?? [];
+        return (data ?? []).filter((contact) => normalizeText([contact.name, contact.email, contact.subject, contact.contenu].filter(Boolean).join(" ")).includes(q));
+    }, [data, search]);
+
+    const reportCount = filteredData.filter((contact) => contact.is_report).length;
 
     const handleReplied = (updatedContact) => {
         setData((current) => {
@@ -71,10 +84,14 @@ function ContactMessages() {
     return <Box id="contact-messages">
         <AdminResourceLayout
             title="Messages de contact"
-            countLabel={data ? `${data.length} message${data.length > 1 ? "s" : ""}${reportCount ? ` dont ${reportCount} signalement${reportCount > 1 ? "s" : ""}` : ""}` : undefined}
+            countLabel={data ? `${filteredData.length} message${filteredData.length > 1 ? "s" : ""}${reportCount ? ` dont ${reportCount} signalement${reportCount > 1 ? "s" : ""}` : ""}` : undefined}
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Rechercher un message…"
+            searchAriaLabel="Rechercher un message par nom, email ou contenu"
             loading={loading}
             loadingLabel="Chargement des messages..."
-            count={data ? data.length : 0}
+            count={filteredData.length}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
@@ -97,7 +114,11 @@ function ContactMessages() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((contact) => {
+                        {filteredData.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} sx={{ textAlign: "center", color: "text.secondary" }}>Aucun message trouvé</TableCell>
+                            </TableRow>
+                        ) : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((contact) => {
                             const { id, name, email, subject, contenu, is_report, created_at, replied_at } = contact;
                             return (
                                 <TableRow

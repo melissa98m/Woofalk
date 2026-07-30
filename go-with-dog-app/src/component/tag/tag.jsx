@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Checkbox,
@@ -19,6 +19,7 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { normalizeText } from "../../services/search/searchIndex";
 
 function Tag() {
 
@@ -32,6 +33,7 @@ function Tag() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -43,6 +45,11 @@ function Tag() {
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
         setPage(0);
     };
 
@@ -94,7 +101,13 @@ function Tag() {
         }
     };
 
-    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const filteredData = useMemo(() => {
+        const q = normalizeText(search);
+        if (q.length === 0) return data ?? [];
+        return (data ?? []).filter((t) => normalizeText(t.tag_name).includes(q));
+    }, [data, search]);
+
+    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((t) => t.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -102,11 +115,15 @@ function Tag() {
     return <Box id="tag">
         <AdminResourceLayout
             title="Tags des ballades"
-            countLabel={data ? `${data.length} tag${data.length > 1 ? "s" : ""}` : undefined}
+            countLabel={data ? `${filteredData.length} tag${filteredData.length > 1 ? "s" : ""}` : undefined}
             actions={<NewTag newValue={{data}} handleDataChange={handleDataChange} />}
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Rechercher un tag…"
+            searchAriaLabel="Rechercher un tag par nom"
             loading={loading}
             loadingLabel="Chargement des tags..."
-            count={data ? data.length : 0}
+            count={filteredData.length}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
@@ -117,8 +134,8 @@ function Tag() {
             bulkBar={data ? (
                 <BulkActionsBar
                     count={selection.count}
-                    total={data.length}
-                    onSelectAll={() => selection.selectAll(data.map((t) => t.id))}
+                    total={filteredData.length}
+                    onSelectAll={() => selection.selectAll(filteredData.map((t) => t.id))}
                     onClear={selection.clear}
                 >
                     <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
@@ -144,7 +161,11 @@ function Tag() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {pageRows.map(({id, tag_name , color, scope}) => {
+                        {pageRows.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={5} sx={{ textAlign: "center", color: "text.secondary" }}>Aucun tag trouvé</TableCell>
+                            </TableRow>
+                        ) : pageRows.map(({id, tag_name , color, scope}) => {
                             return (
                                 <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={id}>
                                     <TableCell padding="checkbox">

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Checkbox,
@@ -18,6 +18,7 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { normalizeText } from "../../services/search/searchIndex";
 
 function Category() {
 
@@ -31,6 +32,7 @@ function Category() {
 
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
+    const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
@@ -42,6 +44,11 @@ function Category() {
 
     const handleChangeRowsPerPage = (event) => {
         setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearch(e.target.value);
         setPage(0);
     };
 
@@ -91,7 +98,13 @@ function Category() {
         }
     };
 
-    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const filteredData = useMemo(() => {
+        const q = normalizeText(search);
+        if (q.length === 0) return data ?? [];
+        return (data ?? []).filter((c) => normalizeText(c.category_name).includes(q));
+    }, [data, search]);
+
+    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((c) => c.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -99,11 +112,15 @@ function Category() {
     return <Box id="category">
         <AdminResourceLayout
             title="Catégories"
-            countLabel={data ? `${data.length} catégorie${data.length > 1 ? "s" : ""}` : undefined}
+            countLabel={data ? `${filteredData.length} catégorie${filteredData.length > 1 ? "s" : ""}` : undefined}
             actions={<NewCategory newValue={{data}} handleDataChange={handleDataChange} />}
+            searchValue={search}
+            onSearchChange={handleSearchChange}
+            searchPlaceholder="Rechercher une catégorie…"
+            searchAriaLabel="Rechercher une catégorie par nom"
             loading={loading}
             loadingLabel="Chargement des categories..."
-            count={data ? data.length : 0}
+            count={filteredData.length}
             page={page}
             rowsPerPage={rowsPerPage}
             onPageChange={handleChangePage}
@@ -114,8 +131,8 @@ function Category() {
             bulkBar={data ? (
                 <BulkActionsBar
                     count={selection.count}
-                    total={data.length}
-                    onSelectAll={() => selection.selectAll(data.map((c) => c.id))}
+                    total={filteredData.length}
+                    onSelectAll={() => selection.selectAll(filteredData.map((c) => c.id))}
                     onClear={selection.clear}
                 >
                     <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
@@ -139,7 +156,11 @@ function Category() {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {pageRows.map(({id, category_name}) => {
+                        {pageRows.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={3} sx={{ textAlign: "center", color: "text.secondary" }}>Aucune catégorie trouvée</TableCell>
+                            </TableRow>
+                        ) : pageRows.map(({id, category_name}) => {
                             return (
                                 <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={category_name+id}>
                                     <TableCell padding="checkbox">
