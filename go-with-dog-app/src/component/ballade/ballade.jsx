@@ -185,7 +185,14 @@ function Ballade() {
                                     <TableCell>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                             {(tags ?? []).slice(0, MAX_VISIBLE_TAGS).map((t) => (
-                                                <Chip key={t.id} size="small" label={truncateLabel(t.tag_name)} title={t.tag_name} sx={{ color: t.color }} />
+                                                <Chip
+                                                    key={t.id}
+                                                    size="small"
+                                                    variant="outlined"
+                                                    label={truncateLabel(t.tag_name)}
+                                                    title={t.tag_name}
+                                                    sx={{ bgcolor: 'background.alt', borderColor: t.color, color: t.color }}
+                                                />
                                             ))}
                                             {(tags ?? []).length > MAX_VISIBLE_TAGS ? (
                                                 <Chip
