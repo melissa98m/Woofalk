@@ -19,7 +19,20 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
+
+const scopeLabels = {place: 'Lieux', ballade: 'Balades', both: 'Lieux et balades'};
+
+const getSortValue = (tag, key) => {
+    switch (key) {
+        case "tag_name": return tag.tag_name;
+        case "color": return tag.color;
+        case "scope": return scopeLabels[tag.scope] ?? scopeLabels.both;
+        default: return null;
+    }
+};
 
 function Tag() {
 
@@ -36,6 +49,7 @@ function Tag() {
     const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
+    const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -78,8 +92,6 @@ function Tag() {
         }
     }
 
-    const scopeLabels = {place: 'Lieux', ballade: 'Balades', both: 'Lieux et balades'};
-
     const handleBulkDelete = async () => {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
@@ -107,7 +119,11 @@ function Tag() {
         return (data ?? []).filter((t) => normalizeText(t.tag_name).includes(q));
     }, [data, search]);
 
-    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const sortedData = useMemo(
+        () => sortRows(filteredData, sort.orderBy, sort.order, getSortValue),
+        [filteredData, sort.orderBy, sort.order]
+    );
+    const pageRows = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((t) => t.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -154,9 +170,9 @@ function Tag() {
                                     slotProps={{ input: { "aria-label": "Sélectionner tous les tags de la page" } }}
                                 />
                             </TableCell>
-                            <TableCell>Nom</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Couleur</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>S'applique à</TableCell>
+                            <SortableTableCell sortKey="tag_name" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
+                            <SortableTableCell sortKey="color" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Couleur</SortableTableCell>
+                            <SortableTableCell sortKey="scope" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>S'applique à</SortableTableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>

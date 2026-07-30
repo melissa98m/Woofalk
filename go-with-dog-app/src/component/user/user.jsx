@@ -17,6 +17,8 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
 import auth from "../../services/auth/token";
 import { normalizeText } from "../../services/search/searchIndex";
 
@@ -36,6 +38,16 @@ const parseRoles = (roles) => {
     return [];
 };
 
+const getSortValue = (user, key) => {
+    switch (key) {
+        case "username": return user.username;
+        case "email": return user.email;
+        case "roles": return parseRoles(user.roles).filter(Boolean).join(", ");
+        case "created_at": return user.created_at;
+        default: return null;
+    }
+};
+
 function User() {
 
     document.title = 'Page des users';
@@ -51,6 +63,7 @@ function User() {
     const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
+    const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
     const currentUserId = Number(auth.getUserId());
@@ -128,7 +141,11 @@ function User() {
         return (data ?? []).filter((u) => normalizeText([u.username, u.email].filter(Boolean).join(" ")).includes(q));
     }, [data, search]);
 
-    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const sortedData = useMemo(
+        () => sortRows(filteredData, sort.orderBy, sort.order, getSortValue),
+        [filteredData, sort.orderBy, sort.order]
+    );
+    const pageRows = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const selectablePageIds = pageRows.filter((u) => u.id !== currentUserId).map((u) => u.id);
     const allPageSelected = selectablePageIds.length > 0 && selectablePageIds.every((id) => selection.isSelected(id));
     const somePageSelected = selectablePageIds.some((id) => selection.isSelected(id));
@@ -174,10 +191,10 @@ function User() {
                                     slotProps={{ input: { "aria-label": "Sélectionner tous les utilisateurs de la page" } }}
                                 />
                             </TableCell>
-                            <TableCell>Username</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</TableCell>
-                            <TableCell>Rôles</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créé le</TableCell>
+                            <SortableTableCell sortKey="username" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Username</SortableTableCell>
+                            <SortableTableCell sortKey="email" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</SortableTableCell>
+                            <SortableTableCell sortKey="roles" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Rôles</SortableTableCell>
+                            <SortableTableCell sortKey="created_at" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créé le</SortableTableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>

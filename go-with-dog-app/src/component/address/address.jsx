@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Checkbox,
@@ -18,6 +18,18 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
+
+const getSortValue = (address, key) => {
+    switch (key) {
+        case "address": return address.address;
+        case "city": return address.city;
+        case "postal_code": return address.postal_code;
+        case "coordinates": return address.latitude;
+        default: return null;
+    }
+};
 
 function Address() {
 
@@ -33,6 +45,7 @@ function Address() {
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
     const selection = useRowSelection();
+    const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -91,7 +104,11 @@ function Address() {
         }
     };
 
-    const pageRows = data ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const sortedData = useMemo(
+        () => sortRows(data ?? [], sort.orderBy, sort.order, getSortValue),
+        [data, sort.orderBy, sort.order]
+    );
+    const pageRows = data ? sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
     const pageIds = pageRows.map((a) => a.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -134,10 +151,10 @@ function Address() {
                                     slotProps={{ input: { "aria-label": "Sélectionner toutes les adresses de la page" } }}
                                 />
                             </TableCell>
-                            <TableCell>Nom</TableCell>
-                            <TableCell>Ville</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Code postal</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Coordonnées</TableCell>
+                            <SortableTableCell sortKey="address" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
+                            <SortableTableCell sortKey="city" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Ville</SortableTableCell>
+                            <SortableTableCell sortKey="postal_code" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Code postal</SortableTableCell>
+                            <SortableTableCell sortKey="coordinates" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Coordonnées</SortableTableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>

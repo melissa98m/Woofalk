@@ -15,8 +15,22 @@ import update from "immutability-helper";
 import { API_URL } from "../../config";
 import auth from "../../services/auth/token";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
 import ReplyContact from "./replyContact";
 import { normalizeText } from "../../services/search/searchIndex";
+
+const getSortValue = (contact, key) => {
+    switch (key) {
+        case "name": return contact.name;
+        case "email": return contact.email;
+        case "subject": return contact.subject;
+        case "contenu": return contact.contenu;
+        case "created_at": return contact.created_at;
+        case "status": return contact.replied_at ? 1 : 0;
+        default: return null;
+    }
+};
 
 // Admin listing of every contact-form submission. The API already returns
 // them sorted subject-first with reports ("Signaler un lieu", is_report)
@@ -35,6 +49,7 @@ function ContactMessages() {
     const [page, setPage] = React.useState(0);
     const [rowsPerPage, setRowsPerPage] = React.useState(10);
     const [search, setSearch] = useState("");
+    const sort = useSort();
 
     const handleChangePage = (event, newPage) => {
         setPage(newPage);
@@ -74,6 +89,11 @@ function ContactMessages() {
 
     const reportCount = filteredData.filter((contact) => contact.is_report).length;
 
+    const sortedData = useMemo(
+        () => sortRows(filteredData, sort.orderBy, sort.order, getSortValue),
+        [filteredData, sort.orderBy, sort.order]
+    );
+
     const handleReplied = (updatedContact) => {
         setData((current) => {
             const foundIndex = current.findIndex((c) => c.id === updatedContact.id);
@@ -104,12 +124,12 @@ function ContactMessages() {
                 <Table size="small">
                     <TableHead>
                         <TableRow>
-                            <TableCell scope="col">Nom</TableCell>
-                            <TableCell scope="col" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</TableCell>
-                            <TableCell scope="col" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sujet</TableCell>
-                            <TableCell scope="col" sx={{ display: { xs: 'none', md: 'table-cell' } }}>Message</TableCell>
-                            <TableCell scope="col" sx={{ display: { xs: 'none', md: 'table-cell' } }}>Reçu le</TableCell>
-                            <TableCell scope="col">Statut</TableCell>
+                            <SortableTableCell scope="col" sortKey="name" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
+                            <SortableTableCell scope="col" sortKey="email" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</SortableTableCell>
+                            <SortableTableCell scope="col" sortKey="subject" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sujet</SortableTableCell>
+                            <SortableTableCell scope="col" sortKey="contenu" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', md: 'table-cell' } }}>Message</SortableTableCell>
+                            <SortableTableCell scope="col" sortKey="created_at" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', md: 'table-cell' } }}>Reçu le</SortableTableCell>
+                            <SortableTableCell scope="col" sortKey="status" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Statut</SortableTableCell>
                             <TableCell scope="col" align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -118,7 +138,7 @@ function ContactMessages() {
                             <TableRow>
                                 <TableCell colSpan={7} sx={{ textAlign: "center", color: "text.secondary" }}>Aucun message trouvé</TableCell>
                             </TableRow>
-                        ) : filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((contact) => {
+                        ) : sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((contact) => {
                             const { id, name, email, subject, contenu, is_report, created_at, replied_at } = contact;
                             return (
                                 <TableRow

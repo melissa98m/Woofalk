@@ -18,7 +18,11 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
+
+const getSortValue = (category, key) => (key === "category_name" ? category.category_name : null);
 
 function Category() {
 
@@ -35,6 +39,7 @@ function Category() {
     const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
+    const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -104,7 +109,11 @@ function Category() {
         return (data ?? []).filter((c) => normalizeText(c.category_name).includes(q));
     }, [data, search]);
 
-    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const sortedData = useMemo(
+        () => sortRows(filteredData, sort.orderBy, sort.order, getSortValue),
+        [filteredData, sort.orderBy, sort.order]
+    );
+    const pageRows = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((c) => c.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -151,7 +160,7 @@ function Category() {
                                     slotProps={{ input: { "aria-label": "Sélectionner toutes les catégories de la page" } }}
                                 />
                             </TableCell>
-                            <TableCell>Nom</TableCell>
+                            <SortableTableCell sortKey="category_name" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>

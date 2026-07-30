@@ -22,9 +22,24 @@ import { useRowSelection } from "../_partials/_ui/useRowSelection";
 import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
 import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
 
 const MAX_VISIBLE_TAGS = 3;
+
+const getSortValue = (ballade, key) => {
+    switch (key) {
+        case "ballade_name": return ballade.ballade_name;
+        case "distance": return ballade.distance;
+        case "denivele": return ballade.denivele;
+        case "tags": return (ballade.tags ?? []).length;
+        case "status": return ballade.status;
+        case "created_at": return ballade.created_at;
+        case "user": return ballade.user?.username;
+        default: return null;
+    }
+};
 
 function Ballade() {
 
@@ -41,6 +56,7 @@ function Ballade() {
     const [search, setSearch] = useState("");
 
     const selection = useRowSelection();
+    const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
 
@@ -126,7 +142,11 @@ function Ballade() {
         return (data ?? []).filter((ballade) => normalizeText([ballade.ballade_name, ballade.ballade_description].filter(Boolean).join(" ")).includes(q));
     }, [data, search]);
 
-    const pageRows = filteredData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+    const sortedData = useMemo(
+        () => sortRows(filteredData, sort.orderBy, sort.order, getSortValue),
+        [filteredData, sort.orderBy, sort.order]
+    );
+    const pageRows = sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
     const pageIds = pageRows.map((b) => b.id);
     const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
     const somePageSelected = pageIds.some((id) => selection.isSelected(id));
@@ -175,13 +195,13 @@ function Ballade() {
                                     slotProps={{ input: { "aria-label": "Sélectionner toutes les balades de la page" } }}
                                 />
                             </TableCell>
-                            <TableCell>Nom</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Distance</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Denivelé</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
-                            <TableCell>Statut</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Date</TableCell>
-                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créateur</TableCell>
+                            <SortableTableCell sortKey="ballade_name" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
+                            <SortableTableCell sortKey="distance" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Distance</SortableTableCell>
+                            <SortableTableCell sortKey="denivele" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Denivelé</SortableTableCell>
+                            <SortableTableCell sortKey="tags" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</SortableTableCell>
+                            <SortableTableCell sortKey="status" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Statut</SortableTableCell>
+                            <SortableTableCell sortKey="created_at" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', md: 'table-cell' } }}>Date</SortableTableCell>
+                            <SortableTableCell sortKey="user" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créateur</SortableTableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
