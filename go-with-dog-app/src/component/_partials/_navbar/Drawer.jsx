@@ -63,7 +63,7 @@ function DrawerComponent() {
                         </Box>
                     ))}
                     {auth.loggedAndAdmin() ? (
-                        <Box component={Link} to="/dashboard" onClick={close} sx={linkSx("/dashboard")}>
+                        <Box component={Link} to="/admin/dashboard" onClick={close} sx={linkSx("/admin/dashboard")}>
                             <DashboardIcon fontSize="medium" />
                             Dashboard
                         </Box>

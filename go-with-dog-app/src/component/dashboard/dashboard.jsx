@@ -129,7 +129,7 @@ function Dashboard() {
                             htmlInput: { "aria-label": "Rechercher un lieu par nom" },
                         }}
                     />
-                    <Typography component={Link} to="/place" sx={{ fontSize: "13px", fontWeight: 700, color: "sageDark", textDecoration: "none" }}>
+                    <Typography component={Link} to="/admin/place" sx={{ fontSize: "13px", fontWeight: 700, color: "sageDark", textDecoration: "none" }}>
                         Voir tous les lieux
                     </Typography>
                 </Box>
@@ -195,7 +195,7 @@ function Dashboard() {
                             htmlInput: { "aria-label": "Rechercher une balade par nom" },
                         }}
                     />
-                    <Typography component={Link} to="/ballade" sx={{ fontSize: "13px", fontWeight: 700, color: "sageDark", textDecoration: "none" }}>
+                    <Typography component={Link} to="/admin/ballade" sx={{ fontSize: "13px", fontWeight: 700, color: "sageDark", textDecoration: "none" }}>
                         Voir toutes les balades
                     </Typography>
                 </Box>

@@ -98,7 +98,7 @@ export function Navbar() {
                             </Button>
                         ))}
                         {auth.loggedAndAdmin() ? (
-                            <Button component={Link} to="/dashboard" sx={navButtonSx("/dashboard")}>
+                            <Button component={Link} to="/admin/dashboard" sx={navButtonSx("/admin/dashboard")}>
                                 Dashboard
                             </Button>
                         ) : null}

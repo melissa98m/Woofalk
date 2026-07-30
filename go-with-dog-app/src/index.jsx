@@ -81,7 +81,7 @@ function AppRoutes() {
             <Route exact path="ballades/:id" element={<BalladeDetail/>}>BalladeDetail</Route>
             <Route exact path="recherche" element={<SearchResults/>}>Recherche</Route>
             <Route exact path="logout" element={<Logout/>}>Logout</Route>
-            <Route element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
+            <Route path="admin" element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
                 <Route exact path="address" element={<Address/>}>Address</Route>
                 <Route exact path="place" element={<Place/>}>Place</Route>
                 <Route exact path="ballade" element={<Ballade/>}>Ballade</Route>

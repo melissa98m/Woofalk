@@ -11,14 +11,14 @@ import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import Logo from "../../../assets/logo.png";
 
 const NAV_ITEMS = [
-    { to: "/dashboard", label: "Tableau de bord", icon: DashboardIcon },
-    { to: "/place", label: "Lieux", icon: PushPinIcon },
-    { to: "/ballade", label: "Balades", icon: ApprovalIcon },
-    { to: "/category", label: "Catégories", icon: CategoryIcon },
-    { to: "/tag", label: "Tags", icon: TagIcon },
-    { to: "/user", label: "Utilisateurs", icon: PersonIcon },
-    { to: "/contact-messages", label: "Messages", icon: MailIcon },
-    { to: "/export", label: "Export", icon: CloudDownloadIcon },
+    { to: "/admin/dashboard", label: "Tableau de bord", icon: DashboardIcon },
+    { to: "/admin/place", label: "Lieux", icon: PushPinIcon },
+    { to: "/admin/ballade", label: "Balades", icon: ApprovalIcon },
+    { to: "/admin/category", label: "Catégories", icon: CategoryIcon },
+    { to: "/admin/tag", label: "Tags", icon: TagIcon },
+    { to: "/admin/user", label: "Utilisateurs", icon: PersonIcon },
+    { to: "/admin/contact-messages", label: "Messages", icon: MailIcon },
+    { to: "/admin/export", label: "Export", icon: CloudDownloadIcon },
 ];
 
 // Persistent sidebar shell for the admin area (dashboard + resource CRUD
