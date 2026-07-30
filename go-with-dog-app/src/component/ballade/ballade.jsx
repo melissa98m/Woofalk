@@ -161,7 +161,7 @@ function Ballade() {
                             <TableCell>Nom</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Distance</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Denivelé</TableCell>
-                            <TableCell>Tags</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Tags</TableCell>
                             <TableCell>Statut</TableCell>
                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Date</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créateur</TableCell>
@@ -182,7 +182,7 @@ function Ballade() {
                                     <TableCell sx={{fontWeight: 'bold'}}>{ballade_name ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{ distance ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{ denivele ?? '--'}</TableCell>
-                                    <TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                             {(tags ?? []).slice(0, MAX_VISIBLE_TAGS).map((t) => (
                                                 <Chip

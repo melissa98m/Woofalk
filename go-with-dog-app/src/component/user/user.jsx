@@ -158,7 +158,7 @@ function User() {
                                 />
                             </TableCell>
                             <TableCell>Username</TableCell>
-                            <TableCell>Email</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</TableCell>
                             <TableCell>Rôles</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Créé le</TableCell>
                             <TableCell align="right">Actions</TableCell>
@@ -178,7 +178,7 @@ function User() {
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{username ?? '--'}</TableCell>
-                                    <TableCell>{email ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{email ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                             {parseRoles(roles).filter(Boolean).map((role) => (

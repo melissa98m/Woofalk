@@ -125,7 +125,7 @@ function Dashboard() {
                         <TableHead>
                             <TableRow>
                                 <TableCell>Nom</TableCell>
-                                <TableCell>Catégorie</TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Catégorie</TableCell>
                                 <TableCell>Statut</TableCell>
                                 <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Date</TableCell>
                                 <TableCell align="right">Actions</TableCell>
@@ -139,7 +139,7 @@ function Dashboard() {
                             ) : latestPlaces.map(({id, place_name, place_description, place_image, status, category, address, tags, user, created_at}) => (
                                 <TableRow hover key={id}>
                                     <TableCell sx={{ fontWeight: "bold" }}>{place_name ?? "--"}</TableCell>
-                                    <TableCell>{category?.category_name ?? "--"}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{category?.category_name ?? "--"}</TableCell>
                                     <TableCell><StatusChip status={status ?? "publie"} /></TableCell>
                                     <TableCell sx={{ color: "text.secondary", fontSize: "13px", display: { xs: 'none', sm: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : "--"}</TableCell>
                                     <TableCell>

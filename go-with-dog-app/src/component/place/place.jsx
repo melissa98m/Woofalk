@@ -160,7 +160,7 @@ function Place() {
                             </TableCell>
                             <TableCell>Nom</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Adresse</TableCell>
-                            <TableCell>Categorie</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Categorie</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Tags</TableCell>
                             <TableCell>Statut</TableCell>
                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>Date</TableCell>
@@ -181,7 +181,7 @@ function Place() {
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{place_name ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{address.address ?? '--'} {address.city ?? '--'} {address.postal_code ?? '--'}</TableCell>
-                                    <TableCell>{category.category_name ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{category.category_name ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                                             {(tags ?? []).slice(0, MAX_VISIBLE_TAGS).map((t) => (

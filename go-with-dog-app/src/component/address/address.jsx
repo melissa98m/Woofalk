@@ -136,7 +136,7 @@ function Address() {
                             </TableCell>
                             <TableCell>Nom</TableCell>
                             <TableCell>Ville</TableCell>
-                            <TableCell>Code postal</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Code postal</TableCell>
                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Coordonnées</TableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
@@ -154,7 +154,7 @@ function Address() {
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{address ?? '--'}</TableCell>
                                     <TableCell>{city ?? '--'}</TableCell>
-                                    <TableCell>{postal_code ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{postal_code ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{latitude ?? '--'} , {longitude ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>

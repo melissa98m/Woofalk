@@ -138,8 +138,8 @@ function Tag() {
                                 />
                             </TableCell>
                             <TableCell>Nom</TableCell>
-                            <TableCell>Couleur</TableCell>
-                            <TableCell>S'applique à</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Couleur</TableCell>
+                            <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>S'applique à</TableCell>
                             <TableCell align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -155,13 +155,13 @@ function Tag() {
                                         />
                                     </TableCell>
                                     <TableCell sx={{fontWeight: 'bold'}}>{tag_name}</TableCell>
-                                    <TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                             <Box sx={{ width: 16, height: 16, borderRadius: '50%', bgcolor: color, border: '1px solid', borderColor: 'divider' }} />
                                             <Typography variant="body2" color="text.secondary">{color}</Typography>
                                         </Box>
                                     </TableCell>
-                                    <TableCell>{scopeLabels[scope] ?? scopeLabels.both}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{scopeLabels[scope] ?? scopeLabels.both}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
                                             <EditTag updateValue={{id, tag_name,color, scope, data}} handleDataChange={handleDataChange} />

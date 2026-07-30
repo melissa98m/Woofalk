@@ -88,11 +88,11 @@ function ContactMessages() {
                     <TableHead>
                         <TableRow>
                             <TableCell scope="col">Nom</TableCell>
-                            <TableCell scope="col">Email</TableCell>
-                            <TableCell scope="col">Sujet</TableCell>
-                            <TableCell scope="col">Message</TableCell>
+                            <TableCell scope="col" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Email</TableCell>
+                            <TableCell scope="col" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Sujet</TableCell>
+                            <TableCell scope="col" sx={{ display: { xs: 'none', md: 'table-cell' } }}>Message</TableCell>
                             <TableCell scope="col" sx={{ display: { xs: 'none', md: 'table-cell' } }}>Reçu le</TableCell>
-                            <TableCell scope="col" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Statut</TableCell>
+                            <TableCell scope="col">Statut</TableCell>
                             <TableCell scope="col" align="right">Actions</TableCell>
                         </TableRow>
                     </TableHead>
@@ -111,8 +111,8 @@ function ContactMessages() {
                                     } : undefined}
                                 >
                                     <TableCell sx={{ fontWeight: 'bold' }}>{name ?? '--'}</TableCell>
-                                    <TableCell>{email}</TableCell>
-                                    <TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{email}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '6px', alignItems: 'center' }}>
                                             <Chip
                                                 size="small"
@@ -131,9 +131,9 @@ function ContactMessages() {
                                             ) : null}
                                         </Box>
                                     </TableCell>
-                                    <TableCell sx={{ maxWidth: 320, whiteSpace: 'normal', wordBreak: 'break-word' }}>{contenu}</TableCell>
+                                    <TableCell sx={{ maxWidth: 320, whiteSpace: 'normal', wordBreak: 'break-word', display: { xs: 'none', md: 'table-cell' } }}>{contenu}</TableCell>
                                     <TableCell sx={{ color: 'text.secondary', fontSize: '13px', display: { xs: 'none', md: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : '--'}</TableCell>
-                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                                    <TableCell>
                                         {replied_at ? (
                                             <Chip
                                                 size="small"
