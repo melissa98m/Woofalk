@@ -1,5 +1,7 @@
 .idea/
 .idea/*
+/.env
 .impeccable.md
 CLAUDE.md
 /backups/
+TODO.md
