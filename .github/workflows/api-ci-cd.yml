@@ -30,9 +30,9 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_DATABASE: gowithdog
-          MYSQL_USER: gowithdog
-          MYSQL_PASSWORD: gowithdog
+          MYSQL_DATABASE: woofalk
+          MYSQL_USER: woofalk
+          MYSQL_PASSWORD: woofalk
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306:3306
@@ -77,9 +77,9 @@ jobs:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_DATABASE: gowithdog
-          DB_USERNAME: gowithdog
-          DB_PASSWORD: gowithdog
+          DB_DATABASE: woofalk
+          DB_USERNAME: woofalk
+          DB_PASSWORD: woofalk
 
       - name: Wait for MySQL
         run: |
@@ -94,9 +94,9 @@ jobs:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_DATABASE: gowithdog
-          DB_USERNAME: gowithdog
-          DB_PASSWORD: gowithdog
+          DB_DATABASE: woofalk
+          DB_USERNAME: woofalk
+          DB_PASSWORD: woofalk
 
       # Informational only: the repo has pre-existing style debt outside
       # this workflow's scope, so style issues are reported but don't fail
@@ -111,9 +111,9 @@ jobs:
           DB_CONNECTION: mysql
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
-          DB_DATABASE: gowithdog
-          DB_USERNAME: gowithdog
-          DB_PASSWORD: gowithdog
+          DB_DATABASE: woofalk
+          DB_USERNAME: woofalk
+          DB_PASSWORD: woofalk
 
   deploy:
     name: Deploy to Raspberry Pi
