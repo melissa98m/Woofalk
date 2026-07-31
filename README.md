@@ -1,6 +1,6 @@
 # Woofalk
 
-Woofalk est une application web qui répertorie les lieux acceptant les chiens ("lieux") et des ballades à faire avec eux. Les visiteurs peuvent consulter et proposer des lieux/ballades ; les administrateurs peuvent en plus les modifier/supprimer et gérer les catégories, tags, adresses et utilisateurs.
+Woofalk est une application web qui répertorie les lieux acceptant les chiens ("lieux"), des ballades et des hébergements pet-friendly. Les visiteurs peuvent consulter et proposer des lieux/ballades/hébergements ; les administrateurs peuvent en plus les modifier/supprimer, gérer les catégories, tags, adresses et utilisateurs, et exporter les données (CSV ou dump SQL complet).
 
 Le dépôt contient trois sous-projets indépendants, chacun avec son propre arbre de dépendances (pas de `package.json` racine) :
 
@@ -33,9 +33,18 @@ Prérequis : Docker + Docker Compose.
 - API : http://localhost:8000
 - Mailhog (emails interceptés) : http://localhost:8025
 
-Pour tout réinitialiser (y compris la base de données) :
+Pour arrêter les conteneurs sans perdre les données (usage quotidien) :
 
-    docker compose down -v
+    docker compose down
+
+Un `Makefile` fournit des raccourcis plus sûrs :
+
+    make up          # docker compose up --build
+    make down        # docker compose down (garde le volume de la base)
+    make backup      # dump la base de dev dans ./backups/ (gitignored)
+    make reset-db    # backup + docker compose down -v, avec confirmation manuelle ("reset")
+
+**`docker compose down -v` supprime définitivement la base de données locale (utilisateurs, lieux, ballades, hébergements, likes...), sans confirmation.** C'est déjà arrivé une fois pendant le développement. Ne jamais lancer `down -v` directement — utiliser `make reset-db`, qui sauvegarde avant de demander confirmation.
 
 Pour un lancement façon production (images optimisées, sans montage du code source) :
 
@@ -92,6 +101,17 @@ Démarrez le serveur de développement :
 
 Puis ouvrez http://localhost:3000 dans votre navigateur.
 
+### Mobile (`GowithDogMobile`)
+
+Application React Native early-stage, non intégrée au Docker Compose ni au CI/CD ci-dessous — son workflow est indépendant (Metro + émulateurs/simulateurs).
+
+Dans le dossier `GowithDogMobile` :
+
+    npm install
+    npm start          # démarre Metro
+    npm run android     # build + lance sur émulateur/device Android
+    npm run ios         # build + lance sur simulateur/device iOS (nécessite Xcode + CocoaPods)
+
 ## Configuration
 
 Principales variables d'environnement de l'API (`woofalk-api/.env`) :
@@ -125,19 +145,27 @@ Front (dans `woofalk-app`) :
 
 Via Docker, préfixez les commandes API par `docker compose exec api` (ex. `docker compose exec api vendor/bin/phpunit`).
 
+## CI/CD et déploiement
+
+- `.github/workflows/api-ci-cd.yml` : sur chaque push/PR touchant `woofalk-api` ou les fichiers Docker Compose, lance PHPUnit (contre une vraie base MySQL) et Pint (informatif, non bloquant). Sur un push sur `master` avec les tests au vert, un job de déploiement se connecte en SSH au Raspberry Pi de production et exécute `scripts/deploy-pi.sh`.
+- `scripts/deploy-pi.sh` : rebuild l'image `api` en mode prod, redémarre uniquement les services `api`/`api-nginx` (la base, le front et Mailhog ne sont pas touchés) et lance les migrations.
+- Le front (`woofalk-app`) est déployé séparément sur Vercel (build/CDN/déploiements propres à Vercel, indépendants de ce workflow et du Raspberry Pi).
+- La mobile (`GowithDogMobile`) n'a pas encore de CI/CD ni de déploiement automatisé.
+
 ## Fonctionnalités
 
 Le site web permet à l'utilisateur (sans le rôle admin) de :
 
-- Consulter la liste des lieux autorisés aux chiens, avec recherche et filtres (catégorie, tags).
-- Consulter la liste des ballades.
-- Ajouter un nouveau lieu autorisé aux chiens.
-- Ajouter une nouvelle ballade.
+- Consulter la liste des lieux autorisés aux chiens, des ballades et des hébergements pet-friendly, avec recherche et filtres (catégorie, tags).
+- Ajouter un nouveau lieu, une nouvelle ballade ou un nouvel hébergement.
+- Liker des lieux/ballades/hébergements.
 - Créer un compte, se connecter et gérer son profil.
+- Exporter ses propres données personnelles (RGPD) depuis son compte.
 - Contacter l'équipe via un formulaire de contact protégé contre le spam.
 
 Le site web permet en plus à l'utilisateur admin de :
 
 - Faire tout comme un utilisateur.
-- Modifier ou supprimer un lieu ou une ballade.
+- Modifier, supprimer ou changer le statut (individuellement ou en masse) d'un lieu, d'une ballade ou d'un hébergement.
 - Gérer les catégories, tags, adresses et utilisateurs depuis un tableau de bord dédié.
+- Exporter tout ou partie des données de l'application (lieux, ballades, hébergements, catégories, tags, adresses, utilisateurs, messages de contact) au format CSV (par table, ou en `.zip` si plusieurs tables sont sélectionnées), ou récupérer un dump SQL complet de la base — voir `ExportController` (`woofalk-api/app/Http/Controllers/API/ExportController.php`).
