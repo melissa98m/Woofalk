@@ -17,7 +17,7 @@
 #     api_uploads volume, mounted at that subpath, independent of api_html's
 #     lifecycle (never removed by the deploy pipeline).
 #   - secrets (APP_KEY, JWT_SECRET, prod DB credentials, mail/recaptcha
-#     keys) → supplied via env_file from go-with-dog-api/.env.production, a
+#     keys) → supplied via env_file from woofalk-api/.env.production, a
 #     file that lives only on the host (gitignored, created once during
 #     server setup), not inside the container/volume. This also means
 #     APP_KEY/JWT_SECRET stay stable across redeploys instead of being
@@ -30,7 +30,7 @@ services:
       - api_html:/var/www/html
       - api_uploads:/var/www/html/storage/app/public
     env_file:
-      - ./go-with-dog-api/.env.production
+      - ./woofalk-api/.env.production
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
@@ -38,13 +38,13 @@ services:
       RUN_MIGRATIONS: "false"
       # Adjust to the real production front-end domain(s) before deploying —
       # the httpOnly auth cookie's CORS grant depends on this being correct.
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://gowithdog.fr}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://woofalk.fr}
 
   api-nginx:
     volumes: !override
       - api_html:/var/www/html:ro
       - api_uploads:/var/www/html/storage/app/public:ro
-      - ./go-with-dog-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./woofalk-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - api
 

@@ -1,14 +1,14 @@
 services:
   api:
     build:
-      context: ./go-with-dog-api
+      context: ./woofalk-api
       target: dev
       args:
         WWWUSER: ${WWWUSER:-1000}
         WWWGROUP: ${WWWGROUP:-1000}
     restart: unless-stopped
     volumes:
-      - ./go-with-dog-api:/var/www/html
+      - ./woofalk-api:/var/www/html
       - api_vendor:/var/www/html/vendor
     environment:
       APP_ENV: local
@@ -35,8 +35,8 @@ services:
     image: nginx:1.27-alpine
     restart: unless-stopped
     volumes:
-      - ./go-with-dog-api:/var/www/html:ro
-      - ./go-with-dog-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./woofalk-api:/var/www/html:ro
+      - ./woofalk-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "8000:80"
     depends_on:
@@ -45,11 +45,11 @@ services:
 
   web:
     build:
-      context: ./go-with-dog-app
+      context: ./woofalk-app
       target: dev
     restart: unless-stopped
     volumes:
-      - ./go-with-dog-app:/app
+      - ./woofalk-app:/app
       - web_node_modules:/app/node_modules
     environment:
       VITE_API_URL: http://localhost:8000

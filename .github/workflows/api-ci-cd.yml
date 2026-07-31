@@ -1,25 +1,25 @@
 name: API CI/CD
 
-# Scoped to go-with-dog-api only: front-end (go-with-dog-app) and mobile
+# Scoped to woofalk-api only: front-end (woofalk-app) and mobile
 # changes never trigger this workflow, and the deploy job only ever
 # rebuilds/restarts the api/api-nginx services on the Raspberry Pi.
 on:
   push:
     paths:
-      - "go-with-dog-api/**"
+      - "woofalk-api/**"
       - "docker-compose.yml"
       - "docker-compose.prod.yml"
       - ".github/workflows/api-ci-cd.yml"
   pull_request:
     paths:
-      - "go-with-dog-api/**"
+      - "woofalk-api/**"
       - "docker-compose.yml"
       - "docker-compose.prod.yml"
       - ".github/workflows/api-ci-cd.yml"
 
 defaults:
   run:
-    working-directory: go-with-dog-api
+    working-directory: woofalk-api
 
 jobs:
   test:
@@ -61,7 +61,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
-          key: ${{ runner.os }}-composer-${{ hashFiles('go-with-dog-api/composer.lock') }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('woofalk-api/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-composer-
 

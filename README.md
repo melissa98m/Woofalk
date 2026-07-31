@@ -1,22 +1,22 @@
-# GoWithDog
+# Woofalk
 
-GoWithDog est une application web qui répertorie les lieux acceptant les chiens ("lieux") et des ballades à faire avec eux. Les visiteurs peuvent consulter et proposer des lieux/ballades ; les administrateurs peuvent en plus les modifier/supprimer et gérer les catégories, tags, adresses et utilisateurs.
+Woofalk est une application web qui répertorie les lieux acceptant les chiens ("lieux") et des ballades à faire avec eux. Les visiteurs peuvent consulter et proposer des lieux/ballades ; les administrateurs peuvent en plus les modifier/supprimer et gérer les catégories, tags, adresses et utilisateurs.
 
 Le dépôt contient trois sous-projets indépendants, chacun avec son propre arbre de dépendances (pas de `package.json` racine) :
 
-- [`go-with-dog-api/`](go-with-dog-api) — API REST Laravel 12 (PHP 8.3), source de vérité pour les données et l'authentification (JWT).
-- [`go-with-dog-app/`](go-with-dog-app) — Front-end web React 19 (MUI v9), construit avec Vite. Client principal.
-- [`GowithDogMobile/`](GowithDogMobile) — Application React Native 0.71, en tout début de développement, non intégrée au Docker Compose ci-dessous.
+- [`woofalk-api/`](woofalk-api) — API REST Laravel 12 (PHP 8.3), source de vérité pour les données et l'authentification (JWT).
+- [`woofalk-app/`](woofalk-app) — Front-end web React 19 (MUI v9), construit avec Vite. Client principal.
+- [`GowithDogMobile/`](GowithDogMobile) — Application React Native 0.71, en tout début de développement, non intégrée au Docker Compose ci-dessous. **Pas encore renommée** : un renommage propre implique de changer le projet Xcode, les identifiants de bundle iOS et le package Android, pas juste le dossier — prévu dans une passe dédiée.
 
 ## Stack technique
 
-| | API (`go-with-dog-api`) | Web (`go-with-dog-app`) |
+| | API (`woofalk-api`) | Web (`woofalk-app`) |
 |---|---|---|
 | Framework | Laravel 12 (PHP 8.3) | React 19 + Vite |
 | Auth | JWT (`php-open-source-saver/jwt-auth`), middleware `auth:api` | Rôles décodés côté client depuis le JWT (`roles`: `ROLE_ADMIN` / `ROLE_USER`) |
 | UI | — | MUI v9 |
 | Base de données | MySQL | — |
-| Emails | Mailgun / Brevo en prod, Mailhog en local | — |
+| Emails | Mailjet en prod, Mailhog en local | — |
 | Cartes | — | `react-leaflet` / `leaflet` |
 | Graphiques (dashboard admin) | — | `chart.js`, `@devexpress/dx-react-chart-material-ui` |
 | Tests | PHPUnit (`tests/Feature`, `tests/Unit`) | Vitest + Testing Library |
@@ -53,9 +53,9 @@ Voir `CLAUDE.md` pour le détail de l'architecture Docker (dev/prod, volumes, en
     NPM
     MySQL
 
-### API (`go-with-dog-api`)
+### API (`woofalk-api`)
 
-Dans le dossier `go-with-dog-api` :
+Dans le dossier `woofalk-api` :
 
     composer install
 
@@ -78,9 +78,9 @@ Démarrez l'API :
 
 L'API est alors disponible sur http://localhost:8000.
 
-### Front-end (`go-with-dog-app`)
+### Front-end (`woofalk-app`)
 
-Dans le dossier `go-with-dog-app` :
+Dans le dossier `woofalk-app` :
 
     npm install
 
@@ -94,7 +94,7 @@ Puis ouvrez http://localhost:3000 dans votre navigateur.
 
 ## Configuration
 
-Principales variables d'environnement de l'API (`go-with-dog-api/.env`) :
+Principales variables d'environnement de l'API (`woofalk-api/.env`) :
 
     APP_NAME       Le nom de l'application.
     APP_ENV        L'environnement de l'application (local, production, etc.).
@@ -105,21 +105,21 @@ Principales variables d'environnement de l'API (`go-with-dog-api/.env`) :
     DB_DATABASE    Le nom de la base de données.
     DB_USERNAME    Le nom d'utilisateur de la base de données.
     DB_PASSWORD    Le mot de passe de la base de données.
-    MAIL_MAILER    Le transport d'email (smtp/mailhog en local, mailgun ou brevo en prod).
+    MAIL_MAILER    Le transport d'email (smtp/mailhog en local, mailjet en prod).
 
-Côté front (`go-with-dog-app/.env`) :
+Côté front (`woofalk-app/.env`) :
 
     VITE_API_URL   URL de base de l'API (sans slash final), inlinée au build par Vite.
 
 ## Tests et qualité de code
 
-API (dans `go-with-dog-api`) :
+API (dans `woofalk-api`) :
 
     vendor/bin/phpunit                              # suite complète (Unit + Feature)
     vendor/bin/phpunit --filter testCreateBallade   # un seul test
     vendor/bin/pint                                 # correction du style de code (Laravel Pint)
 
-Front (dans `go-with-dog-app`) :
+Front (dans `woofalk-app`) :
 
     npm test   # Vitest
 

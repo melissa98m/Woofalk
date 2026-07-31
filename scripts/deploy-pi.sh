@@ -1,5 +1,5 @@
 #!/bin/bash
-# Redeploys go-with-dog-api on the Raspberry Pi. Invoked over SSH by the
+# Redeploys woofalk-api on the Raspberry Pi. Invoked over SSH by the
 # "Deploy to Raspberry Pi" job in .github/workflows/api-ci-cd.yml, after
 # PHPUnit has passed in CI. Only ever touches the api/api-nginx services —
 # db/web/mailhog are left running untouched.

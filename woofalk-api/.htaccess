@@ -1,0 +1,6 @@
+Header always set Access-Control-Allow-Origin "https://woofalk.fr"
+Header always set Access-Control-Allow-Methods "POST, GET, OPTIONS, DELETE, PUT"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+Header set Access-Control-Allow-Credentials true
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE , OPTION, PATCH"
+Header set Access-Control-Allow-Headers "Origin, X-Requested-With, Content-Type,Authorization,  Accept"

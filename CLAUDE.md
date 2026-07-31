@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-GoWithDog is a website that lists dog-friendly places ("places") and walks ("ballades"). Non-authenticated/regular users can browse and add places/ballades; admins can also edit/delete places, ballades, categories, tags, addresses, and manage users. The repo has three independent sub-projects, each with its own dependency tree — there is no shared root `package.json`:
+Woofalk is a website that lists dog-friendly places ("places") and walks ("ballades"). Non-authenticated/regular users can browse and add places/ballades; admins can also edit/delete places, ballades, categories, tags, addresses, and manage users. The repo has three independent sub-projects, each with its own dependency tree — there is no shared root `package.json`:
 
-- `go-with-dog-api/` — Laravel 12 REST API (PHP 8.3), source of truth for data and auth.
-- `go-with-dog-app/` — React 19 web front-end (MUI v9), built with Vite. The primary client.
-- `GowithDogMobile/` — React Native 0.71 app, early stage, not part of the Docker setup below.
+- `woofalk-api/` — Laravel 12 REST API (PHP 8.3), source of truth for data and auth.
+- `woofalk-app/` — React 19 web front-end (MUI v9), built with Vite. The primary client.
+- `GowithDogMobile/` — React Native 0.71 app, early stage, not part of the Docker setup below. Not yet renamed to match the Woofalk rebrand — a proper rename means changing the Xcode project, iOS bundle identifiers, and Android package, not just the folder, so it's deferred to a dedicated mobile-rename pass.
 
 The API and web app run together via the root `docker-compose.yml` (see below); this is the primary way to run the project locally. Mobile has its own workflow (Metro/emulators) and isn't containerized.
 
@@ -16,7 +16,7 @@ The API and web app run together via the root `docker-compose.yml` (see below); 
 
 Sur ce projet, Claude Code doit se comporter comme un **lead développeur expert React / Laravel**, avec une expertise poussée en accessibilité, sécurité, optimisation et bonnes pratiques. Cette exigence s'applique à toute modification de code, quelle que soit sa taille.
 
-Pour **chaque changement** (front `go-with-dog-app` ou back `go-with-dog-api`), vérifier systématiquement avant de considérer la tâche terminée :
+Pour **chaque changement** (front `woofalk-app` ou back `woofalk-api`), vérifier systématiquement avant de considérer la tâche terminée :
 
 - **Non-régression** : le comportement existant (routes, endpoints, permissions, UI) n'est pas cassé. Lancer les tests concernés (`vendor/bin/phpunit` côté API, `npm test` côté web) et le linting (`vendor/bin/pint`, ESLint) quand le changement les touche. Ne pas se contenter d'une relecture visuelle si une vérification automatisée existe.
 - **Sécurité** : pas de faille introduite ou laissée en place — injection SQL, XSS, CSRF, IDOR/absence de contrôle d'autorisation (`auth:api`, vérification du rôle `ROLE_ADMIN`/`ROLE_USER`), secrets/API keys en dur, validation/échappement des entrées utilisateurs, dépendances non prévues côté client (ex. ne jamais faire confiance au rôle décodé côté front pour protéger une donnée sensible — le contrôle réel doit être côté API).
@@ -37,7 +37,7 @@ Dès qu'une fonctionnalité ou une tâche est considérée comme terminée :
 3. **Commit** : proposer un message de commit et **attendre la validation explicite de l'utilisateur** avant de committer — ne jamais committer un message non validé.
 4. **Push** : ne jamais pousser (`git push`) sans confirmation explicite de l'utilisateur, même après un commit validé.
 
-## SEO (à appliquer sur toutes les pages publiques de `go-with-dog-app`)
+## SEO (à appliquer sur toutes les pages publiques de `woofalk-app`)
 
 Le front est un SPA React (Vite) rendu côté client, sans SSR/prerendering : `index.html` ne contient qu'un titre/description/canonical **statiques et identiques sur toutes les routes** (pas de gestion par page). C'est la limite structurelle numéro un du SEO actuel — tout crawler ou réseau social qui n'exécute pas le JS ne voit que ce HTML générique. Tant qu'aucune solution de SSR/prerendering n'est mise en place, en tenir compte dans toute estimation d'impact SEO.
 
@@ -65,13 +65,13 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d   
 
 > **`docker compose down -v` deletes every user, place, ballade, and like in the local dev database — permanently, no confirmation.** This has already happened once during development (a manually-created account was lost and silently replaced by `DatabaseSeeder`'s fake users). Default to `docker compose down` (no `-v`) day to day. `make up` / `make down` wrap these two safely; `make reset-db` is the only sanctioned way to wipe — it backs up to `./backups/` (gitignored, via `scripts/backup-db.sh`) and requires typing `reset` to confirm before running `-v`.
 
-- `api` (dev target) bind-mounts `./go-with-dog-api` and runs `composer install` at build time; `api-nginx` (plain `nginx:alpine`) reverse-proxies PHP to it over fastcgi using `go-with-dog-api/docker/nginx/api.conf`. The API's entrypoint (`go-with-dog-api/docker/entrypoint.sh`) bootstraps `.env` from `.env.example`, generates `APP_KEY`/`JWT_SECRET` if missing, waits for the db, runs migrations, and runs `storage:link` — all idempotent, safe on every `up`.
-- `web` (dev target) bind-mounts `./go-with-dog-app` and runs the Vite dev server; `node_modules` is kept in a named volume (`web_node_modules`) so the host's absence of `node_modules` doesn't shadow the container's.
+- `api` (dev target) bind-mounts `./woofalk-api` and runs `composer install` at build time; `api-nginx` (plain `nginx:alpine`) reverse-proxies PHP to it over fastcgi using `woofalk-api/docker/nginx/api.conf`. The API's entrypoint (`woofalk-api/docker/entrypoint.sh`) bootstraps `.env` from `.env.example`, generates `APP_KEY`/`JWT_SECRET` if missing, waits for the db, runs migrations, and runs `storage:link` — all idempotent, safe on every `up`.
+- `web` (dev target) bind-mounts `./woofalk-app` and runs the Vite dev server; `node_modules` is kept in a named volume (`web_node_modules`) so the host's absence of `node_modules` doesn't shadow the container's.
 - The `api`/`www-data` user inside the API image is re-keyed to UID/GID 1000 (override via `WWWUSER`/`WWWGROUP` build args) so files written into the bind-mounted `storage/`/`bootstrap/cache` don't end up root-owned on the host.
-- `docker-compose.prod.yml` is a merge overlay (uses Compose's `!override`/`!reset` YAML tags) — it switches both images to their `prod` build target (immutable, no bind mounts, optimized autoloader/opcache for the API, nginx-served static build for the web app) and shares the API's `public/`/`storage` tree with `api-nginx` via a named volume (`api_html`) instead of a bind mount, since the prod image has no host mount. If you rebuild the api image with new static assets, `docker volume rm gowithdog_api_html` to force nginx to pick them up.
-- `go-with-dog-api/Dockerfile` and `go-with-dog-app/Dockerfile` are both multi-stage (`base`/`dev`/`vendor`/`prod` and `deps`/`dev`/`build`/`prod` respectively) and can be built/run standalone outside compose too.
+- `docker-compose.prod.yml` is a merge overlay (uses Compose's `!override`/`!reset` YAML tags) — it switches both images to their `prod` build target (immutable, no bind mounts, optimized autoloader/opcache for the API, nginx-served static build for the web app) and shares the API's `public/`/`storage` tree with `api-nginx` via a named volume (`api_html`) instead of a bind mount, since the prod image has no host mount. If you rebuild the api image with new static assets, `docker volume rm gowithdog_api_html` to force nginx to pick them up. (This volume name — and the underlying `COMPOSE_PROJECT_NAME=gowithdog` in `scripts/deploy-pi.sh` — intentionally still says "gowithdog", not "woofalk": it's an internal Compose project identifier on the live Raspberry Pi deployment, and renaming it would make Compose treat `api`/`api-nginx` as belonging to a different project than the already-running `db`/`web`/`mailhog`, risking lost network connectivity and an orphaned/reinitialized database volume. Not worth it for an invisible technical identifier.)
+- `woofalk-api/Dockerfile` and `woofalk-app/Dockerfile` are both multi-stage (`base`/`dev`/`vendor`/`prod` and `deps`/`dev`/`build`/`prod` respectively) and can be built/run standalone outside compose too.
 
-## go-with-dog-api (Laravel)
+## woofalk-api (Laravel)
 
 ### Setup (without Docker)
 ```bash
@@ -101,10 +101,10 @@ Via Docker instead: `docker compose exec api <command>` (e.g. `docker compose ex
 - Models: `Address`, `Ballade`, `Category`, `Contact`, `PasswordReset`, `Place`, `Tag`, `User` in `app/Models/`.
 - Roles are embedded in the issued JWT as a `roles` claim (e.g. `ROLE_ADMIN`, `ROLE_USER`) — this is how the front-end determines admin access, not a server-side gate on every request.
 - Most `store`/`update`/`destroy` endpoints require `auth:api`; `index`/`show` endpoints are public. `*-user` endpoints (`places-user`, `ballades-user`) return only the authenticated user's own records.
-- Mail is configured for both Mailgun and Brevo transports (`symfony/mailgun-mailer`, `symfony/brevo-mailer` — Brevo is Sendinblue's current name; the package was renamed upstream). Local/dev mail goes to Mailhog (`MAIL_HOST=mailhog`, UI at `:8025`).
+- Mail is configured for Mailjet in production. Laravel has no built-in Mailjet transport, so `app/Providers/AppServiceProvider.php` registers one via `Mail::extend('mailjet', ...)`, using `symfony/mailjet-mailer`'s `MailjetTransportFactory` (API transport, `mailjet+api` scheme) with credentials from `config('services.mailjet')` (`MAILJET_KEY`/`MAILJET_SECRET`). Local/dev mail goes to Mailhog (`MAIL_HOST=mailhog`, UI at `:8025`) and doesn't touch Mailjet.
 - Tests: `tests/Feature/*Test.php` hit routes via HTTP and assert response status/shape; `tests/Unit/*Test.php` test model/logic in isolation. **Known pre-existing gaps, not introduced by any recent change**: `AddressFactory`/`CategoryFactory`/`BalladeFactory` don't exist even though tests call `Model::factory()`; the stock `UserFactory` generates a `name` column the custom `users` migration doesn't have (it uses `username`); `CategoryFTest` posts to a non-existent web route (`/categories` instead of `/api/categories`); a couple of tests use the wrong HTTP verb or don't authenticate before hitting an `auth:api` route. Expect `vendor/bin/phpunit` to report ~13 pre-existing failures/errors unrelated to your changes unless you're specifically asked to fix the test suite.
 
-## go-with-dog-app (React web front-end, Vite)
+## woofalk-app (React web front-end, Vite)
 
 ### Setup / common commands
 ```bash
@@ -122,7 +122,7 @@ Was Create React App until this was migrated to Vite (CRA/`react-scripts` has be
 
 ### Architecture
 - Routing is defined centrally in `src/index.jsx` (not `App.jsx`) — all top-level routes and their admin/auth gating live there via `react-router-dom`'s `<Routes>`. `App.jsx` just renders the shared `<Outlet/>` layout inside `index.jsx`'s tree. Only depend on `react-router-dom` (not the bare `react-router` package) — a few files used to import hooks from `react-router` directly, which is redundant and, post-upgrade, versioned independently from `react-router-dom`; they were switched to import from `react-router-dom` instead.
-- The API origin is centralized in `src/config.jsx` (`export const API_URL = import.meta.env.VITE_API_URL || "https://api.gowithdog.fr"`) and imported wherever a request is made. It used to be hardcoded to the production domain (`https://api.gowithdog.fr`) in ~50 places across every component/service file, which meant local/Docker dev always hit prod — if you add a new API call, import `API_URL` from `./config` (or the right relative path) rather than hardcoding a host.
+- The API origin is centralized in `src/config.jsx` (`export const API_URL = import.meta.env.VITE_API_URL || "https://api.woofalk.fr"`) and imported wherever a request is made. It used to be hardcoded to the production domain (formerly `https://api.gowithdog.fr`, now `https://api.woofalk.fr`) in ~50 places across every component/service file, which meant local/Docker dev always hit prod — if you add a new API call, import `API_URL` from `./config` (or the right relative path) rather than hardcoding a host.
 - Auth/authorization is entirely client-side and localStorage-based: the JWT from the API is stored under `access_token`, and `src/services/auth/token.jsx` decodes it (via `jwt-decode`'s named `jwtDecode` export — v4 dropped the default export) to expose `getToken`, `getRoles`, `loggedAndAdmin`, `loggedAndUser`, `getExpiryTime`, etc. Route elements call `auth.loggedAndAdmin()` / `auth.loggedAndUser()` directly to decide what to render — there is no route-guard component wrapping children.
 - `src/store.jsx` and `src/services/auth/guard.jsx` reference `@reduxjs/toolkit`/`react-redux` (not installed) and a `component/features/loginButton/loginButtonSlice` module that doesn't exist, and neither file is imported from `index.jsx`. This is dead/broken leftover code, not the actual state mechanism — the real "am I logged in" state is derived live from `auth.getToken()`/`auth.loggedAndAdmin()` in `token.jsx`.
 - Components are organized by domain under `src/component/` (`place/`, `ballade/`, `category/`, `tag/`, `address/`, `user/`, `account/`, `contact/`, `dashboard/`, `legal/`, `search/`), each typically with `new*`/`edit*`/`delete*`/list-and-detail files following the same CRUD pattern per resource, mirroring the API's resources. Shared chrome lives in `src/component/_partials/` (`_navbar/`, `_footer/`, `_theme/` — light/dark theme via `ColorContext`).
