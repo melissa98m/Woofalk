@@ -11,11 +11,17 @@ const GEO_API = "https://geo.api.gouv.fr";
 // (~120 rows) is cheap and doesn't change during a session.
 let cachedDivisionsPromise = null;
 
+// Third-party API responding with `Access-Control-Allow-Origin: *`, which
+// browsers reject when combined with credentials — the
+// axios.defaults.withCredentials=true set for the Woofalk API (see
+// index.jsx) must not leak onto requests to this one.
+const NO_CREDENTIALS = { withCredentials: false };
+
 function loadDivisions() {
     if (!cachedDivisionsPromise) {
         cachedDivisionsPromise = Promise.all([
-            axios.get(`${GEO_API}/departements`, { params: { fields: "nom,code" } }),
-            axios.get(`${GEO_API}/regions`, { params: { fields: "nom,code" } }),
+            axios.get(`${GEO_API}/departements`, { params: { fields: "nom,code" }, ...NO_CREDENTIALS }),
+            axios.get(`${GEO_API}/regions`, { params: { fields: "nom,code" }, ...NO_CREDENTIALS }),
         ]).then(([departementsRes, regionsRes]) => [
             ...departementsRes.data.map((d) => ({ type: "departement", code: d.code, label: `${d.nom} (${d.code})` })),
             ...regionsRes.data.map((r) => ({ type: "region", code: r.code, label: r.nom })),
@@ -59,6 +65,7 @@ export async function resolveDivisionCenter(division) {
     const param = division.type === "departement" ? "codeDepartement" : "codeRegion";
     const { data: communes } = await axios.get(`${GEO_API}/communes`, {
         params: { [param]: division.code, fields: "nom,population" },
+        ...NO_CREDENTIALS,
     });
 
     const largest = communes.reduce((best, c) => ((c.population ?? 0) > (best?.population ?? 0) ? c : best), null);
@@ -68,6 +75,7 @@ export async function resolveDivisionCenter(division) {
 
     const { data: withCenter } = await axios.get(`${GEO_API}/communes/${largest.code}`, {
         params: { fields: "nom,centre" },
+        ...NO_CREDENTIALS,
     });
 
     return {
