@@ -1,8 +1,8 @@
 import { Box, Container, Link, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
-const CONTACT_EMAIL = "bonjour@woofalk.fr";
-const MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Contact depuis les mentions légales — woofalk.fr")}`;
+const CONTACT_EMAIL = "bonjour@woofalk.com";
+const MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Contact depuis les mentions légales — woofalk.com")}`;
 
 function Section({ title, children }) {
     return (
@@ -27,7 +27,7 @@ function MentionsLegales() {
             <Typography variant="body2" color="text.secondary">
                 Conformément aux articles 6-III et 19 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie
                 numérique (LCEN), les informations suivantes sont mises à la disposition des utilisateurs et visiteurs du
-                site <strong>woofalk.fr</strong>.
+                site <strong>woofalk.com</strong>.
             </Typography>
 
             <Section title="1. Éditeur du site">

@@ -94,7 +94,7 @@ function Contact() {
                     <Box sx={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                         <Typography variant="body2" color="text.primary">
                             <strong>Email :</strong>{" "}
-                            <Link href="mailto:bonjour@woofalk.fr">bonjour@woofalk.fr</Link>
+                            <Link href="mailto:bonjour@woofalk.com">bonjour@woofalk.com</Link>
                         </Typography>
                         <Typography variant="body2" color="text.primary">
                             <strong>Réseaux :</strong> Instagram · Facebook

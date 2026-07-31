@@ -31,14 +31,30 @@ services:
       - api_uploads:/var/www/html/storage/app/public
     env_file:
       - ./woofalk-api/.env.production
-    environment:
+    # !override (not a plain merge) is deliberate: docker-compose.yml's `api`
+    # service sets APP_URL/DB_*/MAIL_* directly in `environment:` for local
+    # dev, and Compose's `environment:` always wins over `env_file:` for a
+    # given key — without this override, those dev defaults (including the
+    # dev DB password) would silently leak into prod and take priority over
+    # the real values in .env.production. Only non-secret, infra-level
+    # constants belong here; secrets (DB credentials, MAIL_MAILER, Mailjet
+    # keys, APP_KEY/JWT_SECRET) stay in .env.production via env_file, which
+    # now has nothing left in this map to be overridden by.
+    environment: !override
       APP_ENV: production
       APP_DEBUG: "false"
+      # Adjust to the real production domain(s) before deploying — the
+      # httpOnly auth cookie's CORS grant and storage/asset URLs depend on
+      # these being correct. woofalk.com/api.woofalk.com are different
+      # origins but the same site (same eTLD+1), so the existing
+      # SameSite=Lax cookie still works across them.
+      APP_URL: ${APP_URL:-https://api.woofalk.com}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://woofalk.com}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
       WAIT_FOR_DB: "true"
       RUN_MIGRATIONS: "false"
-      # Adjust to the real production front-end domain(s) before deploying —
-      # the httpOnly auth cookie's CORS grant depends on this being correct.
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://woofalk.fr}
 
   api-nginx:
     volumes: !override

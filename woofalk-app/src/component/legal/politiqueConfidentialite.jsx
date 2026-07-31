@@ -1,7 +1,7 @@
 import { Box, Container, Link, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
-const CONTACT_EMAIL = "bonjour@woofalk.fr";
+const CONTACT_EMAIL = "bonjour@woofalk.com";
 
 function Section({ title, children }) {
     return (

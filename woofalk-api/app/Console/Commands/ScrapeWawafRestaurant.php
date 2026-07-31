@@ -41,7 +41,7 @@ use Illuminate\Support\Facades\Http;
  */
 class ScrapeWawafRestaurant extends Command
 {
-    private const USER_AGENT = 'WoofalkImportBot/1.0 (+https://woofalk.fr; contact: melissa.mangione@gmail.com)';
+    private const USER_AGENT = 'WoofalkImportBot/1.0 (+https://woofalk.com; contact: melissa.mangione@gmail.com)';
 
     private const API_URL = 'https://wawaf.fr/wp-json/wp/v2/etablissement';
 

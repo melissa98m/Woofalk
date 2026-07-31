@@ -13,7 +13,7 @@ use Symfony\Component\DomCrawler\Crawler;
  */
 trait ScrapesEmmeneTonChien
 {
-    private const USER_AGENT = 'WoofalkImportBot/1.0 (+https://woofalk.fr; contact: melissa.mangione@gmail.com)';
+    private const USER_AGENT = 'WoofalkImportBot/1.0 (+https://woofalk.com; contact: melissa.mangione@gmail.com)';
 
     private const BAN_URL = 'https://api-adresse.data.gouv.fr/search/';
 
