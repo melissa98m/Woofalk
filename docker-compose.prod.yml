@@ -82,6 +82,19 @@ services:
 
   db:
     ports: !reset null
+    # docker-compose.yml's dev credentials (gowithdog/gowithdog/root) are
+    # public in this repo's history — reusing them here would mean a
+    # publicly known password guards prod data, even with the port
+    # unpublished. Real values come from a root .env file (gitignored, see
+    # .env.example), which Compose auto-loads for variable substitution.
+    # Must match DB_DATABASE/DB_USERNAME/DB_PASSWORD in
+    # woofalk-api/.env.production, since that's what the api service
+    # connects with.
+    environment: !override
+      MYSQL_DATABASE: ${DB_DATABASE:?Set DB_DATABASE in a root .env file, see .env.example}
+      MYSQL_USER: ${DB_USERNAME:?Set DB_USERNAME in a root .env file, see .env.example}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in a root .env file, see .env.example}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in a root .env file, see .env.example}
 
 volumes:
   api_html:
