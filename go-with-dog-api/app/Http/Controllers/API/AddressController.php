@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Address;
 use Illuminate\Http\Request;
@@ -9,6 +10,10 @@ use Illuminate\Http\Response;
 
 class AddressController extends Controller
 {
+    use CachesListing;
+
+    private const CACHE_KEY = 'addresses.index';
+
     /**
      * Display a listing of the resource.
      *
@@ -16,7 +21,7 @@ class AddressController extends Controller
      */
     public function index()
     {
-        $addresses = Address::all();
+        $addresses = $this->rememberListing(self::CACHE_KEY, fn () => Address::all());
 
         return response()->json([
             'status' => 'Success',
@@ -47,6 +52,7 @@ class AddressController extends Controller
             'longitude' => $request->longitude,
 
         ]);
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json([
             'status' => 'Success',
@@ -86,6 +92,7 @@ class AddressController extends Controller
             'latitude' => $request->latitude,
             'longitude' => $request->longitude,
         ]);
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json([
             'status' => 'Success',
@@ -101,6 +108,7 @@ class AddressController extends Controller
     public function destroy(Address $address)
     {
         $address->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         // On retourne la réponse JSON
         return response()->json([
@@ -122,6 +130,7 @@ class AddressController extends Controller
         ]);
 
         Address::whereIn('id', $validated['ids'])->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

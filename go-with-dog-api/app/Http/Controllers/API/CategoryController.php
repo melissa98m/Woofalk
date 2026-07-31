@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
@@ -10,6 +11,15 @@ use Illuminate\Support\Facades\DB;
 
 class CategoryController extends Controller
 {
+    use CachesListing;
+
+    /**
+     * One cache entry per `scope` filter value (index is called with
+     * scope=place/hebergement/both or no filter at all), so a mutation must
+     * clear every variant since we don't know which ones were affected.
+     */
+    private const CACHE_KEYS = ['categories.index', 'categories.index.place', 'categories.index.hebergement', 'categories.index.both'];
+
     /**
      * Display a listing of the resource.
      *
@@ -21,12 +31,15 @@ class CategoryController extends Controller
             'scope' => 'nullable|in:place,hebergement,both',
         ]);
 
-        $query = DB::table('categories');
-        if ($request->filled('scope')) {
-            $query->whereIn('scope', [$request->scope, 'both']);
-        }
+        $cacheKey = 'categories.index'.($request->filled('scope') ? '.'.$request->scope : '');
+        $categories = $this->rememberListing($cacheKey, function () use ($request) {
+            $query = DB::table('categories');
+            if ($request->filled('scope')) {
+                $query->whereIn('scope', [$request->scope, 'both']);
+            }
 
-        $categories = $query->get()->toArray();
+            return $query->get()->toArray();
+        });
 
         return response()->json(['status' => 'Success', 'data' => $categories]);
     }
@@ -46,6 +59,7 @@ class CategoryController extends Controller
             'category_name' => $request->category_name,
             'scope' => $request->scope ?? 'place',
         ]);
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Success', 'data' => $category]);
     }
@@ -79,6 +93,7 @@ class CategoryController extends Controller
             'category_name' => $request->category_name,
             'scope' => $request->scope ?? $category->scope,
         ]);
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Success', 'data' => $category]);
     }
@@ -91,6 +106,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $category->delete();
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }
@@ -109,6 +125,7 @@ class CategoryController extends Controller
         ]);
 
         Category::whereIn('id', $validated['ids'])->delete();
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

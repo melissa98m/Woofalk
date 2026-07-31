@@ -110,6 +110,37 @@ trait ScrapesEmmeneTonChien
         return ['lat' => (float) $coordinates[1], 'lng' => (float) $coordinates[0]];
     }
 
+    /**
+     * Some fiche types (e.g. beaches) don't carry a street address to geocode
+     * via the BAN API, but the theme's per-listing map widget embeds the
+     * fiche's own lat/lng in an inline `ziston_map_options` JS object —
+     * read that directly instead. More accurate than geocoding a
+     * postcode+city anyway, since that would only resolve to the town
+     * centre rather than the actual spot.
+     *
+     * @return array{lat: float, lng: float}|null
+     */
+    private function extractInlineMapCoordinates(string $html): ?array
+    {
+        if (! preg_match('/ziston_map_options\s*=\s*(\{.*?\});/s', $html, $m)) {
+            return null;
+        }
+
+        $options = json_decode($m[1], true);
+        if (! is_array($options) || ! isset($options['latitude'], $options['longitude'])) {
+            return null;
+        }
+
+        $lat = (float) $options['latitude'];
+        $lng = (float) $options['longitude'];
+
+        if ($lat === 0.0 && $lng === 0.0) {
+            return null;
+        }
+
+        return ['lat' => $lat, 'lng' => $lng];
+    }
+
     private function fetchHtml(string $url, int $delay): string
     {
         $response = Http::withHeaders(['User-Agent' => self::USER_AGENT])

@@ -26,12 +26,18 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        if (Category::count() > 0) {
+        $hadExistingCategories = Category::count() > 0;
+
+        foreach (['Plage', 'Restaurant', 'Visite'] as $categoryName) {
+            Category::firstOrCreate(['category_name' => $categoryName]);
+        }
+
+        if ($hadExistingCategories) {
             return;
         }
 
         $users = User::factory(5)->create();
-        $categories = Category::factory(5)->create();
+        $categories = Category::all();
         $tags = Tag::factory(5)->create();
         Address::factory(10)->create();
 

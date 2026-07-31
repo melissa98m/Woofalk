@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Ballade;
 use App\Models\Tag;
@@ -15,6 +16,10 @@ use Illuminate\Validation\Rule;
 
 class BalladeController extends Controller
 {
+    use CachesListing;
+
+    private const CACHE_KEY = 'ballades.index';
+
     /**
      * Display a listing of the resource.
      *
@@ -22,8 +27,41 @@ class BalladeController extends Controller
      */
     public function index()
     {
-        $ballades = Ballade::with(['user', 'tags'])->withCount('likedByUsers as likes_count')->get();
-        $this->attachLikeState($ballades);
+        $ballades = $this->rememberListing(self::CACHE_KEY, function () {
+            // Cached as plain arrays rather than Eloquent models — see the
+            // identical note in PlaceController::index(): hydrating full
+            // models for every row and serializing them whole for the file
+            // cache can exhaust the default memory_limit at scale, which
+            // fails silently (a truncated payload, not an error) rather than
+            // loudly. likes_count is deliberately NOT selected here: it
+            // changes on every like/unlike, and baking it into the cached
+            // payload would mean busting the whole list cache on every like
+            // instead of only on ballade edits — it's merged in below.
+            return Ballade::select(['id', 'ballade_name', 'ballade_description', 'ballade_image', 'ballade_website', 'distance', 'denivele', 'ballade_latitude', 'ballade_longitude', 'status', 'user', 'created_at'])
+                ->with([
+                    'user:id,username',
+                    'tags:id,tag_name,color',
+                ])
+                ->get()
+                ->toArray();
+        });
+
+        // is_liked/likes_count depend on live like state, so they're merged
+        // in after the cache read rather than baked into the cached payload.
+        $userId = Auth::id();
+        $likedIds = $userId
+            ? DB::table('ballade_likes')->where('user_id', $userId)->pluck('ballade_id')->all()
+            : [];
+        $likeCounts = DB::table('ballade_likes')
+            ->selectRaw('ballade_id, count(*) as count')
+            ->groupBy('ballade_id')
+            ->pluck('count', 'ballade_id');
+        $ballades = array_map(function ($ballade) use ($likedIds, $likeCounts) {
+            $ballade['is_liked'] = in_array($ballade['id'], $likedIds, true);
+            $ballade['likes_count'] = (int) ($likeCounts[$ballade['id']] ?? 0);
+
+            return $ballade;
+        }, $ballades);
 
         return response()->json([
             'status' => 'Success',
@@ -121,7 +159,9 @@ class BalladeController extends Controller
 
     /**
      * Mark, without an extra query per row, which of the given ballades the
-     * authenticated user (if any) has liked.
+     * authenticated user (if any) has liked, and attach each one's live like
+     * count (kept out of the cached listing query so a like/unlike doesn't
+     * have to bust the whole list cache).
      *
      * @param  Collection<int, Ballade>  $ballades
      */
@@ -131,8 +171,13 @@ class BalladeController extends Controller
         $likedIds = $userId
             ? DB::table('ballade_likes')->where('user_id', $userId)->pluck('ballade_id')->all()
             : [];
-        $ballades->each(function (Ballade $ballade) use ($likedIds) {
+        $likeCounts = DB::table('ballade_likes')
+            ->selectRaw('ballade_id, count(*) as count')
+            ->groupBy('ballade_id')
+            ->pluck('count', 'ballade_id');
+        $ballades->each(function (Ballade $ballade) use ($likedIds, $likeCounts) {
             $ballade->is_liked = in_array($ballade->id, $likedIds, true);
+            $ballade->likes_count = (int) ($likeCounts[$ballade->id] ?? 0);
         });
     }
 
@@ -195,6 +240,7 @@ class BalladeController extends Controller
             'status' => $request->status ?? 'publie',
         ]);
         $this->syncTagsWithAutoTags($ballade, $request);
+        $this->forgetListing(self::CACHE_KEY);
 
         $ballade->tags = $ballade->tags()->get();
         $ballade->user = $ballade->user()->get()[0];
@@ -271,6 +317,7 @@ class BalladeController extends Controller
             'status' => $request->status ?? $ballade->status,
         ]);
         $this->syncTagsWithAutoTags($ballade, $request);
+        $this->forgetListing(self::CACHE_KEY);
 
         $ballade->tags = $ballade->tags()->get();
         $ballade->user = $ballade->user()->get()[0];
@@ -293,6 +340,7 @@ class BalladeController extends Controller
             Storage::delete('/public/uploads/ballades'.$ballade->ballade_image);
         }
         $ballade->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json([
             'status' => 'Supprimer avec success',
@@ -314,6 +362,7 @@ class BalladeController extends Controller
         ]);
 
         Ballade::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Success']);
     }
@@ -339,6 +388,7 @@ class BalladeController extends Controller
         }
 
         Ballade::whereIn('id', $validated['ids'])->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

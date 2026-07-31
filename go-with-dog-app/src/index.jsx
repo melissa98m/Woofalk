@@ -28,6 +28,7 @@ const Place = lazy(() => import("./component/place/place"));
 const PlaceDetail = lazy(() => import("./component/place/placeDetail"));
 const NewPlace = lazy(() => import("./component/place/newPlace"));
 const SearchResults = lazy(() => import("./component/search/searchResults"));
+const MapSearch = lazy(() => import("./component/search/mapSearch"));
 const Ballades = lazy(() => import("./component/ballade/ballades"));
 const Ballade = lazy(() => import("./component/ballade/ballade"));
 const BalladeDetail = lazy(() => import("./component/ballade/balladeDetail"));
@@ -87,6 +88,7 @@ function AppRoutes() {
             <Route exact path="hebergements/new" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <NewHebergement/> : <Home adminMessage='Non connecté'/>}>NewHebergement</Route>
             <Route exact path="hebergements/:id" element={<HebergementDetail/>}>HebergementDetail</Route>
             <Route exact path="recherche" element={<SearchResults/>}>Recherche</Route>
+            <Route exact path="carte" element={<MapSearch/>}>Carte</Route>
             <Route exact path="logout" element={<Logout/>}>Logout</Route>
             <Route path="admin" element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
                 <Route exact path="address" element={<Address/>}>Address</Route>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Tag;
 use Illuminate\Http\Request;
@@ -10,6 +11,14 @@ use Illuminate\Support\Facades\DB;
 
 class TagController extends Controller
 {
+    use CachesListing;
+
+    /**
+     * One cache entry per `scope` filter value, so a mutation must clear
+     * every variant since we don't know which ones were affected.
+     */
+    private const CACHE_KEYS = ['tags.index', 'tags.index.place', 'tags.index.ballade', 'tags.index.hebergement', 'tags.index.both'];
+
     /**
      * Display a listing of the resource.
      *
@@ -21,12 +30,15 @@ class TagController extends Controller
             'scope' => 'nullable|in:place,ballade,hebergement,both',
         ]);
 
-        $query = DB::table('tags');
-        if ($request->filled('scope')) {
-            $query->whereIn('scope', [$request->scope, 'both']);
-        }
+        $cacheKey = 'tags.index'.($request->filled('scope') ? '.'.$request->scope : '');
+        $tags = $this->rememberListing($cacheKey, function () use ($request) {
+            $query = DB::table('tags');
+            if ($request->filled('scope')) {
+                $query->whereIn('scope', [$request->scope, 'both']);
+            }
 
-        $tags = $query->get()->toArray();
+            return $query->get()->toArray();
+        });
 
         return response()->json(['status' => 'Success', 'data' => $tags]);
     }
@@ -48,6 +60,7 @@ class TagController extends Controller
             'color' => $request->color,
             'scope' => $request->scope ?? 'both',
         ]);
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Success', 'data' => $tag]);
     }
@@ -90,6 +103,7 @@ class TagController extends Controller
         if ($tag->scope !== 'hebergement' && $tag->scope !== 'both') {
             $tag->hebergements()->detach();
         }
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Success', 'data' => $tag]);
     }
@@ -102,6 +116,7 @@ class TagController extends Controller
     public function destroy(Tag $tag)
     {
         $tag->delete();
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }
@@ -120,6 +135,7 @@ class TagController extends Controller
         ]);
 
         Tag::whereIn('id', $validated['ids'])->delete();
+        $this->forgetListing(...self::CACHE_KEYS);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

@@ -6,7 +6,7 @@ import { BalladeCard } from "../_partials/_ui/BalladeCard";
 import Search from "../search/search";
 import { API_URL } from "../../config";
 
-const QUICK_CATEGORIES = ["Restaurant", "Parc", "Hebergement", "Autre"];
+const QUICK_CATEGORIES = ["Plage", "Restaurant", "Visite"];
 
 function Home() {
 

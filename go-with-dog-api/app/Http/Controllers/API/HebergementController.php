@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Hebergement;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,6 +15,10 @@ use Illuminate\Validation\Rule;
 
 class HebergementController extends Controller
 {
+    use CachesListing;
+
+    private const CACHE_KEY = 'hebergements.index';
+
     /**
      * Display a listing of the resource.
      *
@@ -21,8 +26,52 @@ class HebergementController extends Controller
      */
     public function index()
     {
-        $hebergements = Hebergement::with(['user', 'category', 'address', 'tags'])->withCount('likedByUsers as likes_count')->get();
-        $this->attachLikeState($hebergements);
+        $hebergements = $this->rememberListing(self::CACHE_KEY, function () {
+            // Trimmed to the columns the listing views actually render (see
+            // HebergementCard, dashboard.jsx, hebergement.jsx) and cached as
+            // plain arrays rather than Eloquent models — some scraped rows
+            // carry dozens of tags each, and hydrating full models for all of
+            // them exhausted the default memory_limit when serialized whole.
+            // likes_count is deliberately NOT selected here: it changes on
+            // every like/unlike, and baking it into the cached payload would
+            // mean busting the whole list cache on every like instead of
+            // only on hebergement edits — it's merged in below instead.
+            $hebergements = Hebergement::select(['id', 'hebergement_name', 'hebergement_description', 'hebergement_image', 'hebergement_website', 'price_indication', 'status', 'user', 'address', 'category', 'created_at'])
+                ->with([
+                    'user:id,username',
+                    'category:id,category_name',
+                    'address:id,address,city,postal_code,latitude,longitude',
+                ])
+                ->get()
+                ->toArray();
+
+            // tags is fetched via a grouped pivot query rather than an
+            // eager-loaded relation — see groupTagsByOwner() docblock.
+            $tagsByHebergement = $this->groupTagsByOwner('hebergement_tag', 'hebergement_id');
+
+            return array_map(function ($hebergement) use ($tagsByHebergement) {
+                $hebergement['tags'] = $tagsByHebergement[$hebergement['id']] ?? [];
+
+                return $hebergement;
+            }, $hebergements);
+        });
+
+        // is_liked/likes_count depend on live like state, so they're merged
+        // in after the cache read rather than baked into the cached payload.
+        $userId = Auth::id();
+        $likedIds = $userId
+            ? DB::table('hebergement_likes')->where('user_id', $userId)->pluck('hebergement_id')->all()
+            : [];
+        $likeCounts = DB::table('hebergement_likes')
+            ->selectRaw('hebergement_id, count(*) as count')
+            ->groupBy('hebergement_id')
+            ->pluck('count', 'hebergement_id');
+        $hebergements = array_map(function ($hebergement) use ($likedIds, $likeCounts) {
+            $hebergement['is_liked'] = in_array($hebergement['id'], $likedIds, true);
+            $hebergement['likes_count'] = (int) ($likeCounts[$hebergement['id']] ?? 0);
+
+            return $hebergement;
+        }, $hebergements);
 
         return response()->json([
             'status' => 'Success',
@@ -128,7 +177,7 @@ class HebergementController extends Controller
             'hebergement_name' => 'required|max:200',
             'hebergement_description' => 'required',
             'hebergement_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'hebergement_website' => 'nullable|url|max:255',
+            'hebergement_website' => 'nullable|url|max:2048',
             'price_indication' => 'nullable|max:100',
             'category' => 'required',
             'address' => 'required',
@@ -156,6 +205,7 @@ class HebergementController extends Controller
             'status' => $request->status ?? 'publie',
         ]);
         $hebergement->tags()->sync($request->input('tags', []));
+        $this->forgetListing(self::CACHE_KEY);
 
         $hebergement->address = $hebergement->address()->get()[0];
         $hebergement->category = $hebergement->category()->get()[0];
@@ -198,7 +248,7 @@ class HebergementController extends Controller
             'hebergement_name' => 'required|max:200',
             'hebergement_description' => 'required',
             'hebergement_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
-            'hebergement_website' => 'nullable|url|max:255',
+            'hebergement_website' => 'nullable|url|max:2048',
             'price_indication' => 'nullable|max:100',
             'category' => 'required',
             'address' => 'required',
@@ -231,6 +281,7 @@ class HebergementController extends Controller
             'status' => $request->status ?? $hebergement->status,
         ]);
         $hebergement->tags()->sync($request->input('tags', []));
+        $this->forgetListing(self::CACHE_KEY);
 
         $hebergement->address = $hebergement->address()->get()[0];
         $hebergement->category = $hebergement->category()->get()[0];
@@ -254,6 +305,7 @@ class HebergementController extends Controller
             Storage::delete('/public/uploads/hebergements/'.$hebergement->hebergement_image);
         }
         $hebergement->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json([
             'status' => 'Supprimer avec succès',
@@ -275,6 +327,7 @@ class HebergementController extends Controller
         ]);
 
         Hebergement::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Success']);
     }
@@ -299,6 +352,7 @@ class HebergementController extends Controller
             }
         }
         Hebergement::whereIn('id', $validated['ids'])->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

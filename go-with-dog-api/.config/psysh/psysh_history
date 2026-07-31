@@ -1,0 +1,52 @@
+$catId = App\Models\Category::where('category_name', 'Restaurant')->value('id');
+$totalPages = 68;
+$updated = 0;
+$checked = 0;
+for ($page = 1; $page <= $totalPages; $page++) {
+    $response = Illuminate\Support\Facades\Http::withHeaders(['User-Agent' => 'GoWithDogImportBot/1.0 (+https://gowithdog.fr; contact: melissa.mangione@gmail.com)'])
+        ->timeout(20)->retry(3, 1000)
+        ->get('https://wawaf.fr/wp-json/wp/v2/etablissement', [
+            'categories' => 5,
+            'per_page' => 100,
+            'page' => $page,
+            '_fields' => 'title,meta_box.ville_hotel,meta_box.url_hotel',
+        ]);
+
+    if (! $response->successful()) {
+        echo "page {$page} failed: {$response->status()}\n";
+
+        continue;
+    }
+
+    foreach ($response->json() ?? [] as $item) {
+        $checked++;
+        $name = html_entity_decode((string) ($item['title']['rendered'] ?? ''), ENT_QUOTES | ENT_HTML5);
+        $city = trim((string) ($item['meta_box']['ville_hotel'] ?? ''));
+        $website = trim((string) ($item['meta_box']['url_hotel'] ?? ''));
+
+        if ($name === '' || $city === '' || $website === '' || ! filter_var($website, FILTER_VALIDATE_URL)) {
+            continue;
+        }
+
+        $place = App\Models\Place::where('category', $catId)
+            ->whereRaw('LOWER(place_name) = ?', [mb_strtolower($name)])
+            ->whereNull('place_website')
+            ->whereHas('address', function ($q) use ($city) {
+                $q->whereRaw('LOWER(city) = ?', [mb_strtolower($city)]);
+            })
+            ->first();
+
+        if ($place) {
+            $place->place_website = $website;
+            $place->save();
+            $updated++;
+        }
+    }
+
+    if ($page % 10 === 0) {
+        echo "page {$page}/{$totalPages}: checked={$checked} updated={$updated}\n";
+    }
+
+    usleep(300000);
+}
+echo "DONE: checked={$checked} updated={$updated}\n";

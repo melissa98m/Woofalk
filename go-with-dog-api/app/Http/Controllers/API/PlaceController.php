@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Place;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,6 +15,10 @@ use Illuminate\Validation\Rule;
 
 class PlaceController extends Controller
 {
+    use CachesListing;
+
+    private const CACHE_KEY = 'places.index';
+
     /**
      * Display a listing of the resource.
      *
@@ -21,8 +26,43 @@ class PlaceController extends Controller
      */
     public function index()
     {
-        $places = Place::with(['user', 'category', 'address', 'tags'])->withCount('likedByUsers as likes_count')->get();
-        $this->attachLikeState($places);
+        $places = $this->rememberListing(self::CACHE_KEY, function () {
+            // Trimmed to the columns the listing views actually render (see
+            // PlaceCard, dashboard.jsx, place.jsx) and cached as plain arrays
+            // rather than Eloquent models — hydrated models carry enough
+            // per-row overhead that serializing all ~7k places for the cache
+            // exhausted the default memory_limit even after trimming columns.
+            // likes_count is deliberately NOT selected here: it changes on
+            // every like/unlike, and baking it into the cached payload would
+            // mean busting the whole list cache on every like instead of
+            // only on place edits — it's merged in below instead.
+            return Place::select(['id', 'place_name', 'place_description', 'place_image', 'place_website', 'status', 'user', 'address', 'category', 'created_at'])
+                ->with([
+                    'user:id,username',
+                    'category:id,category_name',
+                    'address:id,address,city,postal_code,latitude,longitude',
+                    'tags:id,tag_name,color',
+                ])
+                ->get()
+                ->toArray();
+        });
+
+        // is_liked/likes_count depend on live like state, so they're merged
+        // in after the cache read rather than baked into the cached payload.
+        $userId = Auth::id();
+        $likedIds = $userId
+            ? DB::table('place_likes')->where('user_id', $userId)->pluck('place_id')->all()
+            : [];
+        $likeCounts = DB::table('place_likes')
+            ->selectRaw('place_id, count(*) as count')
+            ->groupBy('place_id')
+            ->pluck('count', 'place_id');
+        $places = array_map(function ($place) use ($likedIds, $likeCounts) {
+            $place['is_liked'] = in_array($place['id'], $likedIds, true);
+            $place['likes_count'] = (int) ($likeCounts[$place['id']] ?? 0);
+
+            return $place;
+        }, $places);
 
         return response()->json([
             'status' => 'Success',
@@ -154,6 +194,7 @@ class PlaceController extends Controller
             'status' => $request->status ?? 'publie',
         ]);
         $place->tags()->sync($request->input('tags', []));
+        $this->forgetListing(self::CACHE_KEY);
 
         $place->address = $place->address()->get()[0];
         $place->category = $place->category()->get()[0];
@@ -227,6 +268,7 @@ class PlaceController extends Controller
             'status' => $request->status ?? $place->status,
         ]);
         $place->tags()->sync($request->input('tags', []));
+        $this->forgetListing(self::CACHE_KEY);
 
         $place->address = $place->address()->get()[0];
         $place->category = $place->category()->get()[0];
@@ -247,6 +289,7 @@ class PlaceController extends Controller
     public function destroy(Place $place)
     {
         $place->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json([
             'status' => 'Supprimer avec succès',
@@ -268,6 +311,7 @@ class PlaceController extends Controller
         ]);
 
         Place::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Success']);
     }
@@ -286,6 +330,7 @@ class PlaceController extends Controller
         ]);
 
         Place::whereIn('id', $validated['ids'])->delete();
+        $this->forgetListing(self::CACHE_KEY);
 
         return response()->json(['status' => 'Supprimer avec succès']);
     }

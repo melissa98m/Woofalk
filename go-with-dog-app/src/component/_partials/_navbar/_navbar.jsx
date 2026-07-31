@@ -11,9 +11,10 @@ import DrawerComponent from "./Drawer";
 
 const NAV_LINKS = [
     { to: "/", label: "Accueil" },
-    { to: "/places", label: "Places" },
+    { to: "/places", label: "Lieux" },
     { to: "/ballades", label: "Ballades" },
     { to: "/hebergements", label: "Hébergements" },
+    { to: "/carte", label: "Carte" },
 ];
 
 export function Navbar() {

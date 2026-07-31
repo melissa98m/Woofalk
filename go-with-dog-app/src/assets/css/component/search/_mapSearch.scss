@@ -1,0 +1,43 @@
+// Leaflet divIcon markers for the /carte page. divIcon renders raw DOM
+// outside React (Leaflet clones the HTML string itself), so these can't be
+// styled via MUI's sx/theme props like the rest of the app — colors below
+// mirror the light-theme palette (terracottaDark/sageDark/coral) since pins
+// sit on the OSM tile layer, which stays light regardless of app dark mode.
+.map-search-pin {
+  width: 26px;
+  height: 26px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  border: 2px solid #FFFDF8;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &__label {
+    transform: rotate(45deg);
+    color: #FFFDF8;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+  }
+
+  &--place {
+    background-color: #A65E2C;
+  }
+
+  &--hebergement {
+    background-color: #4F6B47;
+  }
+
+  &--ballade {
+    background-color: #E2624B;
+  }
+
+  // Applied on top of a type class (see SELECTED_PIN_ICONS) when a pin is
+  // the current map/list selection.
+  &--selected {
+    border-color: #FFCD3C;
+    box-shadow: 0 0 0 4px rgba(255, 205, 60, 0.55), 0 2px 8px rgba(0, 0, 0, 0.45);
+  }
+}

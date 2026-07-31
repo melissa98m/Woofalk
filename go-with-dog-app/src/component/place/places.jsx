@@ -186,10 +186,9 @@ function Places() {
                     size="small"
                 >
                     <MenuItem value={null}>Toutes catégories</MenuItem>
+                    <MenuItem value="Plage">Plage</MenuItem>
                     <MenuItem value="Restaurant">Restaurant</MenuItem>
-                    <MenuItem value="Parc">Parc</MenuItem>
-                    <MenuItem value="Hebergement">Hebergement</MenuItem>
-                    <MenuItem value="Autre">Autre</MenuItem>
+                    <MenuItem value="Visite">Visite</MenuItem>
                 </Select>
 
                 <Box sx={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: { md: "auto" } }}>
