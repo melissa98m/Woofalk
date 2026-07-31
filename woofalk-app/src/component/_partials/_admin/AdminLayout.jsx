@@ -57,7 +57,7 @@ export function AdminLayout() {
             >
                 {!isMobile && (
                     <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-                        <Box component="img" src={Logo} alt="Woofalk" sx={{ height: 40 }} />
+                        <Box component="img" src={Logo} alt="Woofalk" sx={{ height: 40, borderRadius: "12px" }} />
                     </Box>
                 )}
                 {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
