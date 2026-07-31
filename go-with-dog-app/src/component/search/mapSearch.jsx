@@ -19,9 +19,10 @@ import {
     useTheme,
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import SearchIcon from "@mui/icons-material/Search";
 import { Language } from "@mui/icons-material";
 import { Link } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from "react-leaflet";
 import { Icon, divIcon, latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "../../assets/css/component/search/_mapSearch.scss";
@@ -133,17 +134,30 @@ function normalizeItems(index) {
 // search zone afterwards needs an imperative setView/fitBounds via useMap().
 // Nothing is ever plotted without a chosen center (see the `filtered` memo
 // in MapSearch), so there's no "fit to whatever's on screen" fallback here.
-function FitToResults({ center, radiusKm }) {
+function FitToResults({ center, radiusKm, programmaticMoveRef, skipNextFitRef }) {
     const map = useMap();
 
     useEffect(() => {
         if (center) {
+            // "Rechercher dans cette zone" derives center/radiusKm from the
+            // map's own current viewport, so re-fitting right after would
+            // just re-animate back to (roughly) where the user already is.
+            if (skipNextFitRef?.current) {
+                skipNextFitRef.current = false;
+                return;
+            }
+            // Flagged so the moveend this triggers isn't mistaken for a user
+            // pan/zoom by MapMoveTracker (see "Rechercher dans cette zone").
+            if (programmaticMoveRef) {
+                programmaticMoveRef.current = true;
+            }
             // The map sits in a CSS grid cell — Leaflet can mismeasure its own
             // pixel size in flex/grid layouts, which throws off fitBounds's
             // zoom computation unless it's told to re-measure first.
             map.invalidateSize();
             map.fitBounds(latLng(center.latitude, center.longitude).toBounds(radiusKm * 2000), { padding: [24, 24] });
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [center, radiusKm, map]);
 
     return null;
@@ -152,16 +166,38 @@ function FitToResults({ center, radiusKm }) {
 // Only fires when a list entry is selected (not when a pin itself is
 // clicked, since the map is already centered there) — see `selectionSource`
 // in MapSearch.
-function FocusOnSelectedItem({ item }) {
+function FocusOnSelectedItem({ item, programmaticMoveRef }) {
     const map = useMap();
 
     useEffect(() => {
         if (item) {
+            if (programmaticMoveRef) {
+                programmaticMoveRef.current = true;
+            }
             map.invalidateSize();
             map.flyTo([item.lat, item.lng], SELECTED_ITEM_ZOOM, { duration: 0.75 });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [item?.id, item?.lat, item?.lng, map]);
+
+    return null;
+}
+
+// Shows a Google Maps-style "Rechercher dans cette zone" prompt once the
+// user pans/zooms away from the last committed search — moveend also fires
+// for our own programmatic fitBounds/flyTo calls, so those flag
+// `programmaticMoveRef` first (see FitToResults/FocusOnSelectedItem) and
+// this ignores the resulting event instead of treating it as user input.
+function MapMoveTracker({ programmaticMoveRef, onUserMoved }) {
+    useMapEvents({
+        moveend: () => {
+            if (programmaticMoveRef.current) {
+                programmaticMoveRef.current = false;
+                return;
+            }
+            onUserMoved();
+        },
+    });
 
     return null;
 }
@@ -180,7 +216,18 @@ function MapSearch() {
     // list entry, so the map only zooms in for list selections and the
     // list only auto-scrolls for pin clicks (see below).
     const [selectionSource, setSelectionSource] = useState(null);
+    // True once the user has panned/zoomed away from the last committed
+    // search — shows the "Rechercher dans cette zone" button.
+    const [mapDirty, setMapDirty] = useState(false);
     const listItemRefs = useRef({});
+    const mapRef = useRef(null);
+    // Distinguishes our own fitBounds/flyTo calls from a real user pan/zoom
+    // (both fire the same 'moveend' event) — see MapMoveTracker.
+    const programmaticMoveRef = useRef(false);
+    // Set right before a "Rechercher dans cette zone" search commits its
+    // derived center/radius, so FitToResults doesn't re-animate back to a
+    // view the map is already showing.
+    const skipNextFitRef = useRef(false);
 
     useEffect(() => {
         ensureLoaded();
@@ -210,9 +257,13 @@ function MapSearch() {
 
     // Reset the selection whenever the search zone/filters change so a
     // stale pin/list entry doesn't stay highlighted once it's no longer shown.
+    // A committed search (address, division, radius, or "search this area")
+    // also means the map no longer disagrees with the results shown, so the
+    // "Rechercher dans cette zone" prompt goes away too.
     useEffect(() => {
         setSelectedId(null);
         setSelectionSource(null);
+        setMapDirty(false);
     }, [center, radiusKm, selectedTypes]);
 
     useEffect(() => {
@@ -240,6 +291,30 @@ function MapSearch() {
     const toggleType = (type) => (e) => {
         setSelectedTypes((current) => ({ ...current, [type]: e.target.checked }));
     };
+
+    // Re-centers the committed search on the map's current viewport instead
+    // of a picked address/division — the radius is the distance from the
+    // viewport's center to its nearest edge, so the search circle stays
+    // fully inside what the user can actually see.
+    const handleSearchThisArea = useCallback(() => {
+        const map = mapRef.current;
+        if (!map) return;
+
+        const bounds = map.getBounds();
+        const viewCenter = bounds.getCenter();
+        const ne = bounds.getNorthEast();
+        const sw = bounds.getSouthWest();
+        const edgeDistancesKm = [
+            haversineDistanceKm(viewCenter.lat, viewCenter.lng, ne.lat, viewCenter.lng),
+            haversineDistanceKm(viewCenter.lat, viewCenter.lng, viewCenter.lat, ne.lng),
+            haversineDistanceKm(viewCenter.lat, viewCenter.lng, sw.lat, viewCenter.lng),
+            haversineDistanceKm(viewCenter.lat, viewCenter.lng, viewCenter.lat, sw.lng),
+        ];
+
+        skipNextFitRef.current = true;
+        setCenter({ latitude: viewCenter.lat, longitude: viewCenter.lng, label: "Zone actuelle de la carte", source: "viewport" });
+        setRadiusKm(Math.max(1, Math.round(Math.min(...edgeDistancesKm))));
+    }, []);
 
     const handleAddressSelect = (option) => {
         setCenter(option ? { ...option, source: "address" } : null);
@@ -356,6 +431,7 @@ function MapSearch() {
                         role="region"
                         aria-label="Carte des résultats"
                         sx={{
+                            position: "relative",
                             borderRadius: "20px",
                             overflow: "hidden",
                             border: "1px solid",
@@ -364,13 +440,52 @@ function MapSearch() {
                             "& .leaflet-container": { height: "100%", width: "100%" },
                         }}
                     >
-                        <MapContainer center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} scrollWheelZoom>
+                        <Box
+                            aria-live="polite"
+                            sx={{
+                                position: "absolute",
+                                top: "12px",
+                                left: "50%",
+                                transform: "translateX(-50%)",
+                                zIndex: 1000,
+                            }}
+                        >
+                            {hasCenter && mapDirty ? (
+                                <Button
+                                    onClick={handleSearchThisArea}
+                                    startIcon={<SearchIcon fontSize="small" aria-hidden="true" />}
+                                    size="small"
+                                    variant="contained"
+                                    disableElevation
+                                    sx={{
+                                        bgcolor: "background.paper",
+                                        color: "text.primary",
+                                        borderRadius: "999px",
+                                        boxShadow: 3,
+                                        textTransform: "none",
+                                        fontWeight: 700,
+                                        "&:hover": { bgcolor: "background.paper", boxShadow: 5 },
+                                    }}
+                                >
+                                    Rechercher dans cette zone
+                                </Button>
+                            ) : null}
+                        </Box>
+                        <MapContainer ref={mapRef} center={DEFAULT_MAP_CENTER} zoom={DEFAULT_MAP_ZOOM} scrollWheelZoom>
                             <TileLayer
                                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                             />
-                            <FitToResults center={hasCenter ? center : null} radiusKm={radiusKm} />
-                            {selectionSource === "list" ? <FocusOnSelectedItem item={selectedItem} /> : null}
+                            <FitToResults
+                                center={hasCenter ? center : null}
+                                radiusKm={radiusKm}
+                                programmaticMoveRef={programmaticMoveRef}
+                                skipNextFitRef={skipNextFitRef}
+                            />
+                            {selectionSource === "list" ? (
+                                <FocusOnSelectedItem item={selectedItem} programmaticMoveRef={programmaticMoveRef} />
+                            ) : null}
+                            {hasCenter ? <MapMoveTracker programmaticMoveRef={programmaticMoveRef} onUserMoved={() => setMapDirty(true)} /> : null}
                             {hasCenter ? (
                                 <>
                                     <Marker position={[center.latitude, center.longitude]} icon={CENTER_ICON}>
