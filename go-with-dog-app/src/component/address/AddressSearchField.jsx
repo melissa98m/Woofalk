@@ -39,7 +39,17 @@ export function AddressSearchField({ value, onSelect, label = "Rechercher une ad
             loading={searching}
             inputValue={query}
             onInputChange={(e, newInputValue, reason) => {
-                if (reason === 'input') handleInputChange(newInputValue);
+                if (reason === 'input') {
+                    handleInputChange(newInputValue);
+                    return;
+                }
+                // "reset" (a suggestion was picked, or the field blurred back
+                // to the last valid value) or "clear" — mirror the text so
+                // the field actually shows the pick instead of what was
+                // typed, but don't kick off a new search for it.
+                clearTimeout(debounceRef.current);
+                setQuery(newInputValue);
+                setOptions([]);
             }}
             value={value}
             onChange={(e, newValue) => onSelect(newValue)}
