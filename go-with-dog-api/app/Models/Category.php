@@ -13,11 +13,12 @@ class Category extends Model
 
     public function places()
     {
-        return $this->hasMany(Place::class);
+        // The FK column is named "category", not the Eloquent-conventional "category_id".
+        return $this->hasMany(Place::class, 'category');
     }
 
     public function hebergements()
     {
-        return $this->hasMany(Hebergement::class);
+        return $this->hasMany(Hebergement::class, 'category');
     }
 }

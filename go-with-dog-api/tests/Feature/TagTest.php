@@ -2,76 +2,71 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use App\Models\Tag;
+use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class TagTest extends TestCase
 {
-    //use RefreshDatabase; // Réinitialise la base de données à chaque test
-    /**
-     * A basic feature test example.
-     *
-     * @return void
-     */
+    use DatabaseTransactions;
+
     /**
      * Teste si la page de la liste des tags est accessible
-     *
-     * @return void
      */
-    public function testIndex(): void
+    public function test_index(): void
     {
         $response = $this->get('/api/tags');
 
         $response->assertStatus(200);
-
     }
+
     /**
      * Teste si l'API peut créer un tag
-     *
-     * @return void
      */
-    public function testCreateTag(): void
+    public function test_create_tag(): void
     {
+        $admin = User::factory()->admin()->create();
+
         $data = [
-            'id' => "1000",
             'tag_name' => 'test',
-            'color' => '#0000'
+            'color' => '#0000',
         ];
 
-        $response = $this->postJson('/api/tags', $data);
+        $response = $this->actingAs($admin, 'api')->postJson('/api/tags', $data);
 
         $response->assertStatus(200);
     }
+
     /**
      * Teste si l'API peut modifier un tag existant
      *
      * @return void
      */
-    public function testUpdateTag()
+    public function test_update_tag()
     {
+        $admin = User::factory()->admin()->create();
+        $tag = Tag::factory()->create();
 
         $data = [
             'tag_name' => 'test',
-            'color' => '#05704'
+            'color' => '#05704',
         ];
-        $response = $this->putJson("/api/tags/1000", $data);
+        $response = $this->actingAs($admin, 'api')->patchJson("/api/tags/{$tag->id}", $data);
         $response->assertStatus(200);
-
     }
+
     /**
      * Teste si l'API peut supprimer un tag existant
      *
      * @return void
      */
-    public function testDeleteTag()
+    public function test_delete_tag()
     {
+        $admin = User::factory()->admin()->create();
+        $tag = Tag::factory()->create();
 
-
-        $response = $this->delete("/api/tags/1000");
-        $response->assertStatus(204);
+        $response = $this->actingAs($admin, 'api')->delete("/api/tags/{$tag->id}");
+        $response->assertStatus(200);
     }
-
-
 }

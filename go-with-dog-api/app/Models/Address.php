@@ -23,11 +23,12 @@ class Address extends Model
 
     public function places()
     {
-        return $this->hasMany(Place::class);
+        // The FK column is named "address", not the Eloquent-conventional "address_id".
+        return $this->hasMany(Place::class, 'address');
     }
 
     public function hebergements()
     {
-        return $this->hasMany(Hebergement::class);
+        return $this->hasMany(Hebergement::class, 'address');
     }
 }

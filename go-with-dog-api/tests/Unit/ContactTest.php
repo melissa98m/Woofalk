@@ -1,13 +1,15 @@
 <?php
+
 use App\Models\Contact;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class ContactTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_can_create_a_new_contact()
     {
         $data = [

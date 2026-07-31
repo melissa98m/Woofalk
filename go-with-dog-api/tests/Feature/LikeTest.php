@@ -8,6 +8,7 @@ use App\Models\Category;
 use App\Models\Place;
 use App\Models\User;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class LikeTest extends TestCase
@@ -62,7 +63,10 @@ class LikeTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertJson(['likes_count' => 1]);
-        $this->assertDatabaseCount('place_likes', 1);
+        $this->assertEquals(
+            1,
+            DB::table('place_likes')->where('place_id', $place->id)->where('user_id', $user->id)->count()
+        );
     }
 
     public function test_user_can_unlike_a_place(): void

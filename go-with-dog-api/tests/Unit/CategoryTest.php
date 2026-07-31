@@ -3,18 +3,19 @@
 use App\Models\Category;
 use App\Models\Place;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class CategoryTest extends TestCase
 {
     use DatabaseTransactions;
 
-    /** @test */
+    #[Test]
     public function it_has_many_places()
     {
         $category = Category::factory()->create();
-        $place1 = Place::factory()->create(['category_id' => $category->id]);
-        $place2 = Place::factory()->create(['category_id' => $category->id]);
+        $place1 = Place::factory()->create(['category' => $category->id]);
+        $place2 = Place::factory()->create(['category' => $category->id]);
 
         $places = $category->places();
 

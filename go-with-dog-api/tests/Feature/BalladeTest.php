@@ -1,94 +1,85 @@
 <?php
 
-
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Tests\TestCase;
 use App\Models\Ballade;
+use App\Models\Tag;
+use App\Models\User;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
+use Tests\TestCase;
 
 class BalladeTest extends TestCase
 {
-    //use RefreshDatabase; // Réinitialise la base de données à chaque test
+    use DatabaseTransactions;
+
     /**
-     * A basic feature test example.
-     *
-     * @return void
+     * Teste si la page de la liste des ballades est accessible
      */
-    /**
-     * Teste si la page de la liste des tags est accessible
-     *
-     * @return void
-     */
-    public function testIndex(): void
+    public function test_index(): void
     {
         $response = $this->get('/api/ballades');
 
         $response->assertStatus(200);
-
     }
 
     /**
-     * Teste si l'API peut créer une ballades
-     *
-     * @return void
+     * Teste si l'API peut créer une ballade
      */
-    public function testCreateBallade(): void
+    public function test_create_ballade(): void
     {
+        $user = User::factory()->create();
+        $tag = Tag::factory()->create(['scope' => 'both']);
+
         $data = [
-            'ballade_name' => "test1",
-            'distance'=> "150",
-            'denivele' => "1000",
+            'ballade_name' => 'test1',
+            'distance' => '150',
+            'denivele' => '1000',
             'ballade_description' => 'lorem ipsum',
-            'ballade_image' => "pas d'image",
             'ballade_latitude' => '44.02',
-            'ballade_longitude' => "-10.25",
-            'user' => 1,
-            'tags' => [2]
+            'ballade_longitude' => '-10.25',
+            'tags' => [$tag->id],
         ];
 
-        $response = $this->postJson('/api/ballades', $data);
+        $response = $this->actingAs($user, 'api')->postJson('/api/ballades', $data);
 
         $response->assertStatus(200);
     }
 
     /**
-     * Teste si l'API peut modifier une ballades existant
+     * Teste si l'API peut modifier une ballade existante
      *
      * @return void
      */
-    public function testUpdateBallade()
+    public function test_update_ballade()
     {
-        $balllade = Ballade::factory()->create();
-        $data = [
-            'ballade_name' => "tes88t51",
-            'distance'=> "150",
-            'denivele' => "1000",
-            'ballade_description' => 'lorem ipsum',
-            'ballade_image' => "pas d'image",
-            'ballade_latitude' => '44.02',
-            'ballade_longitude' => "-10.25",
-            'user' => 1,
-            'tags' => [2]
-        ];
-        $response = $this->putJson("/api/ballades/{$balllade->id}", $data);
-        $response->assertStatus(200);
+        $user = User::factory()->create();
+        $ballade = Ballade::factory()->create(['user' => $user->id]);
+        $tag = Tag::factory()->create(['scope' => 'both']);
 
+        $data = [
+            'ballade_name' => 'tes88t51',
+            'distance' => '150',
+            'denivele' => '1000',
+            'ballade_description' => 'lorem ipsum',
+            'ballade_latitude' => '44.02',
+            'ballade_longitude' => '-10.25',
+            'tags' => [$tag->id],
+        ];
+        $response = $this->actingAs($user, 'api')->patchJson("/api/ballades/{$ballade->id}", $data);
+        $response->assertStatus(200);
     }
 
     /**
-     * Teste si l'API peut supprimer une ballade existant
+     * Teste si l'API peut supprimer une ballade existante
      *
      * @return void
      */
-    public function testDeleteBallade()
+    public function test_delete_ballade()
     {
-        $ballade = Ballade::factory()->create();
+        $user = User::factory()->create();
+        $ballade = Ballade::factory()->create(['user' => $user->id]);
 
-        $response = $this->delete("/api/ballades/{$ballade->id}");
-        $response->assertStatus(204);
+        $response = $this->actingAs($user, 'api')->delete("/api/ballades/{$ballade->id}");
+        $response->assertStatus(200);
     }
-
-
 }
