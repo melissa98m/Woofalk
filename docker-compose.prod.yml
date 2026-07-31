@@ -6,25 +6,44 @@
 # storage:link symlink) to serve uploads and static files, but the prod api
 # image is immutable, so instead of bind-mounting the host source tree we
 # share a named volume between api and api-nginx. Docker seeds a fresh named
-# volume from the image's contents on first run. If you rebuild the api image
-# with new static assets, recreate the volume to pick them up:
+# volume from the image's contents on first run. Every redeploy (new code)
+# needs that volume recreated to pick it up:
 #   docker compose -f docker-compose.yml -f docker-compose.prod.yml down
 #   docker volume rm gowithdog_api_html
+#
+# api_html is therefore treated as disposable/code-only. Two things must NOT
+# live in it, since they'd otherwise be wiped by every redeploy:
+#   - user-uploaded files (storage/app/public/uploads/**) → given their own
+#     api_uploads volume, mounted at that subpath, independent of api_html's
+#     lifecycle (never removed by the deploy pipeline).
+#   - secrets (APP_KEY, JWT_SECRET, prod DB credentials, mail/recaptcha
+#     keys) → supplied via env_file from go-with-dog-api/.env.production, a
+#     file that lives only on the host (gitignored, created once during
+#     server setup), not inside the container/volume. This also means
+#     APP_KEY/JWT_SECRET stay stable across redeploys instead of being
+#     regenerated (which would invalidate every session/JWT on every push).
 services:
   api:
     build:
       target: prod
     volumes: !override
       - api_html:/var/www/html
+      - api_uploads:/var/www/html/storage/app/public
+    env_file:
+      - ./go-with-dog-api/.env.production
     environment:
       APP_ENV: production
       APP_DEBUG: "false"
       WAIT_FOR_DB: "true"
       RUN_MIGRATIONS: "false"
+      # Adjust to the real production front-end domain(s) before deploying —
+      # the httpOnly auth cookie's CORS grant depends on this being correct.
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://gowithdog.fr}
 
   api-nginx:
     volumes: !override
       - api_html:/var/www/html:ro
+      - api_uploads:/var/www/html/storage/app/public:ro
       - ./go-with-dog-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - api
@@ -42,3 +61,4 @@ services:
 
 volumes:
   api_html:
+  api_uploads:

@@ -92,8 +92,6 @@ function NewHebergement() {
         let res = await axios.post(`${API_URL}/api/addresses`, {
             address: selectedAddress.address, city: selectedAddress.city, postal_code: selectedAddress.postal_code,
             latitude: selectedAddress.latitude, longitude: selectedAddress.longitude,
-        }, {
-            headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
         });
         let created = res.data.data;
         setAddresses(update(Array.isArray(addresses) ? addresses : [], { $push: [created] }));
@@ -120,9 +118,7 @@ function NewHebergement() {
             formData.append("address", `${addressId}`);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
 
-            let res = await axios.post(`${API_URL}/api/hebergements`, formData, {
-                headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
-            });
+            let res = await axios.post(`${API_URL}/api/hebergements`, formData);
             if (res.status === 200) {
                 reset();
                 setToastMessage({ message: "Hébergement ajouté ! Vous pouvez en ajouter un autre", severity: "success" });

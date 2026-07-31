@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -20,6 +21,28 @@ use Illuminate\Validation\ValidationException;
 class AuthController extends Controller
 {
     public function __construct() {}
+
+    /**
+     * Build the httpOnly cookie the JWT is shipped in for browser clients.
+     * The token never appears in a JSON body, so front-end JS has no way to
+     * read it (and no way to leak it via XSS) — the browser attaches it
+     * automatically on requests to this API's origin. `secure` is relaxed
+     * outside `local` so it still works over plain http in Docker dev.
+     */
+    private function authCookie(?string $token, ?int $minutes = null)
+    {
+        return cookie(
+            config('jwt.cookie_key_name', 'access_token'),
+            $token,
+            $minutes ?? config('jwt.ttl'),
+            '/',
+            null,
+            ! app()->isLocal(),
+            true,
+            false,
+            'lax'
+        );
+    }
 
     public function login(Request $request)
     {
@@ -50,8 +73,8 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'user' => $user,
-            'token' => $token,
-        ]);
+            'expires_at' => now()->addMinutes(config('jwt.ttl'))->getTimestamp(),
+        ])->cookie($this->authCookie($token));
 
     }
 
@@ -76,32 +99,25 @@ class AuthController extends Controller
             ]
         );
 
-        if (empty($request->roles)) {
-            $request->roles = json_encode(['ROLE_USER']);
-        } else {
-            json_encode($request->roles);
-        }
-
         $user = User::create([
             'username' => $request->username,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'roles' => $request->roles,
+            // self-registration always grants the base role; roles.* fields
+            // sent by the client are ignored — only an admin (UserController)
+            // can grant ROLE_ADMIN.
+            'roles' => json_encode(['ROLE_USER']),
             'terms_accepted_at' => now(),
         ]);
         Mail::to('melissa.mangione@gmail.com') // permet définir de qui est envoyé le mail
             ->send(new MailRegister($user));
 
-        $token = Auth::login($user);
-
+        // Registration does not log the user in — the front-end sends them
+        // to the login page afterwards, so no cookie/token is issued here.
         return response()->json([
             'status' => 'success',
             'message' => 'User created successfully',
             'user' => $user,
-            'authorisation' => [
-                'token' => $token,
-                'type' => 'bearer',
-            ],
         ]);
     }
 
@@ -112,19 +128,19 @@ class AuthController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Successfully logged out',
-        ]);
+        ])->withCookie(Cookie::forget(config('jwt.cookie_key_name', 'access_token')));
     }
 
     public function refresh()
     {
+        $token = Auth::refresh();
+        $user = Auth::user();
+
         return response()->json([
             'status' => 'success',
-            'user' => Auth::user(),
-            'authorisation' => [
-                'token' => Auth::refresh(),
-                'type' => 'bearer',
-            ],
-        ]);
+            'user' => $user,
+            'expires_at' => now()->addMinutes(config('jwt.ttl'))->getTimestamp(),
+        ])->cookie($this->authCookie($token));
     }
 
     public function currentUser()
@@ -175,16 +191,18 @@ class AuthController extends Controller
             'token' => 'required|string',
         ]);
         try {
-            // find the token
-            $passwordReset = DB::table('password_resets')->where('token', $request->token);
-            if (! $passwordReset) {
-                return response(['message' => 'token expiré ou inexistant'], 422);
+            // find a matching, unexpired token for this email
+            $passwordReset = DB::table('password_resets')
+                ->where('email', $request->email)
+                ->where('token', $request->token)
+                ->first();
+
+            if (! $passwordReset || Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
+                DB::table('password_resets')->where('email', $request->email)->delete();
+
+                return response(['message' => 'Token invalide ou expiré'], 422);
             }
-            // find user's email
-            $user = DB::table('users')->where('email', $request->email);
-            if (! $user) {
-                return response(['message' => 'Utilisateur non trouvé'], 422);
-            }
+
             // update user password
             $userUpdateResult = DB::table('users')->where('email', $request->email)->update([
                 'password' => Hash::make($request->password),
@@ -193,11 +211,8 @@ class AuthController extends Controller
             if (! $userUpdateResult) {
                 return response(['message' => 'Erreur lors de la reinitialisation du mot de passe'], 422);
             }
-            // delete current token
-            $deleteTokenResult = DB::table('password_resets')->where('token', $request->token)->delete();
-            if (! $deleteTokenResult) {
-                return response(['message' => 'Erreur lors de la suppression du token'], 422);
-            }
+            // delete the token (and any other outstanding tokens for this email) so it can't be reused
+            DB::table('password_resets')->where('email', $request->email)->delete();
 
             return response(['message' => 'Mot de passe bien reinitialisé'], 200);
         } catch (Exception $e) {

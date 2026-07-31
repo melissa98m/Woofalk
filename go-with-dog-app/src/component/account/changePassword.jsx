@@ -42,7 +42,6 @@ const ChangePassword = () => {
        formData.append("confirm_password", confirm_password);
        await axios
          .post(`${API_URL}/api/users/change-password`, formData ,
-         {"headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token')} } ,
          setMessage(<Alert severity="success" autoHideDuration={3000}>Mot de passe modifié</Alert>))
          .catch(({ response }) => {
            if (response.status != 200) {

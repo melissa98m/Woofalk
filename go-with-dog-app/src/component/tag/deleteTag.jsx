@@ -17,9 +17,7 @@ function DeleteTag(props) {
     let deleteTag = async (e) => {
         e.preventDefault();
         try {
-            let res = await axios.delete(`${API_URL}/api/tags/` + oneTag.id , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.delete(`${API_URL}/api/tags/` + oneTag.id)
             if (res.status === 200) {
                 const foundIndex = props.deleteValue.data.findIndex(x => x.id === oneTag.id);
                 let data = update(props.deleteValue.data, {$splice: [[foundIndex, 1]]})

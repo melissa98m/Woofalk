@@ -13,7 +13,6 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import axios from "axios";
 import update from "immutability-helper";
 import { API_URL } from "../../config";
-import auth from "../../services/auth/token";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
 import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
 import { useSort, sortRows } from "../_partials/_ui/useSort";
@@ -66,9 +65,7 @@ function ContactMessages() {
     };
 
     useEffect(() => {
-        axios.get(`${API_URL}/api/contacts`, {
-            headers: { Authorization: `Bearer ${auth.getToken()}` },
-        }).then((actualData) => {
+        axios.get(`${API_URL}/api/contacts`).then((actualData) => {
             actualData = actualData.data;
             setLoading(true)
             setData(actualData.data);

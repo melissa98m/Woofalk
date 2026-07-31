@@ -79,12 +79,10 @@ function Account() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const headers = { Authorization: "Bearer" + localStorage.getItem('access_token') };
-
         Promise.all([
-            axios.get(`${API_URL}/api/current-user`, { headers }),
-            axios.get(`${API_URL}/api/places-user`, { headers }),
-            axios.get(`${API_URL}/api/ballades-user`, { headers }),
+            axios.get(`${API_URL}/api/current-user`),
+            axios.get(`${API_URL}/api/places-user`),
+            axios.get(`${API_URL}/api/ballades-user`),
         ]).then(([userRes, placesRes, balladesRes]) => {
             setUser(userRes.data);
             setPlaces(placesRes.data.data);
@@ -107,8 +105,7 @@ function Account() {
         setExporting(true);
         setActionError("");
         try {
-            const headers = { Authorization: "Bearer" + localStorage.getItem('access_token') };
-            const res = await axios.get(`${API_URL}/api/users/me/export`, { headers, responseType: 'blob' });
+            const res = await axios.get(`${API_URL}/api/users/me/export`, { responseType: 'blob' });
             const url = URL.createObjectURL(new Blob([res.data], { type: 'application/json' }));
             const link = document.createElement('a');
             link.href = url;
@@ -126,9 +123,9 @@ function Account() {
         setDeleting(true);
         setActionError("");
         try {
-            const headers = { Authorization: "Bearer" + localStorage.getItem('access_token') };
-            await axios.delete(`${API_URL}/api/users/${user.id}`, { headers });
-            localStorage.removeItem('access_token');
+            await axios.delete(`${API_URL}/api/users/${user.id}`);
+            await axios.post(`${API_URL}/api/logout`).catch(() => {});
+            auth.clearSession();
             navigate('/');
         } catch {
             setActionError("Impossible de supprimer votre compte pour le moment. Réessayez plus tard.");

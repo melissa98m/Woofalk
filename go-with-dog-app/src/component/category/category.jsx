@@ -95,7 +95,6 @@ function Category() {
         setBulkLoading(true);
         try {
             await axios.delete(`${API_URL}/api/categories/bulk`, {
-                headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') },
                 data: { ids },
             });
             setData(data.filter((c) => !selection.isSelected(c.id)));

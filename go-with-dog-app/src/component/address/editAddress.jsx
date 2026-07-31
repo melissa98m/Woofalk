@@ -40,9 +40,7 @@ function EditAddress(props) {
                 latitude: latitude ? latitude : oneAddress.latitude,
                 longitude: longitude ? longitude : oneAddress.longitude
             }
-            let res = await axios.patch(`${API_URL}/api/addresses/` + oneAddress.id, {address, city , postal_code , latitude , longitude} , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.patch(`${API_URL}/api/addresses/` + oneAddress.id, {address, city , postal_code , latitude , longitude})
             if (res.status === 200) {
                 const foundIndex = props.updateValue.data.findIndex(x => x.id === oneAddress.id);
                 let data = update(props.updateValue.data, {[foundIndex]: {$set: updatedAddress}})

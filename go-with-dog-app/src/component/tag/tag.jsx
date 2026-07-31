@@ -97,7 +97,6 @@ function Tag() {
         setBulkLoading(true);
         try {
             await axios.delete(`${API_URL}/api/tags/bulk`, {
-                headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') },
                 data: { ids },
             });
             setData(data.filter((t) => !selection.isSelected(t.id)));

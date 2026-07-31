@@ -27,9 +27,7 @@ function EditCategory(props) {
                 category_name: oneCategory.category_name ? category_name : oneCategory.category_name,
                 scope: scope ? scope : oneCategory.scope,
             }
-            let res = await axios.patch(`${API_URL}/api/categories/`+oneCategory.id, {category_name, scope}, {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            });
+            let res = await axios.patch(`${API_URL}/api/categories/`+oneCategory.id, {category_name, scope});
             if (res.status === 200) {
                 const foundIndex = props.updateValue.data.findIndex(x => x.id === oneCategory.id);
                 let data = update(props.updateValue.data, {[foundIndex]: {$set: updatedCategory}})

@@ -83,10 +83,7 @@ function User() {
     };
 
     useEffect(() => {
-        axios.get(`${API_URL}/api/users`
-        , {
-         "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-        }).then((actualData) => {
+        axios.get(`${API_URL}/api/users`).then((actualData) => {
             actualData = actualData.data;
             setLoading(true)
             setData(actualData.data);
@@ -115,7 +112,6 @@ function User() {
         setBulkLoading(true);
         try {
             await axios.delete(`${API_URL}/api/users/bulk`, {
-                headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') },
                 data: { ids },
             });
             setData(data.filter((u) => !selection.isSelected(u.id)));

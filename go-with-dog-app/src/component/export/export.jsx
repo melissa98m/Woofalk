@@ -76,9 +76,7 @@ function Export() {
 
     useEffect(() => {
         axios
-            .get(`${API_URL}/api/export/options`, {
-                headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
-            })
+            .get(`${API_URL}/api/export/options`)
             .then((res) => {
                 const data = res.data.data;
                 setTables(data);
@@ -121,7 +119,6 @@ function Export() {
         try {
             const res = await axios.get(`${API_URL}/api/export/sql`, {
                 responseType: "blob",
-                headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
             });
             triggerDownload(res.data, extractFilename(res, "gowithdog-db.zip"));
         } catch (err) {
@@ -146,7 +143,6 @@ function Export() {
                 { tables: payload },
                 {
                     responseType: "blob",
-                    headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
                 }
             );
             triggerDownload(res.data, extractFilename(res, "export.csv"));

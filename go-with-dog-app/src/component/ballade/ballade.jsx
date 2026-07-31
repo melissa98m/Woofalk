@@ -99,13 +99,12 @@ function Ballade() {
         }
     }
 
-    const authHeaders = { headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') } };
 
     const handleBulkStatus = async (status) => {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
         try {
-            await axios.patch(`${API_URL}/api/ballades/bulk-status`, { ids, status }, authHeaders);
+            await axios.patch(`${API_URL}/api/ballades/bulk-status`, { ids, status });
             setData(data.map((b) => (selection.isSelected(b.id) ? { ...b, status } : b)));
             selection.clear();
             setToastMessage({ message: status === 'publie' ? "Balades publiées !" : "Balades mises en attente !", severity: "success" });
@@ -122,7 +121,7 @@ function Ballade() {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
         try {
-            await axios.delete(`${API_URL}/api/ballades/bulk`, { ...authHeaders, data: { ids } });
+            await axios.delete(`${API_URL}/api/ballades/bulk`, { data: { ids } });
             setData(data.filter((b) => !selection.isSelected(b.id)));
             selection.clear();
             setShowBulkDelete(false);

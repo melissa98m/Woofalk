@@ -1,6 +1,13 @@
 import React, {useEffect, Suspense, lazy} from 'react';
 import ReactDOM from 'react-dom/client';
+import axios from 'axios';
 import reportWebVitals from './reportWebVitals';
+
+// The JWT lives in an httpOnly cookie (see AuthController::authCookie on the
+// API) rather than in a header we attach manually — this makes the browser
+// send it on every request to the API's origin, for every axios call in the
+// app (all of them import the bare `axios` singleton this default applies to).
+axios.defaults.withCredentials = true;
 
 import './index.css';
 import './assets/css/component/_partials/_theme.scss';

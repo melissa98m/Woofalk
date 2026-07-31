@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Hebergement;
+use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -244,6 +245,9 @@ class HebergementController extends Controller
     public function update(Request $request, Hebergement $hebergement)
     {
         $current = Auth::id();
+        if ($hebergement->user !== $current && ! Roles::isAdmin(Auth::user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         $this->validate($request, [
             'hebergement_name' => 'required|max:200',
             'hebergement_description' => 'required',
@@ -277,7 +281,7 @@ class HebergementController extends Controller
             'price_indication' => $request->price_indication,
             'address' => $request->address,
             'category' => $request->category,
-            'user' => $current,
+            'user' => $hebergement->user,
             'status' => $request->status ?? $hebergement->status,
         ]);
         $hebergement->tags()->sync($request->input('tags', []));
@@ -301,6 +305,9 @@ class HebergementController extends Controller
      */
     public function destroy(Hebergement $hebergement)
     {
+        if ($hebergement->user !== Auth::id() && ! Roles::isAdmin(Auth::user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         if ($hebergement->hebergement_image) {
             Storage::delete('/public/uploads/hebergements/'.$hebergement->hebergement_image);
         }

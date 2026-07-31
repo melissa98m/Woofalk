@@ -99,13 +99,11 @@ function Hebergement() {
         }
     }
 
-    const authHeaders = { headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') } };
-
     const handleBulkStatus = async (status) => {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
         try {
-            await axios.patch(`${API_URL}/api/hebergements/bulk-status`, { ids, status }, authHeaders);
+            await axios.patch(`${API_URL}/api/hebergements/bulk-status`, { ids, status });
             setData(data.map((h) => (selection.isSelected(h.id) ? { ...h, status } : h)));
             selection.clear();
             setToastMessage({ message: status === 'publie' ? "Hébergements publiés !" : "Hébergements mis en attente !", severity: "success" });
@@ -122,7 +120,7 @@ function Hebergement() {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
         try {
-            await axios.delete(`${API_URL}/api/hebergements/bulk`, { ...authHeaders, data: { ids } });
+            await axios.delete(`${API_URL}/api/hebergements/bulk`, { data: { ids } });
             setData(data.filter((h) => !selection.isSelected(h.id)));
             selection.clear();
             setShowBulkDelete(false);

@@ -99,13 +99,12 @@ function Place() {
         }
     }
 
-    const authHeaders = { headers: { "Authorization": "Bearer" + localStorage.getItem('access_token') } };
 
     const handleBulkStatus = async (status) => {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
         try {
-            await axios.patch(`${API_URL}/api/places/bulk-status`, { ids, status }, authHeaders);
+            await axios.patch(`${API_URL}/api/places/bulk-status`, { ids, status });
             setData(data.map((p) => (selection.isSelected(p.id) ? { ...p, status } : p)));
             selection.clear();
             setToastMessage({ message: status === 'publie' ? "Lieux publiés !" : "Lieux mis en attente !", severity: "success" });
@@ -122,7 +121,7 @@ function Place() {
         const ids = Array.from(selection.selected);
         setBulkLoading(true);
         try {
-            await axios.delete(`${API_URL}/api/places/bulk`, { ...authHeaders, data: { ids } });
+            await axios.delete(`${API_URL}/api/places/bulk`, { data: { ids } });
             setData(data.filter((p) => !selection.isSelected(p.id)));
             selection.clear();
             setShowBulkDelete(false);

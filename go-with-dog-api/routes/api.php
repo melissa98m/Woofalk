@@ -29,8 +29,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('logout', 'logout');
     Route::post('refresh', 'refresh');
     Route::get('current-user', 'currentUser');
-    Route::post('forgot-password', 'forgotPassword');
-    Route::post('reset-password', 'resetPassword');
+    Route::post('forgot-password', 'forgotPassword')->middleware('throttle:api');
+    Route::post('reset-password', 'resetPassword')->middleware('throttle:api');
 });
 
 Route::controller(AddressController::class)->group(function () {
@@ -38,19 +38,23 @@ Route::controller(AddressController::class)->group(function () {
     // Must precede addresses/{address} below, or "bulk" gets swallowed as a {address} id.
     Route::delete('addresses/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('addresses/{address}', 'show');
+    // store stays open to any authenticated user: creating a place/ballade/
+    // hebergement lets the user create a brand-new address inline. Editing
+    // an existing address (shared by other listings) or deleting one is
+    // admin-only, matching bulkDestroy above.
     Route::post('addresses', 'store')->middleware('auth:api');
-    Route::patch('addresses/{address}', 'update')->middleware('auth:api');
-    Route::delete('addresses/{address}', 'destroy')->middleware('auth:api');
+    Route::patch('addresses/{address}', 'update')->middleware(['auth:api', 'admin']);
+    Route::delete('addresses/{address}', 'destroy')->middleware(['auth:api', 'admin']);
 });
 Route::controller(BalladeController::class)->group(function () {
     Route::get('ballades', 'index');
     Route::get('ballades-user', 'byUser')->middleware('auth:api');
     Route::get('ballades-liked', 'likedByUser')->middleware('auth:api');
-    // Must precede ballades/{ballade} below, or "bulk*" gets swallowed as a {ballade} id.
+    // Must precede ballades/{ballade} below, or "bulk*"/"sortDateDesc" gets swallowed as a {ballade} id.
     Route::patch('ballades/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
     Route::delete('ballades/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
-    Route::get('ballades/{ballade}', 'show');
     Route::get('ballades/sortDateDesc', 'sortByDateDesc');
+    Route::get('ballades/{ballade}', 'show');
     Route::post('ballades', 'store')->middleware(['auth:api', 'throttle:api']);
     Route::post('ballades/{ballade}/like', 'like')->middleware('auth:api');
     Route::delete('ballades/{ballade}/like', 'unlike')->middleware('auth:api');
@@ -62,9 +66,9 @@ Route::controller(CategoryController::class)->group(function () {
     // Must precede categories/{category} below, or "bulk" gets swallowed as a {category} id.
     Route::delete('categories/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('categories/{category}', 'show');
-    Route::post('categories', 'store')->middleware('auth:api');
-    Route::patch('categories/{category}', 'update')->middleware('auth:api');
-    Route::delete('categories/{category}', 'destroy')->middleware('auth:api');
+    Route::post('categories', 'store')->middleware(['auth:api', 'admin']);
+    Route::patch('categories/{category}', 'update')->middleware(['auth:api', 'admin']);
+    Route::delete('categories/{category}', 'destroy')->middleware(['auth:api', 'admin']);
 });
 Route::controller(PlaceController::class)->group(function () {
     Route::get('places', 'index');
@@ -99,9 +103,9 @@ Route::controller(TagController::class)->group(function () {
     // Must precede tags/{tag} below, or "bulk" gets swallowed as a {tag} id.
     Route::delete('tags/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('tags/{tag}', 'show');
-    Route::post('tags', 'store')->middleware('auth:api');
-    Route::patch('tags/{tag}', 'update')->middleware('auth:api');
-    Route::delete('tags/{tag}', 'destroy')->middleware('auth:api');
+    Route::post('tags', 'store')->middleware(['auth:api', 'admin']);
+    Route::patch('tags/{tag}', 'update')->middleware(['auth:api', 'admin']);
+    Route::delete('tags/{tag}', 'destroy')->middleware(['auth:api', 'admin']);
 });
 Route::controller(ContactController::class)->group(function () {
     Route::post('contact', 'store')->middleware('throttle:contact');

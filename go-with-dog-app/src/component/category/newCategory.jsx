@@ -19,9 +19,7 @@ function NewCategory(props) {
 
     let newCategoryForm = async () => {
         try {
-            let res = await axios.post(`${API_URL}/api/categories`, {category_name, scope}, {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            });
+            let res = await axios.post(`${API_URL}/api/categories`, {category_name, scope});
             if (res.status === 200) {
                 let tab = {};
                 await Object.assign(tab, res.data.data);

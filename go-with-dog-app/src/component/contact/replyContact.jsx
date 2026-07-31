@@ -6,7 +6,6 @@ import axios from "axios";
 import { CrudModal } from "../_partials/_ui/CrudModal";
 import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { API_URL } from "../../config";
-import auth from "../../services/auth/token";
 
 // Lets an admin answer a contact-form message without leaving the dashboard:
 // the reply is emailed to the sender by the API (App\Mail\ContactReply) and
@@ -24,9 +23,7 @@ function ReplyContact({ contact, onReplied }) {
     const sendReply = async (values) => {
         setSubmitting(true);
         try {
-            const res = await axios.post(`${API_URL}/api/contacts/${contact.id}/reply`, values, {
-                headers: { Authorization: `Bearer ${auth.getToken()}` },
-            });
+            const res = await axios.post(`${API_URL}/api/contacts/${contact.id}/reply`, values);
             onReplied(res.data.data);
             setOpen(false);
             reset();

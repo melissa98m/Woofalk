@@ -23,9 +23,7 @@ function NewTag(props) {
 
     let newTagForm = async () => {
         try {
-            let res = await axios.post(`${API_URL}/api/tags`, {tag_name , color, scope} , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.post(`${API_URL}/api/tags`, {tag_name , color, scope})
             if (res.status === 200) {
                 let tab = {};
                 await Object.assign(tab, res.data.data);

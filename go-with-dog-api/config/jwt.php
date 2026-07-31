@@ -1,5 +1,8 @@
 <?php
 
+use PHPOpenSourceSaver\JWTAuth\Providers\Auth\Illuminate;
+use PHPOpenSourceSaver\JWTAuth\Providers\JWT\Lcobucci;
+
 return [
     /*
     |--------------------------------------------------------------------------
@@ -256,6 +259,21 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Cookie name
+    |--------------------------------------------------------------------------
+    |
+    | The name of the httpOnly cookie AuthController stores the JWT in for
+    | browser clients (see cookie() calls in AuthController). Kept separate
+    | from the JSON response so front-end JS never has direct read access to
+    | the token itself, only to auth:api-protected endpoints via the cookie
+    | the browser attaches automatically.
+    |
+    */
+
+    'cookie_key_name' => env('JWT_COOKIE_NAME', 'access_token'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Providers
     |--------------------------------------------------------------------------
     |
@@ -273,7 +291,7 @@ return [
         |
         */
 
-        'jwt' => PHPOpenSourceSaver\JWTAuth\Providers\JWT\Lcobucci::class,
+        'jwt' => Lcobucci::class,
 
         /*
         |--------------------------------------------------------------------------
@@ -284,7 +302,7 @@ return [
         |
         */
 
-        'auth' => PHPOpenSourceSaver\JWTAuth\Providers\Auth\Illuminate::class,
+        'auth' => Illuminate::class,
 
         /*
         |--------------------------------------------------------------------------

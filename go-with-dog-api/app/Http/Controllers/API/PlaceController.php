@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Place;
+use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -233,6 +234,9 @@ class PlaceController extends Controller
     public function update(Request $request, Place $place)
     {
         $current = Auth::id();
+        if ($place->user !== $current && ! Roles::isAdmin(Auth::user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         $this->validate($request, [
             'place_name' => 'required|max:200',
             'place_description' => 'required',
@@ -264,7 +268,7 @@ class PlaceController extends Controller
             'place_website' => $request->place_website,
             'address' => $request->address,
             'category' => $request->category,
-            'user' => $current,
+            'user' => $place->user,
             'status' => $request->status ?? $place->status,
         ]);
         $place->tags()->sync($request->input('tags', []));
@@ -288,6 +292,9 @@ class PlaceController extends Controller
      */
     public function destroy(Place $place)
     {
+        if ($place->user !== Auth::id() && ! Roles::isAdmin(Auth::user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         $place->delete();
         $this->forgetListing(self::CACHE_KEY);
 

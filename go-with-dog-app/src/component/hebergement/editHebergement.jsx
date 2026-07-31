@@ -83,9 +83,7 @@ function EditHebergement(props) {
             }
             formData.append("_method", 'PATCH');
 
-            let res = await axios.post(`${API_URL}/api/hebergements/` + oneHebergement.id, formData, {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.post(`${API_URL}/api/hebergements/` + oneHebergement.id, formData)
             if (res.status === 200) {
                 const foundIndex = props.updateValue.data.findIndex(x => x.id === oneHebergement.id);
                 let tab = {};

@@ -17,9 +17,7 @@ function DeleteAddress(props) {
     let deleteAddress = async (e) => {
         e.preventDefault();
         try {
-            let res = await axios.delete(`${API_URL}/api/addresses/` + oneAddress.id , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.delete(`${API_URL}/api/addresses/` + oneAddress.id)
             if (res.status === 200) {
                 const foundIndex = props.deleteValue.data.findIndex(x => x.id === oneAddress.id);
                 let data = update(props.deleteValue.data, {$splice: [[foundIndex, 1]]})

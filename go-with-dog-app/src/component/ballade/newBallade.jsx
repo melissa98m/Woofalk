@@ -86,9 +86,7 @@ function NewBallade() {
             formData.append("ballade_website", ballade_website);
             tags.forEach((tagId) => formData.append("tags[]", tagId));
 
-            let res = await axios.post(`${API_URL}/api/ballades`, formData, {
-                headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
-            });
+            let res = await axios.post(`${API_URL}/api/ballades`, formData);
             if (res.status === 200) {
                 reset();
                 setToastMessage({ message: "Balade ajoutée ! Vous pouvez en ajouter une autre", severity: "success" });

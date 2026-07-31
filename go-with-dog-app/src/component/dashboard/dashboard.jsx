@@ -45,9 +45,7 @@ function Dashboard() {
             axios.get(`${API_URL}/api/places`),
             axios.get(`${API_URL}/api/ballades`),
             axios.get(`${API_URL}/api/hebergements`),
-            axios.get(`${API_URL}/api/users`, {
-                headers: { Authorization: "Bearer" + localStorage.getItem("access_token") },
-            }),
+            axios.get(`${API_URL}/api/users`),
         ]).then(([placesRes, balladesRes, hebergementsRes, usersRes]) => {
             setPlaces(placesRes.data.data);
             setBallades(balladesRes.data.data);

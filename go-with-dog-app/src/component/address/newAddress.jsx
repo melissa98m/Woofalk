@@ -28,8 +28,6 @@ function NewAddress(props) {
             let res = await axios.post(`${API_URL}/api/addresses`, {
                 address: selected.address, city: selected.city, postal_code: selected.postal_code,
                 latitude: selected.latitude, longitude: selected.longitude
-            } , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
             })
             if (res.status === 200) {
                 let tab = {};

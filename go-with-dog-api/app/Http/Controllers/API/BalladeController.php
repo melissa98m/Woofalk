@@ -6,6 +6,7 @@ use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
 use App\Models\Ballade;
 use App\Models\Tag;
+use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -275,6 +276,9 @@ class BalladeController extends Controller
     public function update(Request $request, Ballade $ballade)
     {
         $current = Auth::id();
+        if ($ballade->user !== $current && ! Roles::isAdmin(Auth::user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         $this->validate($request, [
             'ballade_name' => 'required|max:200',
             'ballade_description' => 'required',
@@ -313,7 +317,7 @@ class BalladeController extends Controller
             'ballade_website' => $request->ballade_website,
             'ballade_latitude' => $request->ballade_latitude,
             'ballade_longitude' => $request->ballade_longitude,
-            'user' => $current,
+            'user' => $ballade->user,
             'status' => $request->status ?? $ballade->status,
         ]);
         $this->syncTagsWithAutoTags($ballade, $request);
@@ -336,6 +340,9 @@ class BalladeController extends Controller
      */
     public function destroy(Ballade $ballade)
     {
+        if ($ballade->user !== Auth::id() && ! Roles::isAdmin(Auth::user())) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
         if ($ballade->ballade_image) {
             Storage::delete('/public/uploads/ballades'.$ballade->ballade_image);
         }

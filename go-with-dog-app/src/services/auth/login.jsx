@@ -6,6 +6,7 @@ import React, { useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
+import auth from "./token";
 
 function Login() {
   document.title = "Connexion au site";
@@ -34,7 +35,7 @@ function Login() {
               "headers" : { "Content-Type":"multipart/form-data" }
             });
       if (res.status === 200) {
-          localStorage.setItem("access_token", res.data.token)
+          auth.setSession(res.data.user, res.data.expires_at)
           navigate("/");
       } else {
         setToastMessage({message: "Une erreur est survenue", severity: "error"});

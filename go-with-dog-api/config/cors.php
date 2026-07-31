@@ -19,7 +19,14 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['*'],
+    // Auth now travels in an httpOnly cookie (see AuthController::authCookie),
+    // which requires supports_credentials below — browsers reject the
+    // combination of a credentialed request with a wildcard origin, so this
+    // must be an explicit list of real front-end origins, not '*'.
+    'allowed_origins' => array_filter(array_map(
+        'trim',
+        explode(',', env('CORS_ALLOWED_ORIGINS', 'http://localhost:3000'))
+    )),
 
     'allowed_origins_patterns' => [],
 
@@ -34,6 +41,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

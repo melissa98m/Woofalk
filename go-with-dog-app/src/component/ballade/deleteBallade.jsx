@@ -17,9 +17,7 @@ function DeleteBallade(props) {
     let deleteBallade = async (e) => {
         e.preventDefault();
         try {
-            let res = await axios.delete(`${API_URL}/api/ballades/` + oneBallade.id , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.delete(`${API_URL}/api/ballades/` + oneBallade.id)
             if (res.status === 200) {
                 const foundIndex = props.deleteValue.data.findIndex(x => x.id === oneBallade.id);
                 let data = update(props.deleteValue.data, {$splice: [[foundIndex, 1]]})

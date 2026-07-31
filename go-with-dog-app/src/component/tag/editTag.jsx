@@ -31,9 +31,7 @@ function EditTag(props) {
                 color: color ? color : oneTag.color,
                 scope: scope ? scope : oneTag.scope
             }
-            let res = await axios.patch(`${API_URL}/api/tags/` + oneTag.id, {tag_name, color, scope} , {
-                "headers" : { "Authorization":"Bearer"+localStorage.getItem('access_token') }
-            })
+            let res = await axios.patch(`${API_URL}/api/tags/` + oneTag.id, {tag_name, color, scope})
             if (res.status === 200) {
                 const foundIndex = props.updateValue.data.findIndex(x => x.id === oneTag.id);
                 let data = update(props.updateValue.data, {[foundIndex]: {$set: updatedTag}})
