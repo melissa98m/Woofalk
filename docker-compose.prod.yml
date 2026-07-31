@@ -61,16 +61,24 @@ services:
       - api_html:/var/www/html:ro
       - api_uploads:/var/www/html/storage/app/public:ro
       - ./woofalk-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
+    # docker-compose.yml's dev default (8000:80) collides with another
+    # project already running on this shared Pi (weeb-backend-api binds
+    # host 8000). Moved to 8010, free on this host as of 2026-07-31 — check
+    # `docker ps` before reusing it for anything else. Only needed for
+    # direct/debug access anyway: once the Cloudflare Tunnel is wired up,
+    # it reaches this container over the internal `gowithdog` network by
+    # service name (http://api-nginx:80), not through a published port.
+    ports: !override
+      - "8010:80"
     depends_on:
       - api
 
-  web:
-    build:
-      target: prod
-    volumes: !reset null
-    environment: !reset null
-    ports: !override
-      - "3000:80"
+  # Front-end is deployed separately on Vercel, not run from this compose
+  # file in production. Removing this key entirely (rather than just not
+  # overriding it) would still merge in docker-compose.yml's dev config —
+  # bind-mounted source, Vite dev server, port 3000 — into the prod stack,
+  # so it needs an explicit `!reset` to drop the service altogether.
+  web: !reset null
 
   db:
     ports: !reset null
