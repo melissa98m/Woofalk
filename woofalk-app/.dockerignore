@@ -1,0 +1,9 @@
+.git
+node_modules
+build
+coverage
+.env
+.env.*
+!.env.example
+.idea
+.vscode

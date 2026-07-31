@@ -1,0 +1,20 @@
+#footer {
+  &.footer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #logo {
+    width: 56px;
+    border-radius: 12px;
+  }
+  .footer-link {
+    font-size: 13px;
+  }
+  .footer-secondary {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

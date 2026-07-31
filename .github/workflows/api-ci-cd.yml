@@ -1,0 +1,137 @@
+name: API CI/CD
+
+# Scoped to woofalk-api only: front-end (woofalk-app) and mobile
+# changes never trigger this workflow, and the deploy job only ever
+# rebuilds/restarts the api/api-nginx services on the Raspberry Pi.
+on:
+  push:
+    paths:
+      - "woofalk-api/**"
+      - "docker-compose.yml"
+      - "docker-compose.prod.yml"
+      - ".github/workflows/api-ci-cd.yml"
+  pull_request:
+    paths:
+      - "woofalk-api/**"
+      - "docker-compose.yml"
+      - "docker-compose.prod.yml"
+      - ".github/workflows/api-ci-cd.yml"
+
+defaults:
+  run:
+    working-directory: woofalk-api
+
+jobs:
+  test:
+    name: Test (PHPUnit)
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_DATABASE: gowithdog
+          MYSQL_USER: gowithdog
+          MYSQL_PASSWORD: gowithdog
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_mysql, bcmath, gd, intl, zip, exif, pcntl
+          coverage: none
+
+      - name: Get composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('woofalk-api/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+          php artisan jwt:secret --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: gowithdog
+          DB_USERNAME: gowithdog
+          DB_PASSWORD: gowithdog
+
+      - name: Wait for MySQL
+        run: |
+          for i in $(seq 1 30); do
+            mysqladmin ping -h 127.0.0.1 -uroot -proot --silent && break
+            sleep 1
+          done
+
+      - name: Run migrations
+        run: php artisan migrate --force
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: gowithdog
+          DB_USERNAME: gowithdog
+          DB_PASSWORD: gowithdog
+
+      # Informational only: the repo has pre-existing style debt outside
+      # this workflow's scope, so style issues are reported but don't fail
+      # the build. PHPUnit below is the actual merge/deploy gate.
+      - name: Check code style (Pint)
+        run: vendor/bin/pint --test
+        continue-on-error: true
+
+      - name: Run tests (PHPUnit)
+        run: vendor/bin/phpunit
+        env:
+          DB_CONNECTION: mysql
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_DATABASE: gowithdog
+          DB_USERNAME: gowithdog
+          DB_PASSWORD: gowithdog
+
+  deploy:
+    name: Deploy to Raspberry Pi
+    needs: test
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        # The actual deploy steps live in scripts/deploy-pi.sh (tracked in
+        # this repo), not inline here: it lets the SSH key used by this job
+        # be locked down with a forced command in the Pi's authorized_keys,
+        # so a leaked key could only ever run that one script — not
+        # arbitrary shell commands. See the setup guide for that part.
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.PI_HOST }}
+          username: ${{ secrets.PI_USER }}
+          key: ${{ secrets.PI_SSH_KEY }}
+          port: ${{ secrets.PI_PORT || 22 }}
+          script_stop: true
+          script: bash "${{ secrets.PI_DEPLOY_PATH }}/scripts/deploy-pi.sh"

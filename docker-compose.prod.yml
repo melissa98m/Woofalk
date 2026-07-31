@@ -1,0 +1,80 @@
+# Production-shaped overlay: immutable images (no host bind mounts of source),
+# optimized builds, no auto-migrate on boot. Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+#
+# nginx still needs to read public/ (and storage/app/public, via the
+# storage:link symlink) to serve uploads and static files, but the prod api
+# image is immutable, so instead of bind-mounting the host source tree we
+# share a named volume between api and api-nginx. Docker seeds a fresh named
+# volume from the image's contents on first run. Every redeploy (new code)
+# needs that volume recreated to pick it up:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml down
+#   docker volume rm gowithdog_api_html
+#
+# api_html is therefore treated as disposable/code-only. Two things must NOT
+# live in it, since they'd otherwise be wiped by every redeploy:
+#   - user-uploaded files (storage/app/public/uploads/**) → given their own
+#     api_uploads volume, mounted at that subpath, independent of api_html's
+#     lifecycle (never removed by the deploy pipeline).
+#   - secrets (APP_KEY, JWT_SECRET, prod DB credentials, mail/recaptcha
+#     keys) → supplied via env_file from woofalk-api/.env.production, a
+#     file that lives only on the host (gitignored, created once during
+#     server setup), not inside the container/volume. This also means
+#     APP_KEY/JWT_SECRET stay stable across redeploys instead of being
+#     regenerated (which would invalidate every session/JWT on every push).
+services:
+  api:
+    build:
+      target: prod
+    volumes: !override
+      - api_html:/var/www/html
+      - api_uploads:/var/www/html/storage/app/public
+    env_file:
+      - ./woofalk-api/.env.production
+    # !override (not a plain merge) is deliberate: docker-compose.yml's `api`
+    # service sets APP_URL/DB_*/MAIL_* directly in `environment:` for local
+    # dev, and Compose's `environment:` always wins over `env_file:` for a
+    # given key — without this override, those dev defaults (including the
+    # dev DB password) would silently leak into prod and take priority over
+    # the real values in .env.production. Only non-secret, infra-level
+    # constants belong here; secrets (DB credentials, MAIL_MAILER, Mailjet
+    # keys, APP_KEY/JWT_SECRET) stay in .env.production via env_file, which
+    # now has nothing left in this map to be overridden by.
+    environment: !override
+      APP_ENV: production
+      APP_DEBUG: "false"
+      # Adjust to the real production domain(s) before deploying — the
+      # httpOnly auth cookie's CORS grant and storage/asset URLs depend on
+      # these being correct. woofalk.com/api.woofalk.com are different
+      # origins but the same site (same eTLD+1), so the existing
+      # SameSite=Lax cookie still works across them.
+      APP_URL: ${APP_URL:-https://api.woofalk.com}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-https://woofalk.com}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      WAIT_FOR_DB: "true"
+      RUN_MIGRATIONS: "false"
+
+  api-nginx:
+    volumes: !override
+      - api_html:/var/www/html:ro
+      - api_uploads:/var/www/html/storage/app/public:ro
+      - ./woofalk-api/docker/nginx/api.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - api
+
+  web:
+    build:
+      target: prod
+    volumes: !reset null
+    environment: !reset null
+    ports: !override
+      - "3000:80"
+
+  db:
+    ports: !reset null
+
+volumes:
+  api_html:
+  api_uploads:

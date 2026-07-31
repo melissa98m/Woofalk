@@ -1,0 +1,198 @@
+import React, {useEffect, useMemo, useState} from "react";
+import {
+    Box,
+    Checkbox,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+} from "@mui/material";
+import DeleteAddress from "./deleteAddress";
+import NewAddress from "./newAddress";
+import EditAddress from "./editAddress";
+import axios from "axios";
+import { API_URL } from "../../config";
+import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
+import { useRowSelection } from "../_partials/_ui/useRowSelection";
+import { BulkActionsBar } from "../_partials/_ui/BulkActionsBar";
+import { BulkDeleteConfirm } from "../_partials/_ui/BulkDeleteConfirm";
+import { RowActionButton } from "../_partials/_ui/RowActionButton";
+import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
+import { useSort, sortRows } from "../_partials/_ui/useSort";
+
+const getSortValue = (address, key) => {
+    switch (key) {
+        case "address": return address.address;
+        case "city": return address.city;
+        case "postal_code": return address.postal_code;
+        case "coordinates": return address.latitude;
+        default: return null;
+    }
+};
+
+function Address() {
+
+    document.title = 'Page des adresses';
+
+    const [data, setData] = useState(null); // array of data
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null); // WIP
+    const [toast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState({});
+
+    const [page, setPage] = React.useState(0);
+    const [rowsPerPage, setRowsPerPage] = React.useState(10);
+
+    const selection = useRowSelection();
+    const sort = useSort();
+    const [showBulkDelete, setShowBulkDelete] = useState(false);
+    const [bulkLoading, setBulkLoading] = useState(false);
+
+    const handleChangePage = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleChangeRowsPerPage = (event) => {
+        setRowsPerPage(+event.target.value);
+        setPage(0);
+    };
+
+    useEffect(() => {
+        axios.get(`${API_URL}/api/addresses`).then((actualData) => {
+            actualData = actualData.data;
+            setLoading(true)
+            setData(actualData.data);
+            setError(null);
+        }).catch((err) => {
+            setError(err.message);
+            setData(null);
+        }).finally(() => {
+            setLoading(false);
+        });
+    }, []);
+
+    const handleDataChange = async (dataChange, message) => {
+        await setData(dataChange)
+        if (message && message === 'edit'){
+            setToastMessage({message: "Adresse modifié !", severity: "success"});
+            setShowToast(true);
+        } else if(message && message === 'delete') {
+            setToastMessage({message: "Adresse supprimé !", severity: "success"});
+            setShowToast(true);
+        }
+    }
+
+    const handleBulkDelete = async () => {
+        const ids = Array.from(selection.selected);
+        setBulkLoading(true);
+        try {
+            await axios.delete(`${API_URL}/api/addresses/bulk`, {
+                data: { ids },
+            });
+            setData(data.filter((a) => !selection.isSelected(a.id)));
+            selection.clear();
+            setShowBulkDelete(false);
+            setToastMessage({ message: "Adresses supprimées !", severity: "success" });
+            setShowToast(true);
+        } catch (err) {
+            setToastMessage({ message: "Une erreur est survenue", severity: "error" });
+            setShowToast(true);
+        } finally {
+            setBulkLoading(false);
+        }
+    };
+
+    const sortedData = useMemo(
+        () => sortRows(data ?? [], sort.orderBy, sort.order, getSortValue),
+        [data, sort.orderBy, sort.order]
+    );
+    const pageRows = data ? sortedData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : [];
+    const pageIds = pageRows.map((a) => a.id);
+    const allPageSelected = pageIds.length > 0 && pageIds.every((id) => selection.isSelected(id));
+    const somePageSelected = pageIds.some((id) => selection.isSelected(id));
+
+    return <Box id="address">
+        <AdminResourceLayout
+            title="Adresses"
+            countLabel={data ? `${data.length} adresse${data.length > 1 ? "s" : ""}` : undefined}
+            actions={<NewAddress newValue={{data}} handleDataChange={handleDataChange} />}
+            loading={loading}
+            loadingLabel="Chargement des adresses..."
+            count={data ? data.length : 0}
+            page={page}
+            rowsPerPage={rowsPerPage}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            toast={toast}
+            toastMessage={toastMessage}
+            onCloseToast={() => setShowToast(false)}
+            bulkBar={data ? (
+                <BulkActionsBar
+                    count={selection.count}
+                    total={data.length}
+                    onSelectAll={() => selection.selectAll(data.map((a) => a.id))}
+                    onClear={selection.clear}
+                >
+                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                </BulkActionsBar>
+            ) : null}
+        >
+            {data ? (
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell padding="checkbox">
+                                <Checkbox
+                                    indeterminate={somePageSelected && !allPageSelected}
+                                    checked={allPageSelected}
+                                    onChange={(e) => selection.toggleMany(pageIds, e.target.checked)}
+                                    slotProps={{ input: { "aria-label": "Sélectionner toutes les adresses de la page" } }}
+                                />
+                            </TableCell>
+                            <SortableTableCell sortKey="address" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Nom</SortableTableCell>
+                            <SortableTableCell sortKey="city" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort}>Ville</SortableTableCell>
+                            <SortableTableCell sortKey="postal_code" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', sm: 'table-cell' } }}>Code postal</SortableTableCell>
+                            <SortableTableCell sortKey="coordinates" orderBy={sort.orderBy} order={sort.order} onSort={sort.toggleSort} sx={{ display: { xs: 'none', lg: 'table-cell' } }}>Coordonnées</SortableTableCell>
+                            <TableCell align="right">Actions</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {pageRows.map(({id, address , city , postal_code , latitude , longitude}) => {
+                            return (
+                                <TableRow hover selected={selection.isSelected(id)} tabIndex={-1} key={id}>
+                                    <TableCell padding="checkbox">
+                                        <Checkbox
+                                            checked={selection.isSelected(id)}
+                                            onChange={() => selection.toggle(id)}
+                                            slotProps={{ input: { "aria-label": `Sélectionner ${address ?? "l'adresse"}` } }}
+                                        />
+                                    </TableCell>
+                                    <TableCell sx={{fontWeight: 'bold'}}>{address ?? '--'}</TableCell>
+                                    <TableCell>{city ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{postal_code ?? '--'}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{latitude ?? '--'} , {longitude ?? '--'}</TableCell>
+                                    <TableCell>
+                                        <Box sx={{display: 'flex', justifyContent: 'right'}}>
+                                            <EditAddress updateValue={{id, address, city, postal_code, latitude, longitude , data}} handleDataChange={handleDataChange} />
+                                            <DeleteAddress deleteValue={{id, address, data}} handleDataChange={handleDataChange}/>
+                                        </Box>
+                                    </TableCell>
+                                </TableRow>
+                            )
+                        })}
+                    </TableBody>
+                </Table>
+            ) : null}
+        </AdminResourceLayout>
+        <BulkDeleteConfirm
+            open={showBulkDelete}
+            onClose={() => setShowBulkDelete(false)}
+            count={selection.count}
+            itemLabel="adresse"
+            onConfirm={handleBulkDelete}
+        />
+    </Box>
+}
+
+export default Address;
