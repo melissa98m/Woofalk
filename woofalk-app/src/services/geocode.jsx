@@ -12,6 +12,11 @@ export async function searchAddresses(query, limit = 5) {
 
     const res = await axios.get(BAN_URL, {
         params: { q: query, limit, autocomplete: 1 },
+        // Third-party API responding with `Access-Control-Allow-Origin: *`,
+        // which browsers reject when combined with credentials — the
+        // axios.defaults.withCredentials=true set for the Woofalk API
+        // (see index.jsx) must not leak onto this request.
+        withCredentials: false,
     });
 
     return res.data.features.map((feature) => ({
