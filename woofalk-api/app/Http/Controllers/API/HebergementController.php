@@ -67,7 +67,7 @@ class HebergementController extends Controller
         if (! $canModerate) {
             $hebergements = array_values(array_filter(
                 $hebergements,
-                fn ($hebergement) => ($hebergement['status'] ?? 'publie') === 'publie' || $hebergement['user'] === $userId
+                fn ($hebergement) => ($hebergement['status'] ?? 'publie') === 'publie' || ($userId !== null && $hebergement['user'] === $userId)
             ));
         }
 

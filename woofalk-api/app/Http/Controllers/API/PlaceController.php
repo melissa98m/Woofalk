@@ -60,7 +60,7 @@ class PlaceController extends Controller
         if (! $canModerate) {
             $places = array_values(array_filter(
                 $places,
-                fn ($place) => ($place['status'] ?? 'publie') === 'publie' || $place['user'] === $userId
+                fn ($place) => ($place['status'] ?? 'publie') === 'publie' || ($userId !== null && $place['user'] === $userId)
             ));
         }
 

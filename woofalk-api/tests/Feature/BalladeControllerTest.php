@@ -49,6 +49,21 @@ class BalladeControllerTest extends TestCase
         $this->assertNull(collect($response->json('data'))->firstWhere('id', $ballade->id));
     }
 
+    public function test_index_hides_pending_ownerless_ballades_from_guests(): void
+    {
+        // Regression test: bulk-imported ballades (CSV import) have no owner
+        // (`user` is nullable, see make_user_nullable_on_places_and_ballades
+        // migration), so a naive `$ballade['user'] === $userId` ownership
+        // check would incorrectly match null (ballade) === null (guest).
+        Cache::forget('ballades.index');
+        $ballade = Ballade::factory()->create(['status' => 'en_attente', 'user' => null]);
+
+        $response = $this->getJson('/api/ballades');
+
+        $response->assertStatus(200);
+        $this->assertNull(collect($response->json('data'))->firstWhere('id', $ballade->id));
+    }
+
     public function test_index_includes_pending_ballades_for_moderators(): void
     {
         Cache::forget('ballades.index');

@@ -42,6 +42,21 @@ class HebergementTest extends TestCase
         $this->assertNull(collect($response->json('data'))->firstWhere('id', $hebergement->id));
     }
 
+    public function test_index_hides_pending_ownerless_hebergements_from_guests(): void
+    {
+        // Regression test: bulk-imported hebergements (CSV import) have no
+        // owner (`user` is nullable), so a naive `$hebergement['user'] ===
+        // $userId` ownership check would incorrectly match null (record) ===
+        // null (guest).
+        Cache::forget('hebergements.index');
+        $hebergement = Hebergement::factory()->create(['status' => 'en_attente', 'user' => null]);
+
+        $response = $this->getJson('/api/hebergements');
+
+        $response->assertStatus(200);
+        $this->assertNull(collect($response->json('data'))->firstWhere('id', $hebergement->id));
+    }
+
     public function test_index_includes_pending_hebergements_for_moderators(): void
     {
         Cache::forget('hebergements.index');

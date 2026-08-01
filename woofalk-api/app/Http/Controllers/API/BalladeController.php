@@ -57,7 +57,7 @@ class BalladeController extends Controller
         if (! $canModerate) {
             $ballades = array_values(array_filter(
                 $ballades,
-                fn ($ballade) => ($ballade['status'] ?? 'publie') === 'publie' || $ballade['user'] === $userId
+                fn ($ballade) => ($ballade['status'] ?? 'publie') === 'publie' || ($userId !== null && $ballade['user'] === $userId)
             ));
         }
 
