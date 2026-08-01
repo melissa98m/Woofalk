@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Auth\GoogleTokenVerifier;
+use App\Services\Auth\GoogleTokenVerifierContract;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +20,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->bind(GoogleTokenVerifierContract::class, GoogleTokenVerifier::class);
     }
 
     /**

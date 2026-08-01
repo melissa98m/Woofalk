@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\Register as MailRegister;
 use App\Mail\ResetPasswordEmail;
 use App\Models\User;
+use App\Services\Auth\GoogleTokenVerifierContract;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -76,6 +78,83 @@ class AuthController extends Controller
             'expires_at' => now()->addMinutes(config('jwt.ttl'))->getTimestamp(),
         ])->cookie($this->authCookie($token));
 
+    }
+
+    public function loginWithGoogle(Request $request, GoogleTokenVerifierContract $verifier)
+    {
+        $request->validate([
+            'credential' => 'required|string',
+            'accept_terms' => 'accepted',
+        ], [
+            'credential.required' => 'Ce champ est requis',
+            'accept_terms.accepted' => 'Vous devez accepter la politique de confidentialité',
+        ]);
+
+        try {
+            $payload = $verifier->verify($request->input('credential'));
+        } catch (Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Jeton Google invalide',
+            ], 401);
+        }
+
+        if (! $payload['email_verified']) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Cet email Google n\'est pas vérifié',
+            ], 401);
+        }
+
+        $user = User::where('google_id', $payload['sub'])->first();
+
+        if (! $user) {
+            $user = User::where('email', $payload['email'])->first();
+
+            if ($user) {
+                // Google already verified ownership of this email, so linking
+                // it to an existing password-based account carries no extra
+                // account-takeover risk.
+                $user->google_id = $payload['sub'];
+                $user->save();
+            }
+        }
+
+        if (! $user) {
+            $user = User::create([
+                'username' => $this->uniqueUsernameFromGoogle($payload),
+                'email' => $payload['email'],
+                'password' => null,
+                'google_id' => $payload['sub'],
+                'roles' => json_encode(['ROLE_USER']),
+                'terms_accepted_at' => now(),
+                'email_verified_at' => now(),
+            ]);
+        }
+
+        $token = Auth::login($user);
+
+        return response()->json([
+            'status' => 'success',
+            'user' => $user,
+            'expires_at' => now()->addMinutes(config('jwt.ttl'))->getTimestamp(),
+        ])->cookie($this->authCookie($token));
+    }
+
+    private function uniqueUsernameFromGoogle(array $payload): string
+    {
+        $base = Str::slug($payload['name'] ?? Str::before($payload['email'], '@'), '');
+        $base = $base !== '' ? $base : 'user';
+
+        $username = $base;
+        $suffix = 1;
+
+        while (User::where('username', $username)->exists()) {
+            $username = $base.$suffix;
+            $suffix++;
+        }
+
+        return $username;
     }
 
     public function register(Request $request)

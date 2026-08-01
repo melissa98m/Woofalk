@@ -6,6 +6,7 @@ import {
     Box,
     Button,
     Checkbox,
+    Divider,
     FormControl,
     FormControlLabel,
     Grid,
@@ -18,6 +19,8 @@ import {
 import {Visibility, VisibilityOff} from "@mui/icons-material";
 import axios from "axios";
 import { API_URL } from "../../config";
+import GoogleSignInButton from "../../component/_partials/_auth/GoogleSignInButton";
+import auth from "./token";
 
 function Register () {
 
@@ -118,6 +121,16 @@ function Register () {
                 setShowToast(true);
             }
         }
+    }
+
+    const handleGoogleSuccess = (googleUser, expiresAt) => {
+        auth.setSession(googleUser, expiresAt);
+        navigate('/');
+    }
+
+    const handleGoogleError = (message) => {
+        setToastMessage({message, severity: "error"});
+        setShowToast(true);
     }
 
     const handleClickShowPassword = () => {
@@ -319,6 +332,14 @@ function Register () {
                 <Button type="submit" disabled={!isDirty || !isValid} variant="contained" sx={{m: 8}}>VALIDER</Button>
             </Grid>
         </form>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 300, mx: "auto", mb: 6 }}>
+            <Divider sx={{ width: "100%", mb: 2 }}>ou</Divider>
+            <GoogleSignInButton
+                acceptTerms={acceptTerms}
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+            />
+        </Box>
         <Snackbar
             open={toast}
             autoHideDuration={3000}

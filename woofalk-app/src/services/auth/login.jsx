@@ -1,11 +1,12 @@
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { Alert, Box, Button, FormControl, IconButton, Input, InputAdornment, InputLabel, Snackbar, TextField, Typography } from "@mui/material";
+import { Alert, Box, Button, Divider, FormControl, IconButton, Input, InputAdornment, InputLabel, Link, Snackbar, TextField, Typography } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import axios from "axios";
 import React, { useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
 import { API_URL } from "../../config";
+import GoogleSignInButton from "../../component/_partials/_auth/GoogleSignInButton";
 import auth from "./token";
 
 function Login() {
@@ -24,6 +25,16 @@ function Login() {
   const [toast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState({});
   const navigate = useNavigate();
+
+  const handleGoogleSuccess = (googleUser, expiresAt) => {
+    auth.setSession(googleUser, expiresAt);
+    navigate("/");
+  };
+
+  const handleGoogleError = (message) => {
+    setToastMessage({ message, severity: "error" });
+    setShowToast(true);
+  };
 
   let login = async () => {
 
@@ -183,6 +194,20 @@ const handleClickShowPassword = () => {
             </Grid>
           </Grid>
         </form>
+        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", maxWidth: 300, mx: "auto", mt: 6 }}>
+          <Divider sx={{ width: "100%", mb: 2 }}>ou</Divider>
+          <GoogleSignInButton
+            acceptTerms={true}
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+          />
+          <Typography variant="caption" sx={{ mt: 1, textAlign: "center" }}>
+            En continuant avec Google, vous acceptez notre{" "}
+            <Link component={RouterLink} to="/politique-confidentialite" target="_blank">
+              politique de confidentialité
+            </Link>
+          </Typography>
+        </Box>
         <Snackbar
             open={toast}
             autoHideDuration={3000}

@@ -24,6 +24,7 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'roles',
         'terms_accepted_at',
+        'google_id',
     ];
 
     public function places()
@@ -65,6 +66,7 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'google_id',
     ];
 
     /**

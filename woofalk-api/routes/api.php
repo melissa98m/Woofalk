@@ -25,6 +25,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::controller(AuthController::class)->group(function () {
     Route::post('login', 'login')->middleware('throttle:api');
+    Route::post('auth/google', 'loginWithGoogle')->middleware('throttle:api');
     Route::post('register', 'register')->middleware('throttle:api');
     Route::post('logout', 'logout');
     Route::post('refresh', 'refresh');
