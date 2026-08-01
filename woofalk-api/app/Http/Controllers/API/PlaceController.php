@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Concerns\CachesListing;
 use App\Http\Controllers\Controller;
+use App\Mail\PlacePublished;
 use App\Models\Place;
 use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
@@ -11,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
@@ -48,9 +50,22 @@ class PlaceController extends Controller
                 ->toArray();
         });
 
+        // "en_attente" places are cached alongside published ones (see
+        // rememberListing() above) so the moderation dashboard — which reads
+        // this same endpoint — still sees everything; hide them from anyone
+        // who isn't the owner or a moderator/admin before returning.
+        $user = Auth::user();
+        $canModerate = $user && Roles::canModerate($user);
+        $userId = $user->id ?? null;
+        if (! $canModerate) {
+            $places = array_values(array_filter(
+                $places,
+                fn ($place) => ($place['status'] ?? 'publie') === 'publie' || $place['user'] === $userId
+            ));
+        }
+
         // is_liked/likes_count depend on live like state, so they're merged
         // in after the cache read rather than baked into the cached payload.
-        $userId = Auth::id();
         $likedIds = $userId
             ? DB::table('place_likes')->where('user_id', $userId)->pluck('place_id')->all()
             : [];
@@ -215,6 +230,9 @@ class PlaceController extends Controller
      */
     public function show(Place $place)
     {
+        if ($place->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $place->user)) {
+            abort(404);
+        }
         $place->load(['user']);
         $place->load(['category']);
         $place->load(['address']);
@@ -237,6 +255,7 @@ class PlaceController extends Controller
         if ($place->user !== $current && ! Roles::isAdmin(Auth::user())) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
+        $wasPublished = $place->status === 'publie';
         $this->validate($request, [
             'place_name' => 'required|max:200',
             'place_description' => 'required',
@@ -279,6 +298,12 @@ class PlaceController extends Controller
         $place->user = $place->user()->get()[0];
         $place->tags = $place->tags()->get();
 
+        if (! $wasPublished && $place->status === 'publie' && $place->user) {
+            Mail::to($place->user->email, $place->user->username)->send(
+                new PlacePublished($place->place_name, $place->category->category_name ?? null, $place->address->city ?? null, $place->id)
+            );
+        }
+
         return response()->json([
             'status' => 'Mise à jour avec succèss',
             'data' => $place,
@@ -317,8 +342,27 @@ class PlaceController extends Controller
             'status' => 'required|in:publie,en_attente',
         ]);
 
+        $placesBecomingPublished = $validated['status'] === 'publie'
+            ? Place::whereIn('id', $validated['ids'])
+                ->where('status', '!=', 'publie')
+                ->with(['user', 'category', 'address'])
+                ->get()
+            : new Collection;
+
         Place::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
         $this->forgetListing(self::CACHE_KEY);
+
+        foreach ($placesBecomingPublished as $place) {
+            $owner = $place->getRelation('user');
+            if ($owner) {
+                Mail::to($owner->email, $owner->username)->send(new PlacePublished(
+                    $place->place_name,
+                    $place->getRelation('category')?->category_name,
+                    $place->getRelation('address')?->city,
+                    $place->id
+                ));
+            }
+        }
 
         return response()->json(['status' => 'Success']);
     }

@@ -23,7 +23,7 @@ class PlaceControllerTest extends TestCase
         // test hitting this endpoint before this one's factory row exists
         // would otherwise serve a stale snapshot from the in-process cache.
         Cache::forget('places.index');
-        $place = Place::factory()->create(['place_name' => 'Unique Index Test Place']);
+        $place = Place::factory()->create(['place_name' => 'Unique Index Test Place', 'status' => 'publie']);
 
         $response = $this->getJson('/api/places');
 
@@ -36,15 +36,57 @@ class PlaceControllerTest extends TestCase
         $this->assertSame('Unique Index Test Place', $found['place_name']);
     }
 
+    public function test_index_hides_pending_places_from_guests(): void
+    {
+        Cache::forget('places.index');
+        $place = Place::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->getJson('/api/places');
+
+        $response->assertStatus(200);
+        $this->assertNull(collect($response->json('data'))->firstWhere('id', $place->id));
+    }
+
+    public function test_index_includes_pending_places_for_moderators(): void
+    {
+        Cache::forget('places.index');
+        $moderator = User::factory()->moderator()->create();
+        $place = Place::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->actingAs($moderator, 'api')->getJson('/api/places');
+
+        $response->assertStatus(200);
+        $this->assertNotNull(collect($response->json('data'))->firstWhere('id', $place->id));
+    }
+
     public function test_show_returns_place_with_relations(): void
     {
-        $place = Place::factory()->create();
+        $place = Place::factory()->create(['status' => 'publie']);
 
         $response = $this->getJson("/api/places/{$place->id}");
 
         $response->assertStatus(200);
         $response->assertJsonFragment(['id' => $place->id]);
         $response->assertJsonStructure(['address', 'category', 'user', 'tags', 'is_liked']);
+    }
+
+    public function test_show_returns_404_for_pending_place_to_guest(): void
+    {
+        $place = Place::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->getJson("/api/places/{$place->id}");
+
+        $response->assertStatus(404);
+    }
+
+    public function test_show_returns_pending_place_to_its_owner(): void
+    {
+        $owner = User::factory()->create();
+        $place = Place::factory()->create(['status' => 'en_attente', 'user' => $owner->id]);
+
+        $response = $this->actingAs($owner, 'api')->getJson("/api/places/{$place->id}");
+
+        $response->assertStatus(200);
     }
 
     public function test_by_user_returns_only_authenticated_users_places(): void

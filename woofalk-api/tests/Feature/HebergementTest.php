@@ -17,7 +17,7 @@ class HebergementTest extends TestCase
     public function test_index(): void
     {
         Cache::forget('hebergements.index');
-        $hebergement = Hebergement::factory()->create(['hebergement_name' => 'Unique Index Test Hebergement']);
+        $hebergement = Hebergement::factory()->create(['hebergement_name' => 'Unique Index Test Hebergement', 'status' => 'publie']);
 
         $response = $this->get('/api/hebergements');
 
@@ -31,14 +31,46 @@ class HebergementTest extends TestCase
         $this->assertSame('Unique Index Test Hebergement', $found['hebergement_name']);
     }
 
+    public function test_index_hides_pending_hebergements_from_guests(): void
+    {
+        Cache::forget('hebergements.index');
+        $hebergement = Hebergement::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->getJson('/api/hebergements');
+
+        $response->assertStatus(200);
+        $this->assertNull(collect($response->json('data'))->firstWhere('id', $hebergement->id));
+    }
+
+    public function test_index_includes_pending_hebergements_for_moderators(): void
+    {
+        Cache::forget('hebergements.index');
+        $moderator = User::factory()->moderator()->create();
+        $hebergement = Hebergement::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->actingAs($moderator, 'api')->getJson('/api/hebergements');
+
+        $response->assertStatus(200);
+        $this->assertNotNull(collect($response->json('data'))->firstWhere('id', $hebergement->id));
+    }
+
     public function test_show_returns_hebergement_with_relations(): void
     {
-        $hebergement = Hebergement::factory()->create();
+        $hebergement = Hebergement::factory()->create(['status' => 'publie']);
 
         $response = $this->getJson("/api/hebergements/{$hebergement->id}");
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['address', 'category', 'user', 'tags', 'is_liked']);
+    }
+
+    public function test_show_returns_404_for_pending_hebergement_to_guest(): void
+    {
+        $hebergement = Hebergement::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->getJson("/api/hebergements/{$hebergement->id}");
+
+        $response->assertStatus(404);
     }
 
     public function test_by_user_returns_only_authenticated_users_hebergements(): void

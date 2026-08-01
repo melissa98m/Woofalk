@@ -47,9 +47,22 @@ class BalladeController extends Controller
                 ->toArray();
         });
 
+        // "en_attente" ballades are cached alongside published ones (see
+        // rememberListing() above) so the moderation dashboard — which reads
+        // this same endpoint — still sees everything; hide them from anyone
+        // who isn't the owner or a moderator/admin before returning.
+        $user = Auth::user();
+        $canModerate = $user && Roles::canModerate($user);
+        $userId = $user->id ?? null;
+        if (! $canModerate) {
+            $ballades = array_values(array_filter(
+                $ballades,
+                fn ($ballade) => ($ballade['status'] ?? 'publie') === 'publie' || $ballade['user'] === $userId
+            ));
+        }
+
         // is_liked/likes_count depend on live like state, so they're merged
         // in after the cache read rather than baked into the cached payload.
-        $userId = Auth::id();
         $likedIds = $userId
             ? DB::table('ballade_likes')->where('user_id', $userId)->pluck('ballade_id')->all()
             : [];
@@ -189,9 +202,17 @@ class BalladeController extends Controller
      */
     public function sortByDateDesc()
     {
-        $balladesdesc = Ballade::with(['user', 'tags'])
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $user = Auth::user();
+        $query = Ballade::with(['user', 'tags'])->orderBy('created_at', 'desc');
+        if (! $user || ! Roles::canModerate($user)) {
+            $query->where(function ($q) use ($user) {
+                $q->where('status', 'publie');
+                if ($user) {
+                    $q->orWhere('user', $user->id);
+                }
+            });
+        }
+        $balladesdesc = $query->get();
 
         return response()->json([
             'status' => 'Success',
@@ -259,6 +280,9 @@ class BalladeController extends Controller
      */
     public function show(Ballade $ballade)
     {
+        if ($ballade->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $ballade->user)) {
+            abort(404);
+        }
         $ballade->load(['user']);
         $ballade->load(['tags']);
         $ballade->loadCount('likedByUsers as likes_count');

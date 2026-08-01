@@ -57,9 +57,22 @@ class HebergementController extends Controller
             }, $hebergements);
         });
 
+        // "en_attente" hebergements are cached alongside published ones (see
+        // rememberListing() above) so the moderation dashboard — which reads
+        // this same endpoint — still sees everything; hide them from anyone
+        // who isn't the owner or a moderator/admin before returning.
+        $user = Auth::user();
+        $canModerate = $user && Roles::canModerate($user);
+        $userId = $user->id ?? null;
+        if (! $canModerate) {
+            $hebergements = array_values(array_filter(
+                $hebergements,
+                fn ($hebergement) => ($hebergement['status'] ?? 'publie') === 'publie' || $hebergement['user'] === $userId
+            ));
+        }
+
         // is_liked/likes_count depend on live like state, so they're merged
         // in after the cache read rather than baked into the cached payload.
-        $userId = Auth::id();
         $likedIds = $userId
             ? DB::table('hebergement_likes')->where('user_id', $userId)->pluck('hebergement_id')->all()
             : [];
@@ -226,6 +239,9 @@ class HebergementController extends Controller
      */
     public function show(Hebergement $hebergement)
     {
+        if ($hebergement->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $hebergement->user)) {
+            abort(404);
+        }
         $hebergement->load(['user']);
         $hebergement->load(['category']);
         $hebergement->load(['address']);

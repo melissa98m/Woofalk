@@ -39,6 +39,22 @@ class Roles
         return self::isAdmin($user) || self::isModerator($user);
     }
 
+    /**
+     * Whether $user (null for a guest) may see a place/ballade/hebergement
+     * that isn't published yet: its owner, or anyone who can moderate.
+     * Used by the public index/show endpoints to hide "en_attente" records
+     * from everyone else while still letting the admin dashboard (which
+     * reads the same endpoints) and the owner's own pages see them.
+     */
+    public static function canViewPending(?User $user, ?int $ownerId): bool
+    {
+        if (! $user) {
+            return false;
+        }
+
+        return $user->id === $ownerId || self::canModerate($user);
+    }
+
     private static function of(User $user): array
     {
         return json_decode($user->roles ?? '[]', true) ?: [];

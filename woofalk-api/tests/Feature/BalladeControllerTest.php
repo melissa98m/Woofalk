@@ -25,7 +25,7 @@ class BalladeControllerTest extends TestCase
     public function test_index_is_public_and_lists_ballades(): void
     {
         Cache::forget('ballades.index');
-        $ballade = Ballade::factory()->create(['ballade_name' => 'Unique Index Test Ballade']);
+        $ballade = Ballade::factory()->create(['ballade_name' => 'Unique Index Test Ballade', 'status' => 'publie']);
 
         $response = $this->getJson('/api/ballades');
 
@@ -38,10 +38,33 @@ class BalladeControllerTest extends TestCase
         $this->assertSame('Unique Index Test Ballade', $found['ballade_name']);
     }
 
+    public function test_index_hides_pending_ballades_from_guests(): void
+    {
+        Cache::forget('ballades.index');
+        $ballade = Ballade::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->getJson('/api/ballades');
+
+        $response->assertStatus(200);
+        $this->assertNull(collect($response->json('data'))->firstWhere('id', $ballade->id));
+    }
+
+    public function test_index_includes_pending_ballades_for_moderators(): void
+    {
+        Cache::forget('ballades.index');
+        $moderator = User::factory()->moderator()->create();
+        $ballade = Ballade::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->actingAs($moderator, 'api')->getJson('/api/ballades');
+
+        $response->assertStatus(200);
+        $this->assertNotNull(collect($response->json('data'))->firstWhere('id', $ballade->id));
+    }
+
     public function test_sort_by_date_desc_orders_most_recent_first(): void
     {
-        $older = Ballade::factory()->create(['created_at' => now()->subDays(2)]);
-        $newer = Ballade::factory()->create(['created_at' => now()]);
+        $older = Ballade::factory()->create(['created_at' => now()->subDays(2), 'status' => 'publie']);
+        $newer = Ballade::factory()->create(['created_at' => now(), 'status' => 'publie']);
 
         $response = $this->getJson('/api/ballades/sortDateDesc');
 
@@ -52,12 +75,21 @@ class BalladeControllerTest extends TestCase
 
     public function test_show_returns_ballade_with_relations(): void
     {
-        $ballade = Ballade::factory()->create();
+        $ballade = Ballade::factory()->create(['status' => 'publie']);
 
         $response = $this->getJson("/api/ballades/{$ballade->id}");
 
         $response->assertStatus(200);
         $response->assertJsonStructure(['user', 'tags', 'is_liked']);
+    }
+
+    public function test_show_returns_404_for_pending_ballade_to_guest(): void
+    {
+        $ballade = Ballade::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->getJson("/api/ballades/{$ballade->id}");
+
+        $response->assertStatus(404);
     }
 
     public function test_by_user_returns_only_authenticated_users_ballades(): void
