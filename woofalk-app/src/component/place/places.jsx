@@ -20,6 +20,7 @@ import { PlaceCard } from "../_partials/_ui/PlaceCard";
 import { getReadableTextColor } from "../_partials/_ui/tagColor";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { normalizeText } from "../../services/search/searchIndex";
+import { Seo } from "../_partials/_seo/Seo";
 import { API_URL } from "../../config";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -27,8 +28,6 @@ const DEFAULT_PAGE_SIZE = 10;
 const MAX_VISIBLE_FILTER_TAGS = 15;
 
 function Places() {
-
-    document.title = 'Tous les lieux';
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -132,6 +131,10 @@ function Places() {
     };
 
     return <Container maxWidth="xl" id="place" sx={{ px: { xs: 2, md: 4 }, pb: "40px" }}>
+        <Seo
+            title="Tous les lieux dog-friendly"
+            description="Parcourez les parcs, plages, restaurants et autres lieux dog-friendly référencés par la communauté Woofalk, filtrables par catégorie et par tag."
+        />
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginTop: "20px", marginBottom: "6px" }}>
                 <Box>

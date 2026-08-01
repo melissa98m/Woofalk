@@ -11,7 +11,9 @@ import { DetailStat } from "../_partials/_ui/DetailStat";
 import { LikeButton } from "../_partials/_ui/LikeButton";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { formatDistance } from "../_partials/_ui/formatDistance";
-import { API_URL } from "../../config";
+import { Seo, truncateDescription } from "../_partials/_seo/Seo";
+import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
+import { API_URL, SITE_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
 
@@ -33,25 +35,52 @@ function BalladeDetail() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    useEffect(() => {
-        document.title = ballade ? ballade.ballade_name : "Balade";
-    }, [ballade]);
-
     if (loading) {
         return <Container maxWidth="md" sx={{ py: "60px" }}>
+            <Seo title="Balade" />
             <Typography role="status" aria-live="polite" sx={{ textAlign: "center" }}>Chargement...</Typography>
         </Container>;
     }
 
     if (error || !ballade) {
         return <Container maxWidth="md" sx={{ py: "60px" }}>
+            <Seo title="Balade introuvable" noindex />
             <Typography role="alert" sx={{ textAlign: "center" }}>{error ?? "Balade introuvable."}</Typography>
         </Container>;
     }
 
     const { ballade_name, ballade_description, ballade_image, ballade_website, tags, ballade_latitude, ballade_longitude, denivele, distance } = ballade;
 
+    const balladeJsonLd = [
+        {
+            "@context": "https://schema.org",
+            "@type": "TouristAttraction",
+            name: ballade_name,
+            description: ballade_description,
+            image: `${API_URL}/storage/uploads/ballades/${ballade_image}`,
+            url: `${SITE_URL}/ballades/${id}`,
+            ...(ballade_latitude != null && ballade_longitude != null ? {
+                geo: {
+                    "@type": "GeoCoordinates",
+                    latitude: ballade_latitude,
+                    longitude: ballade_longitude,
+                },
+            } : {}),
+        },
+        breadcrumbJsonLd([
+            { name: "Accueil", path: "/" },
+            { name: "Balades", path: "/ballades" },
+            { name: ballade_name, path: `/ballades/${id}` },
+        ]),
+    ];
+
     return <Container maxWidth="xl" id="ballade-detail" sx={{ px: { xs: 1, sm: 1.5, md: 2 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
+        <Seo
+            title={ballade_name}
+            description={truncateDescription(ballade_description)}
+            image={`${API_URL}/storage/uploads/ballades/${ballade_image}`}
+            jsonLd={balladeJsonLd}
+        />
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
             <Typography component={Link} to="/ballades" color="text.secondary" sx={{ textDecoration: "none", fontSize: "13px" }}>Balades</Typography>
             <Typography color="text.primary" sx={{ fontSize: "13px" }}>{ballade_name}</Typography>

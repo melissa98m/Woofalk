@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +17,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+// Deliberately outside routes/api.php: this must be reachable at the bare
+// API origin (not under /api) so a Vercel rewrite can proxy the front-end's
+// own /sitemap.xml to it — see vercel.json.
+Route::get('sitemap.xml', [SitemapController::class, 'index']);

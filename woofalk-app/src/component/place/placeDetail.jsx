@@ -9,7 +9,9 @@ import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { LikeButton } from "../_partials/_ui/LikeButton";
-import { API_URL } from "../../config";
+import { Seo, truncateDescription } from "../_partials/_seo/Seo";
+import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
+import { API_URL, SITE_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
 
@@ -31,25 +33,60 @@ function PlaceDetail() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    useEffect(() => {
-        document.title = place ? place.place_name : "Lieu";
-    }, [place]);
-
     if (loading) {
         return <Container maxWidth="md" sx={{ py: "60px" }}>
+            <Seo title="Lieu" />
             <Typography role="status" aria-live="polite" sx={{ textAlign: "center" }}>Chargement...</Typography>
         </Container>;
     }
 
     if (error || !place) {
         return <Container maxWidth="md" sx={{ py: "60px" }}>
+            <Seo title="Lieu introuvable" noindex />
             <Typography role="alert" sx={{ textAlign: "center" }}>{error ?? "Lieu introuvable."}</Typography>
         </Container>;
     }
 
     const { place_name, place_description, place_image, place_website, category, address, tags } = place;
 
+    const placeJsonLd = [
+        {
+            "@context": "https://schema.org",
+            "@type": "Place",
+            name: place_name,
+            description: place_description,
+            image: `${API_URL}/storage/uploads/places/${place_image}`,
+            url: `${SITE_URL}/places/${id}`,
+            ...(address ? {
+                address: {
+                    "@type": "PostalAddress",
+                    streetAddress: address.address,
+                    addressLocality: address.city,
+                    postalCode: address.postal_code,
+                    addressCountry: "FR",
+                },
+                geo: {
+                    "@type": "GeoCoordinates",
+                    latitude: address.latitude,
+                    longitude: address.longitude,
+                },
+            } : {}),
+        },
+        breadcrumbJsonLd([
+            { name: "Accueil", path: "/" },
+            { name: "Lieux", path: "/places" },
+            { name: place_name, path: `/places/${id}` },
+        ]),
+    ];
+
     return <Container maxWidth="xl" id="place-detail" sx={{ px: { xs: 1, sm: 1.5, md: 2 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
+        <Seo
+            title={place_name}
+            description={truncateDescription(place_description)}
+            image={`${API_URL}/storage/uploads/places/${place_image}`}
+            type="place"
+            jsonLd={placeJsonLd}
+        />
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
             <Typography component={Link} to="/places" color="text.secondary" sx={{ textDecoration: "none", fontSize: "13px" }}>Lieux</Typography>
             <Typography color="text.primary" sx={{ fontSize: "13px" }}>{place_name}</Typography>

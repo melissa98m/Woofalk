@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://api.woofalk.com/sitemap.xml" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

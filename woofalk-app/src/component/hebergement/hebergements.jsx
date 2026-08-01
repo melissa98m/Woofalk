@@ -19,6 +19,7 @@ import { HebergementCard } from "../_partials/_ui/HebergementCard";
 import { getReadableTextColor } from "../_partials/_ui/tagColor";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { normalizeText } from "../../services/search/searchIndex";
+import { Seo } from "../_partials/_seo/Seo";
 import { API_URL } from "../../config";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -26,8 +27,6 @@ const DEFAULT_PAGE_SIZE = 10;
 const MAX_VISIBLE_FILTER_TAGS = 15;
 
 function Hebergements() {
-
-    document.title = 'Tous les hébergements';
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -129,6 +128,10 @@ function Hebergements() {
     };
 
     return <Container maxWidth="xl" id="hebergement" sx={{ px: { xs: 2, md: 4 }, pb: "40px" }}>
+        <Seo
+            title="Tous les hébergements dog-friendly"
+            description="Trouvez un hébergement qui accepte les chiens : gîtes, hôtels et locations référencés et notés par la communauté Woofalk."
+        />
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginTop: "20px", marginBottom: "6px" }}>
                 <Box>

@@ -4,13 +4,28 @@ import axios from "axios";
 import { PlaceCard } from "../_partials/_ui/PlaceCard";
 import { BalladeCard } from "../_partials/_ui/BalladeCard";
 import Search from "../search/search";
-import { API_URL } from "../../config";
+import { Seo } from "../_partials/_seo/Seo";
+import { API_URL, SITE_URL } from "../../config";
 
 const QUICK_CATEGORIES = ["Plage", "Restaurant", "Visite"];
 
-function Home() {
+const HOME_JSON_LD = [
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Woofalk",
+        url: SITE_URL,
+    },
+    {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: "Woofalk",
+        url: SITE_URL,
+        logo: `${SITE_URL}/logo512.png`,
+    },
+];
 
-    document.title = "Page d'accueil";
+function Home() {
 
     const [ballades, setBallades] = useState([]);
     const [places, setPlaces] = useState([]);
@@ -33,6 +48,11 @@ function Home() {
     }, []);
 
     return <Container maxWidth="xl" id='home' sx={{ pb: "40px", px: { xs: 2, md: 4 } }}>
+        <Seo
+            title="Trouvez le coin parfait pour votre chien"
+            description="Woofalk référence les meilleurs parcs, plages, forêts, balades et hébergements dog-friendly, vérifiés par des propriétaires de chiens partout en France."
+            jsonLd={HOME_JSON_LD}
+        />
         <Box
             sx={{
                 bgcolor: "sageSoft",

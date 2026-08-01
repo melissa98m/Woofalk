@@ -16,6 +16,7 @@ import { useForm, Controller } from "react-hook-form";
 import { Link as RouterLink } from "react-router-dom";
 import axios from "axios";
 import { FieldLabel } from "../_partials/_ui/FieldLabel";
+import { Seo } from "../_partials/_seo/Seo";
 import { API_URL } from "../../config";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,8 +24,6 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const SUBJECT_OPTIONS = ["Signaler un lieu", "Proposer une balade", "Question générale", "Autre"];
 
 function Contact() {
-
-    document.title = "Contact";
 
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
@@ -77,6 +76,10 @@ function Contact() {
 
     return (
         <Container maxWidth="md" id="contact" sx={{ px: { xs: 2, md: 4 }, pt: { xs: "32px", md: "48px" }, pb: "80px" }}>
+            <Seo
+                title="Contact"
+                description="Une question, une idée ou un lieu à signaler ? Contactez l'équipe Woofalk, réponse sous 48h."
+            />
             <Box
                 sx={{
                     display: "grid",

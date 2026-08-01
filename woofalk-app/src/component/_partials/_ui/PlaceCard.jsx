@@ -18,6 +18,7 @@ export function PlaceCard({ place }) {
                 <CardMedia
                     component="img"
                     height="150"
+                    loading="lazy"
                     src={`${API_URL}/storage/uploads/places/${place_image}`}
                     alt={place_name}
                 />
@@ -63,7 +64,7 @@ export function PlaceCard({ place }) {
                 ) : null}
             </CardContent>
             <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
-                <Button component={Link} to={`/places/${id}`} variant="contained">Voir détails</Button>
+                <Button component={Link} to={`/places/${id}`} variant="contained" aria-label={`Voir les détails de ${place_name}`}>Voir détails</Button>
             </CardActions>
         </Card>
     );

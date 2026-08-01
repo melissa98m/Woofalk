@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import { Seo } from "../_partials/_seo/Seo";
 
 const FAQ_SECTIONS = [
     {
@@ -81,11 +82,13 @@ const faqSchema = {
 
 function Faq() {
 
-    document.title = "FAQ - Questions fréquentes";
-
     return (
         <Container maxWidth="md" id="faq" sx={{ px: { xs: 2, md: 4 }, pt: { xs: "32px", md: "48px" }, pb: "80px" }}>
-            <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+            <Seo
+                title="FAQ - Questions fréquentes"
+                description="Tout ce qu'il faut savoir pour trouver, proposer et partager un lieu ami des chiens sur Woofalk."
+                jsonLd={faqSchema}
+            />
 
             <Typography variant="h1" sx={{ fontSize: { xs: "24px", md: "30px" } }} gutterBottom>
                 Questions fréquentes

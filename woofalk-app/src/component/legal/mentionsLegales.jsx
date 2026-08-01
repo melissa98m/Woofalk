@@ -1,5 +1,6 @@
 import { Box, Container, Link, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { Seo } from "../_partials/_seo/Seo";
 
 const CONTACT_EMAIL = "bonjour@woofalk.com";
 const MAILTO = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Contact depuis les mentions légales — woofalk.com")}`;
@@ -17,10 +18,9 @@ function Section({ title, children }) {
 
 function MentionsLegales() {
 
-    document.title = "Mentions légales";
-
     return (
         <Container maxWidth="md" id="mentions-legales" sx={{ px: { xs: 2, md: 4 }, pt: { xs: "32px", md: "48px" }, pb: "80px" }}>
+            <Seo title="Mentions légales" description="Mentions légales du site Woofalk : éditeur, hébergeur et informations légales." />
             <Typography variant="h1" sx={{ fontSize: { xs: "26px", md: "32px" } }} gutterBottom>
                 Mentions légales
             </Typography>

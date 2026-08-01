@@ -58,6 +58,11 @@ return [
 
     'asset_url' => env('ASSET_URL'),
 
+    // The web front-end's public origin (woofalk-app, deployed on Vercel) —
+    // distinct from 'url' above, which is this API's own origin. Used to
+    // build absolute front-end URLs (e.g. the sitemap) from the API.
+    'frontend_url' => env('FRONTEND_URL', 'https://woofalk.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Application Timezone

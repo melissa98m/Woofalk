@@ -1,3 +1,13 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow: /recherche
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password/
+Disallow: /mon-compte
+Disallow: /change-password
+Disallow: /admin
+Disallow: /admin/
+
+Sitemap: https://woofalk.com/sitemap.xml

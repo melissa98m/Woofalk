@@ -15,17 +15,19 @@
       name="description"
       content="Bienvenue sur Woofalk, votre guide ultime pour les balades et promenades en compagnie de votre fidèle ami canin ! Notre site web est conçu pour référencer les meilleurs endroits où vous pouvez profiter de moments de détente en toute sécurité avec votre chien"
     />
-    <link rel="apple-touch-icon" href="/woofalk.png" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
     <link rel="manifest" href="/manifest.json" />
-    <!-- SEO-->
-    <link rel="canonical" href="https://woofalk.fr/places">
+    <!-- SEO: default/fallback tags only — every public route overrides title,
+         description and canonical per-page via react-helmet-async (see
+         src/component/_partials/_seo/Seo.jsx). No static canonical here: a
+         single fixed URL would be wrong for every route but this one. -->
     <meta name="robots" content="index, follow">
-    <meta name="author" content="melissa98m">
-    <meta name="publisher" content="melissa98m">
+    <meta name="author" content="Woofalk">
+    <meta name="publisher" content="Woofalk">
     <meta name="keywords" content="chiens, balades, lieux autorisés chien">
     <title>Woofalk</title>
   </head>

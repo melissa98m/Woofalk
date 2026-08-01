@@ -27,6 +27,7 @@ export function BalladeCard({ ballade }) {
                 <CardMedia
                     component="img"
                     height="150"
+                    loading="lazy"
                     src={`${API_URL}/storage/uploads/ballades/${ballade_image}`}
                     alt={ballade_name}
                 />
@@ -80,7 +81,7 @@ export function BalladeCard({ ballade }) {
                 ) : null}
             </CardContent>
             <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
-                <Button component={Link} to={`/ballades/${id}`} variant="contained">Voir détails</Button>
+                <Button component={Link} to={`/ballades/${id}`} variant="contained" aria-label={`Voir les détails de ${ballade_name}`}>Voir détails</Button>
             </CardActions>
         </Card>
     );

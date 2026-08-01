@@ -9,7 +9,9 @@ import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { LikeButton } from "../_partials/_ui/LikeButton";
-import { API_URL } from "../../config";
+import { Seo, truncateDescription } from "../_partials/_seo/Seo";
+import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
+import { API_URL, SITE_URL } from "../../config";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
 
@@ -31,25 +33,61 @@ function HebergementDetail() {
             .finally(() => setLoading(false));
     }, [id]);
 
-    useEffect(() => {
-        document.title = hebergement ? hebergement.hebergement_name : "Hébergement";
-    }, [hebergement]);
-
     if (loading) {
         return <Container maxWidth="md" sx={{ py: "60px" }}>
+            <Seo title="Hébergement" />
             <Typography role="status" aria-live="polite" sx={{ textAlign: "center" }}>Chargement...</Typography>
         </Container>;
     }
 
     if (error || !hebergement) {
         return <Container maxWidth="md" sx={{ py: "60px" }}>
+            <Seo title="Hébergement introuvable" noindex />
             <Typography role="alert" sx={{ textAlign: "center" }}>{error ?? "Hébergement introuvable."}</Typography>
         </Container>;
     }
 
     const { hebergement_name, hebergement_description, hebergement_image, hebergement_website, price_indication, category, address, tags } = hebergement;
 
+    const hebergementJsonLd = [
+        {
+            "@context": "https://schema.org",
+            "@type": "LodgingBusiness",
+            name: hebergement_name,
+            description: hebergement_description,
+            image: `${API_URL}/storage/uploads/hebergements/${hebergement_image}`,
+            url: `${SITE_URL}/hebergements/${id}`,
+            ...(hebergement_website ? { sameAs: hebergement_website } : {}),
+            ...(address ? {
+                address: {
+                    "@type": "PostalAddress",
+                    streetAddress: address.address,
+                    addressLocality: address.city,
+                    postalCode: address.postal_code,
+                    addressCountry: "FR",
+                },
+                geo: {
+                    "@type": "GeoCoordinates",
+                    latitude: address.latitude,
+                    longitude: address.longitude,
+                },
+            } : {}),
+        },
+        breadcrumbJsonLd([
+            { name: "Accueil", path: "/" },
+            { name: "Hébergements", path: "/hebergements" },
+            { name: hebergement_name, path: `/hebergements/${id}` },
+        ]),
+    ];
+
     return <Container maxWidth="xl" id="hebergement-detail" sx={{ px: { xs: 1, sm: 1.5, md: 2 }, py: { xs: "24px", md: "32px" }, pb: "80px" }}>
+        <Seo
+            title={hebergement_name}
+            description={truncateDescription(hebergement_description)}
+            image={`${API_URL}/storage/uploads/hebergements/${hebergement_image}`}
+            type="place"
+            jsonLd={hebergementJsonLd}
+        />
         <Breadcrumbs aria-label="Fil d'ariane" sx={{ marginBottom: "16px", fontSize: "13px" }}>
             <Typography component={Link} to="/hebergements" color="text.secondary" sx={{ textDecoration: "none", fontSize: "13px" }}>Hébergements</Typography>
             <Typography color="text.primary" sx={{ fontSize: "13px" }}>{hebergement_name}</Typography>

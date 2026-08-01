@@ -14,6 +14,7 @@ import './assets/css/component/_partials/_theme.scss';
 
 import {BrowserRouter, Route, Routes, useLocation} from 'react-router-dom';
 import {useTheme, useMediaQuery} from "@mui/material";
+import {HelmetProvider} from "react-helmet-async";
 
 import {lightTheme} from "./component/_partials/_theme/_lightTheme";
 import {darkTheme} from "./component/_partials/_theme/_darkTheme";
@@ -193,7 +194,9 @@ function CustomTheme() {
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>
-        <CustomTheme/>
+        <HelmetProvider>
+            <CustomTheme/>
+        </HelmetProvider>
     </React.StrictMode>
 );
 

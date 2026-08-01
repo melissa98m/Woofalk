@@ -19,6 +19,7 @@ import { BalladeCard } from "../_partials/_ui/BalladeCard";
 import { getReadableTextColor } from "../_partials/_ui/tagColor";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { normalizeText } from "../../services/search/searchIndex";
+import { Seo } from "../_partials/_seo/Seo";
 import { API_URL } from "../../config";
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50];
@@ -26,8 +27,6 @@ const DEFAULT_PAGE_SIZE = 10;
 const MAX_VISIBLE_FILTER_TAGS = 15;
 
 function Ballades() {
-
-    document.title = 'Toutes les balades';
 
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -138,6 +137,10 @@ function Ballades() {
     };
 
     return <Container maxWidth="xl" id="ballade" sx={{ px: { xs: 2, md: 4 }, pb: "40px" }}>
+        <Seo
+            title="Toutes les balades dog-friendly"
+            description="Découvrez des idées de balades pour votre chien : distance, dénivelé et difficulté renseignés pour chaque itinéraire partagé par la communauté Woofalk."
+        />
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px", marginTop: "20px", marginBottom: "6px" }}>
                 <Box>

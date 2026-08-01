@@ -1,5 +1,6 @@
 import { Box, Container, Link, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import { Seo } from "../_partials/_seo/Seo";
 
 const CONTACT_EMAIL = "bonjour@woofalk.com";
 
@@ -24,10 +25,9 @@ function Right({ title, children }) {
 
 function PolitiqueConfidentialite() {
 
-    document.title = "Politique de confidentialité";
-
     return (
         <Container maxWidth="md" id="politique-confidentialite" sx={{ px: { xs: 2, md: 4 }, pt: { xs: "32px", md: "48px" }, pb: "80px" }}>
+            <Seo title="Politique de confidentialité" description="Politique de confidentialité de Woofalk : données personnelles collectées, finalités et vos droits." />
             <Typography variant="h1" sx={{ fontSize: { xs: "26px", md: "32px" } }} gutterBottom>
                 Politique de confidentialité
             </Typography>

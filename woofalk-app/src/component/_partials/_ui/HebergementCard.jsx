@@ -18,6 +18,7 @@ export function HebergementCard({ hebergement }) {
                 <CardMedia
                     component="img"
                     height="150"
+                    loading="lazy"
                     src={`${API_URL}/storage/uploads/hebergements/${hebergement_image}`}
                     alt={hebergement_name}
                 />
@@ -66,7 +67,7 @@ export function HebergementCard({ hebergement }) {
                 ) : null}
             </CardContent>
             <CardActions sx={{ justifyContent: "flex-end", px: 2, pb: 2 }}>
-                <Button component={Link} to={`/hebergements/${id}`} variant="contained">Voir détails</Button>
+                <Button component={Link} to={`/hebergements/${id}`} variant="contained" aria-label={`Voir les détails de ${hebergement_name}`}>Voir détails</Button>
             </CardActions>
         </Card>
     );
