@@ -103,11 +103,15 @@ export function Navbar() {
                             <Button component={Link} to="/admin/dashboard" sx={navButtonSx("/admin/dashboard")}>
                                 Dashboard
                             </Button>
+                        ) : auth.loggedAndModerator() ? (
+                            <Button component={Link} to="/admin/place" sx={navButtonSx("/admin/place")}>
+                                Modération
+                            </Button>
                         ) : null}
                         <Button component={Link} to="/contact" sx={navButtonSx("/contact")}>
                             Contact
                         </Button>
-                        {auth.loggedAndUser() || auth.loggedAndAdmin() ? (
+                        {auth.loggedAndUser() || auth.loggedAndCanModerate() ? (
                             <Button component={Link} to="/mon-compte" aria-label="Mon compte" sx={navButtonSx("/mon-compte")}>
                                 <AccountCircleOutlinedIcon />
                             </Button>

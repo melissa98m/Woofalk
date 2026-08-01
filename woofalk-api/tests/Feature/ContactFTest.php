@@ -54,6 +54,16 @@ class ContactFTest extends TestCase
         $this->assertFalse($byEmail['bo-fttest@example.com']['is_report']);
     }
 
+    public function test_moderator_can_list_contact_messages(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        Contact::create(['name' => 'Zoé', 'email' => 'zoe-moderator@example.com', 'subject' => 'Autre', 'contenu' => 'Coucou']);
+
+        $response = $this->actingAs($moderator, 'api')->getJson('/api/contacts');
+
+        $response->assertStatus(200);
+    }
+
     public function test_guest_cannot_reply_to_a_contact_message(): void
     {
         $contact = Contact::create(['name' => 'Zoé', 'email' => 'zoe-reply@example.com', 'subject' => 'Autre', 'contenu' => 'Coucou']);
@@ -95,6 +105,21 @@ class ContactFTest extends TestCase
 
         $response->assertStatus(200);
         $this->assertNotNull($response->json('data.replied_at'));
+        $this->assertNotNull($contact->fresh()->replied_at);
+        Mail::assertSent(ContactReply::class, fn ($mail) => $mail->hasTo($contact->email));
+    }
+
+    public function test_moderator_can_reply_to_a_contact_message(): void
+    {
+        Mail::fake();
+        $moderator = User::factory()->moderator()->create();
+        $contact = Contact::create(['name' => 'Zoé', 'email' => 'zoe-reply5@example.com', 'subject' => Contact::REPORT_SUBJECT, 'contenu' => 'Lieu fermé']);
+
+        $response = $this->actingAs($moderator, 'api')->postJson("/api/contacts/{$contact->id}/reply", [
+            'message' => 'Merci pour votre signalement, nous vérifions.',
+        ]);
+
+        $response->assertStatus(200);
         $this->assertNotNull($contact->fresh()->replied_at);
         Mail::assertSent(ContactReply::class, fn ($mail) => $mail->hasTo($contact->email));
     }

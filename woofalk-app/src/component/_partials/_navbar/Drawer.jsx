@@ -71,12 +71,17 @@ function DrawerComponent() {
                             <DashboardIcon fontSize="medium" />
                             Dashboard
                         </Box>
+                    ) : auth.loggedAndModerator() ? (
+                        <Box component={Link} to="/admin/place" onClick={close} sx={linkSx("/admin/place")}>
+                            <DashboardIcon fontSize="medium" />
+                            Modération
+                        </Box>
                     ) : null}
                     <Box component={Link} to="/contact" onClick={close} sx={linkSx("/contact")}>
                         <ContactsIcon fontSize="medium" />
                         Contact
                     </Box>
-                    {auth.loggedAndUser() || auth.loggedAndAdmin() ? (
+                    {auth.loggedAndUser() || auth.loggedAndCanModerate() ? (
                         <Box component={Link} to="/mon-compte" onClick={close} sx={linkSx("/mon-compte")}>
                             <AccountCircleOutlinedIcon fontSize="medium" />
                             Mon compte

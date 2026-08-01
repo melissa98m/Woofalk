@@ -83,5 +83,14 @@ let loggedAndUser = () => {
     // Check si il y a une session valide et check si le rôle est celui d'un user, répond true quand c'est vrai
     return !!(getExpiryTime() && getRoles() === 'ROLE_USER');
 }
+let loggedAndModerator = () => {
+    return !!(getExpiryTime() && getRoles() === 'ROLE_MODERATOR');
+}
+// Admins implicitly have every permission a moderator has — used to gate
+// the narrow moderation-only pages/actions (places/ballades/hébergements
+// status, contact message replies) without duplicating the admin check.
+let loggedAndCanModerate = () => {
+    return loggedAndAdmin() || loggedAndModerator();
+}
 
-export default {getToken, getRoles, getEmail, getUsername, getUserId, loggedAndAdmin, loggedAndUser, getExpiryTime, setSession, clearSession}
+export default {getToken, getRoles, getEmail, getUsername, getUserId, loggedAndAdmin, loggedAndUser, loggedAndModerator, loggedAndCanModerate, getExpiryTime, setSession, clearSession}

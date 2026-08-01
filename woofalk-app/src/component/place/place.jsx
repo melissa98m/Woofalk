@@ -25,6 +25,7 @@ import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
 import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
+import auth from "../../services/auth/token";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -59,6 +60,9 @@ function Place() {
     const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
+    // Moderators can only change a place's publication status (see
+    // EnsureUserCanModerate server-side) — edit/delete stay admin-only.
+    const isModerator = auth.loggedAndModerator();
 
     const handleChangePage = (place, newPage) => {
         setPage(newPage);
@@ -154,7 +158,7 @@ function Place() {
         <AdminResourceLayout
             title="Lieux"
             countLabel={data ? `${filteredData.length} lieu${filteredData.length > 1 ? "x" : ""} référencé${filteredData.length > 1 ? "s" : ""}` : undefined}
-            actions={<Button component={Link} to="/places/new" variant="contained">Ajouter un lieu</Button>}
+            actions={isModerator ? undefined : <Button component={Link} to="/places/new" variant="contained">Ajouter un lieu</Button>}
             searchValue={search}
             onSearchChange={handleSearchChange}
             searchPlaceholder="Rechercher un lieu…"
@@ -178,7 +182,9 @@ function Place() {
                 >
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('publie')}>Publier</RowActionButton>
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('en_attente')}>Mettre en attente</RowActionButton>
-                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                    {isModerator ? null : (
+                        <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                    )}
                 </BulkActionsBar>
             ) : null}
         >
@@ -249,8 +255,12 @@ function Place() {
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{user?.username ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                            <EditPlace updateValue={{id, place_name, place_description, place_image, status, category, address, tags, data}} handleDataChange={handleDataChange} />
-                                            <DeletePlace deleteValue={{id, place_name, place_description, place_image, category, address, data}} handleDataChange={handleDataChange}/>
+                                            {isModerator ? null : (
+                                                <>
+                                                    <EditPlace updateValue={{id, place_name, place_description, place_image, status, category, address, tags, data}} handleDataChange={handleDataChange} />
+                                                    <DeletePlace deleteValue={{id, place_name, place_description, place_image, category, address, data}} handleDataChange={handleDataChange}/>
+                                                </>
+                                            )}
                                         </Box>
                                     </TableCell>
                                 </TableRow>

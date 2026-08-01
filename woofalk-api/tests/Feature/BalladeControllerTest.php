@@ -188,6 +188,33 @@ class BalladeControllerTest extends TestCase
         $this->assertDatabaseHas('ballades', ['id' => $ballade->id, 'status' => 'publie']);
     }
 
+    public function test_moderator_can_bulk_update_status(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $ballade = Ballade::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->actingAs($moderator, 'api')->patchJson('/api/ballades/bulk-status', [
+            'ids' => [$ballade->id],
+            'status' => 'publie',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('ballades', ['id' => $ballade->id, 'status' => 'publie']);
+    }
+
+    public function test_moderator_cannot_bulk_delete_ballades(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $ballade = Ballade::factory()->create();
+
+        $response = $this->actingAs($moderator, 'api')->deleteJson('/api/ballades/bulk', [
+            'ids' => [$ballade->id],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('ballades', ['id' => $ballade->id]);
+    }
+
     public function test_admin_can_bulk_delete_ballades(): void
     {
         $admin = User::factory()->admin()->create();

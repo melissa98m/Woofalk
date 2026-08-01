@@ -97,20 +97,23 @@ function AppRoutes() {
             <Route exact path="recherche" element={<SearchResults/>}>Recherche</Route>
             <Route exact path="carte" element={<MapSearch/>}>Carte</Route>
             <Route exact path="logout" element={<Logout/>}>Logout</Route>
-            <Route path="admin" element={auth.loggedAndAdmin() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
-                <Route exact path="address" element={<Address/>}>Address</Route>
+            <Route path="admin" element={auth.loggedAndCanModerate() ? <AdminLayout/> : <Home adminMessage='unauthorizedRole'/>}>
+                {/* Moderators only get the status/reply actions on these four pages
+                    (enforced server-side too — see EnsureUserCanModerate) — every other
+                    admin resource stays admin-only. */}
+                <Route exact path="address" element={auth.loggedAndAdmin() ? <Address/> : <Home adminMessage='unauthorizedRole'/>}>Address</Route>
                 <Route exact path="place" element={<Place/>}>Place</Route>
                 <Route exact path="ballade" element={<Ballade/>}>Ballade</Route>
                 <Route exact path="hebergement" element={<Hebergement/>}>Hebergement</Route>
-                <Route exact path="category" element={<Category/>}>Categorie</Route>
-                <Route exact path="tag" element={<Tag/>}>Tag</Route>
-                <Route exact path="user" element={<User/>}>User</Route>
+                <Route exact path="category" element={auth.loggedAndAdmin() ? <Category/> : <Home adminMessage='unauthorizedRole'/>}>Categorie</Route>
+                <Route exact path="tag" element={auth.loggedAndAdmin() ? <Tag/> : <Home adminMessage='unauthorizedRole'/>}>Tag</Route>
+                <Route exact path="user" element={auth.loggedAndAdmin() ? <User/> : <Home adminMessage='unauthorizedRole'/>}>User</Route>
                 <Route exact path="contact-messages" element={<ContactMessages/>}>ContactMessages</Route>
-                <Route exact path="dashboard" element={<Dashboard/>}>Dashboard</Route>
-                <Route exact path="export" element={<Export/>}>Export</Route>
+                <Route exact path="dashboard" element={auth.loggedAndAdmin() ? <Dashboard/> : <Home adminMessage='unauthorizedRole'/>}>Dashboard</Route>
+                <Route exact path="export" element={auth.loggedAndAdmin() ? <Export/> : <Home adminMessage='unauthorizedRole'/>}>Export</Route>
             </Route>
-            <Route exact path="mon-compte" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <Account/> : <Home adminMessage='Non connecté'/> }>Account</Route>
-            <Route exact path="change-password" element={auth.loggedAndUser() || auth.loggedAndAdmin() ? <ChangePassword/> : <Home adminMessage='Non connecté'/> }>Change Password</Route>
+            <Route exact path="mon-compte" element={auth.loggedAndUser() || auth.loggedAndCanModerate() ? <Account/> : <Home adminMessage='Non connecté'/> }>Account</Route>
+            <Route exact path="change-password" element={auth.loggedAndUser() || auth.loggedAndCanModerate() ? <ChangePassword/> : <Home adminMessage='Non connecté'/> }>Change Password</Route>
             <Route exact path="contact" element={<Contact/>}>Contact</Route>
             <Route exact path="faq" element={<Faq/>}>FAQ</Route>
             <Route exact path="mentions-legales" element={<MentionsLegales/>}>MentionsLegales</Route>

@@ -51,7 +51,7 @@ Route::controller(BalladeController::class)->group(function () {
     Route::get('ballades-user', 'byUser')->middleware('auth:api');
     Route::get('ballades-liked', 'likedByUser')->middleware('auth:api');
     // Must precede ballades/{ballade} below, or "bulk*"/"sortDateDesc" gets swallowed as a {ballade} id.
-    Route::patch('ballades/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
+    Route::patch('ballades/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'moderate']);
     Route::delete('ballades/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('ballades/sortDateDesc', 'sortByDateDesc');
     Route::get('ballades/{ballade}', 'show');
@@ -75,7 +75,7 @@ Route::controller(PlaceController::class)->group(function () {
     Route::get('places-user', 'byUser')->middleware('auth:api');
     Route::get('places-liked', 'likedByUser')->middleware('auth:api');
     // Must precede places/{place} below, or "bulk*" gets swallowed as a {place} id.
-    Route::patch('places/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
+    Route::patch('places/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'moderate']);
     Route::delete('places/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('places/{place}', 'show');
     Route::post('places', 'store')->middleware(['auth:api', 'throttle:api']);
@@ -89,7 +89,7 @@ Route::controller(HebergementController::class)->group(function () {
     Route::get('hebergements-user', 'byUser')->middleware('auth:api');
     Route::get('hebergements-liked', 'likedByUser')->middleware('auth:api');
     // Must precede hebergements/{hebergement} below, or "bulk*" gets swallowed as a {hebergement} id.
-    Route::patch('hebergements/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'admin']);
+    Route::patch('hebergements/bulk-status', 'bulkUpdateStatus')->middleware(['auth:api', 'moderate']);
     Route::delete('hebergements/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('hebergements/{hebergement}', 'show');
     Route::post('hebergements', 'store')->middleware(['auth:api', 'throttle:api']);
@@ -109,8 +109,8 @@ Route::controller(TagController::class)->group(function () {
 });
 Route::controller(ContactController::class)->group(function () {
     Route::post('contact', 'store')->middleware('throttle:contact');
-    Route::get('contacts', 'index')->middleware(['auth:api', 'admin']);
-    Route::post('contacts/{contact}/reply', 'reply')->middleware(['auth:api', 'admin', 'throttle:api']);
+    Route::get('contacts', 'index')->middleware(['auth:api', 'moderate']);
+    Route::post('contacts/{contact}/reply', 'reply')->middleware(['auth:api', 'moderate', 'throttle:api']);
 });
 
 Route::controller(UserController::class)->group(function () {
@@ -121,6 +121,7 @@ Route::controller(UserController::class)->group(function () {
     // Must precede users/{user} below, or "bulk" gets swallowed as a {user} id.
     Route::delete('users/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('users/{user}', 'show')->middleware('auth:api');
+    Route::patch('users/{user}/roles', 'updateRoles')->middleware(['auth:api', 'admin']);
     Route::post('users/change-password', 'updatePassword')->middleware('auth:api');
     Route::delete('users/{user}', 'destroy')->middleware('auth:api');
 });

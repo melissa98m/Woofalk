@@ -197,6 +197,103 @@ class UserAuthorizationTest extends TestCase
         $response->assertStatus(422);
     }
 
+    public function test_admin_can_promote_another_user_to_moderator(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $other = User::factory()->create();
+
+        $response = $this->actingAs($admin, 'api')->patchJson("/api/users/{$other->id}/roles", [
+            'roles' => ['ROLE_MODERATOR'],
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame(['ROLE_MODERATOR'], json_decode($other->fresh()->roles, true));
+    }
+
+    public function test_moderator_cannot_list_all_users(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+
+        $response = $this->actingAs($moderator, 'api')->getJson('/api/users');
+
+        $response->assertStatus(403);
+    }
+
+    public function test_moderator_cannot_change_roles(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $other = User::factory()->create();
+
+        $response = $this->actingAs($moderator, 'api')->patchJson("/api/users/{$other->id}/roles", [
+            'roles' => ['ROLE_ADMIN'],
+        ]);
+
+        $response->assertStatus(403);
+    }
+
+    public function test_admin_can_promote_another_user_to_admin(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $other = User::factory()->create();
+
+        $response = $this->actingAs($admin, 'api')->patchJson("/api/users/{$other->id}/roles", [
+            'roles' => ['ROLE_ADMIN'],
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame(['ROLE_ADMIN'], json_decode($other->fresh()->roles, true));
+    }
+
+    public function test_admin_can_demote_another_admin_to_user(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $other = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin, 'api')->patchJson("/api/users/{$other->id}/roles", [
+            'roles' => ['ROLE_USER'],
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertSame(['ROLE_USER'], json_decode($other->fresh()->roles, true));
+    }
+
+    public function test_admin_cannot_change_their_own_role(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        $response = $this->actingAs($admin, 'api')->patchJson("/api/users/{$admin->id}/roles", [
+            'roles' => ['ROLE_USER'],
+        ]);
+
+        $response->assertStatus(422);
+        $this->assertSame(['ROLE_ADMIN'], json_decode($admin->fresh()->roles, true));
+    }
+
+    public function test_non_admin_cannot_change_roles(): void
+    {
+        $user = User::factory()->create();
+        $other = User::factory()->create();
+
+        $response = $this->actingAs($user, 'api')->patchJson("/api/users/{$other->id}/roles", [
+            'roles' => ['ROLE_ADMIN'],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertSame(['ROLE_USER'], json_decode($other->fresh()->roles, true));
+    }
+
+    public function test_update_roles_rejects_unknown_role_values(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $other = User::factory()->create();
+
+        $response = $this->actingAs($admin, 'api')->patchJson("/api/users/{$other->id}/roles", [
+            'roles' => ['ROLE_SUPERUSER'],
+        ]);
+
+        $response->assertStatus(422);
+    }
+
     public function test_current_user_id_endpoint_returns_authenticated_id(): void
     {
         $user = User::factory()->create();

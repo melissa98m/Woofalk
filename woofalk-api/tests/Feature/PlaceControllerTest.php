@@ -208,6 +208,49 @@ class PlaceControllerTest extends TestCase
         $this->assertDatabaseHas('places', ['id' => $place->id, 'status' => 'publie']);
     }
 
+    public function test_moderator_can_bulk_update_status(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $place = Place::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->actingAs($moderator, 'api')->patchJson('/api/places/bulk-status', [
+            'ids' => [$place->id],
+            'status' => 'publie',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('places', ['id' => $place->id, 'status' => 'publie']);
+    }
+
+    public function test_moderator_cannot_bulk_delete_places(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $place = Place::factory()->create();
+
+        $response = $this->actingAs($moderator, 'api')->deleteJson('/api/places/bulk', [
+            'ids' => [$place->id],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('places', ['id' => $place->id]);
+    }
+
+    public function test_moderator_cannot_update_a_place_they_do_not_own(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $place = Place::factory()->create();
+
+        $response = $this->actingAs($moderator, 'api')->patchJson("/api/places/{$place->id}", [
+            'place_name' => 'Hack via moderator',
+            'place_description' => $place->place_description,
+            'address' => $place->address,
+            'category' => $place->category,
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseMissing('places', ['id' => $place->id, 'place_name' => 'Hack via moderator']);
+    }
+
     public function test_admin_can_bulk_delete_places(): void
     {
         $admin = User::factory()->admin()->create();

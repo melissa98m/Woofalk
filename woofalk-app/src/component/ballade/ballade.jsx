@@ -25,6 +25,7 @@ import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
 import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
+import auth from "../../services/auth/token";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -59,6 +60,9 @@ function Ballade() {
     const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
+    // Moderators can only change a ballade's publication status (see
+    // EnsureUserCanModerate server-side) — edit/delete stay admin-only.
+    const isModerator = auth.loggedAndModerator();
 
     const handleChangePage = (ballade, newPage) => {
         setPage(newPage);
@@ -154,7 +158,7 @@ function Ballade() {
         <AdminResourceLayout
             title="Balades"
             countLabel={data ? `${filteredData.length} balade${filteredData.length > 1 ? "s" : ""} référencée${filteredData.length > 1 ? "s" : ""}` : undefined}
-            actions={<Button component={Link} to="/ballades/new" variant="contained">Ajouter une balade</Button>}
+            actions={isModerator ? undefined : <Button component={Link} to="/ballades/new" variant="contained">Ajouter une balade</Button>}
             searchValue={search}
             onSearchChange={handleSearchChange}
             searchPlaceholder="Rechercher une balade…"
@@ -178,7 +182,9 @@ function Ballade() {
                 >
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('publie')}>Publier</RowActionButton>
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('en_attente')}>Mettre en attente</RowActionButton>
-                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                    {isModerator ? null : (
+                        <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                    )}
                 </BulkActionsBar>
             ) : null}
         >
@@ -249,8 +255,12 @@ function Ballade() {
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{user?.username ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                            <EditBallade updateValue={{id, ballade_name, ballade_description, ballade_image, status, tags, distance, denivele, ballade_latitude, ballade_longitude, data}} handleDataChange={handleDataChange} />
-                                            <DeleteBallade deleteValue={{id, ballade_name, ballade_description, ballade_image, tags, data}} handleDataChange={handleDataChange}/>
+                                            {isModerator ? null : (
+                                                <>
+                                                    <EditBallade updateValue={{id, ballade_name, ballade_description, ballade_image, status, tags, distance, denivele, ballade_latitude, ballade_longitude, data}} handleDataChange={handleDataChange} />
+                                                    <DeleteBallade deleteValue={{id, ballade_name, ballade_description, ballade_image, tags, data}} handleDataChange={handleDataChange}/>
+                                                </>
+                                            )}
                                         </Box>
                                     </TableCell>
                                 </TableRow>

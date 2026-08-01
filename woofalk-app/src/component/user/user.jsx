@@ -2,7 +2,6 @@ import React, {useEffect, useMemo, useState} from "react";
 import {
     Box,
     Checkbox,
-    Chip,
     Table,
     TableBody,
     TableCell,
@@ -10,6 +9,7 @@ import {
     TableRow,
 } from "@mui/material";
 import DeleteUser from "./deleteUser";
+import RoleSelect from "./RoleSelect";
 import axios from "axios";
 import { API_URL } from "../../config";
 import { AdminResourceLayout } from "../_partials/_admin/AdminResourceLayout";
@@ -106,6 +106,17 @@ function User() {
             setShowToast(true);
         }
     }
+
+    const handleRoleChange = (userId, newRoles, errorMessage) => {
+        if (errorMessage) {
+            setToastMessage({ message: errorMessage, severity: "error" });
+            setShowToast(true);
+            return;
+        }
+        setData((prev) => prev.map((u) => (u.id === userId ? { ...u, roles: newRoles } : u)));
+        setToastMessage({ message: "Rôle mis à jour !", severity: "success" });
+        setShowToast(true);
+    };
 
     const handleBulkDelete = async () => {
         const ids = Array.from(selection.selected);
@@ -214,11 +225,13 @@ function User() {
                                     <TableCell sx={{fontWeight: 'bold'}}>{username ?? '--'}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{email ?? '--'}</TableCell>
                                     <TableCell>
-                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                                            {parseRoles(roles).filter(Boolean).map((role) => (
-                                                <Chip key={role} size="small" label={role} sx={{ bgcolor: 'sageSoft', color: 'sageDark' }} />
-                                            ))}
-                                        </Box>
+                                        <RoleSelect
+                                            id={id}
+                                            username={username}
+                                            roles={parseRoles(roles)}
+                                            isSelf={isSelf}
+                                            onRoleChange={handleRoleChange}
+                                        />
                                     </TableCell>
                                     <TableCell sx={{ color: 'text.secondary', fontSize: '13px', display: { xs: 'none', lg: 'table-cell' } }}>{created_at ? created_at.slice(0, 10) : '--'}</TableCell>
                                     <TableCell>

@@ -97,6 +97,30 @@ class UserController extends Controller
     }
 
     /**
+     * Change a user's roles from the admin dashboard. Admin-only (enforced
+     * by the route's `admin` middleware) and, like bulkDestroy, an admin can
+     * never target their own account — self-demotion here could lock the
+     * acting admin out with no other admin able to revert it from the UI.
+     *
+     * @return JsonResponse
+     */
+    public function updateRoles(Request $request, User $user)
+    {
+        if ($user->id === $request->user()->id) {
+            return response()->json(['message' => 'Vous ne pouvez pas modifier votre propre rôle'], 422);
+        }
+
+        $validated = $request->validate([
+            'roles' => 'required|array|min:1',
+            'roles.*' => 'in:'.implode(',', [Roles::USER, Roles::MODERATOR, Roles::ADMIN]),
+        ]);
+
+        $user->update(['roles' => json_encode(array_values(array_unique($validated['roles'])))]);
+
+        return response()->json(['status' => 'Success', 'data' => $user->fresh()]);
+    }
+
+    /**
      * Export the authenticated user's own personal data (GDPR right to
      * data portability) as a downloadable JSON file.
      *

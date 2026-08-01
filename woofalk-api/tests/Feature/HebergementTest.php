@@ -112,6 +112,33 @@ class HebergementTest extends TestCase
         $this->assertDatabaseHas('hebergements', ['id' => $hebergement->id, 'status' => 'publie']);
     }
 
+    public function test_moderator_can_bulk_update_status(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $hebergement = Hebergement::factory()->create(['status' => 'en_attente']);
+
+        $response = $this->actingAs($moderator, 'api')->patchJson('/api/hebergements/bulk-status', [
+            'ids' => [$hebergement->id],
+            'status' => 'publie',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('hebergements', ['id' => $hebergement->id, 'status' => 'publie']);
+    }
+
+    public function test_moderator_cannot_bulk_delete_hebergements(): void
+    {
+        $moderator = User::factory()->moderator()->create();
+        $hebergement = Hebergement::factory()->create();
+
+        $response = $this->actingAs($moderator, 'api')->deleteJson('/api/hebergements/bulk', [
+            'ids' => [$hebergement->id],
+        ]);
+
+        $response->assertStatus(403);
+        $this->assertDatabaseHas('hebergements', ['id' => $hebergement->id]);
+    }
+
     public function test_admin_can_bulk_delete_hebergements(): void
     {
         $admin = User::factory()->admin()->create();

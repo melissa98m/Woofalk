@@ -25,6 +25,7 @@ import { RowActionButton } from "../_partials/_ui/RowActionButton";
 import { SortableTableCell } from "../_partials/_ui/SortableTableCell";
 import { useSort, sortRows } from "../_partials/_ui/useSort";
 import { normalizeText } from "../../services/search/searchIndex";
+import auth from "../../services/auth/token";
 
 const MAX_VISIBLE_TAGS = 3;
 
@@ -59,6 +60,9 @@ function Hebergement() {
     const sort = useSort();
     const [showBulkDelete, setShowBulkDelete] = useState(false);
     const [bulkLoading, setBulkLoading] = useState(false);
+    // Moderators can only change a hébergement's publication status (see
+    // EnsureUserCanModerate server-side) — edit/delete stay admin-only.
+    const isModerator = auth.loggedAndModerator();
 
     const handleChangePage = (hebergement, newPage) => {
         setPage(newPage);
@@ -153,7 +157,7 @@ function Hebergement() {
         <AdminResourceLayout
             title="Hébergements"
             countLabel={data ? `${filteredData.length} hébergement${filteredData.length > 1 ? "s" : ""} référencé${filteredData.length > 1 ? "s" : ""}` : undefined}
-            actions={<Button component={Link} to="/hebergements/new" variant="contained">Ajouter un hébergement</Button>}
+            actions={isModerator ? undefined : <Button component={Link} to="/hebergements/new" variant="contained">Ajouter un hébergement</Button>}
             searchValue={search}
             onSearchChange={handleSearchChange}
             searchPlaceholder="Rechercher un hébergement…"
@@ -177,7 +181,9 @@ function Hebergement() {
                 >
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('publie')}>Publier</RowActionButton>
                     <RowActionButton disabled={bulkLoading} onClick={() => handleBulkStatus('en_attente')}>Mettre en attente</RowActionButton>
-                    <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                    {isModerator ? null : (
+                        <RowActionButton danger disabled={bulkLoading} onClick={() => setShowBulkDelete(true)}>Supprimer la sélection</RowActionButton>
+                    )}
                 </BulkActionsBar>
             ) : null}
         >
@@ -248,8 +254,12 @@ function Hebergement() {
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{user?.username ?? '--'}</TableCell>
                                     <TableCell>
                                         <Box sx={{display: 'flex', justifyContent: 'right'}}>
-                                            <EditHebergement updateValue={{id, hebergement_name, hebergement_description, hebergement_image, hebergement_website, price_indication, status, category, address, tags, data}} handleDataChange={handleDataChange} />
-                                            <DeleteHebergement deleteValue={{id, hebergement_name, hebergement_description, hebergement_image, category, address, data}} handleDataChange={handleDataChange}/>
+                                            {isModerator ? null : (
+                                                <>
+                                                    <EditHebergement updateValue={{id, hebergement_name, hebergement_description, hebergement_image, hebergement_website, price_indication, status, category, address, tags, data}} handleDataChange={handleDataChange} />
+                                                    <DeleteHebergement deleteValue={{id, hebergement_name, hebergement_description, hebergement_image, category, address, data}} handleDataChange={handleDataChange}/>
+                                                </>
+                                            )}
                                         </Box>
                                     </TableCell>
                                 </TableRow>

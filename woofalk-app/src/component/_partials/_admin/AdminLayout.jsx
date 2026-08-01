@@ -10,17 +10,18 @@ import PersonIcon from "@mui/icons-material/Person";
 import MailIcon from "@mui/icons-material/MailOutlined";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
 import Logo from "../../../assets/logo.png";
+import auth from "../../../services/auth/token";
 
 const NAV_ITEMS = [
-    { to: "/admin/dashboard", label: "Tableau de bord", icon: DashboardIcon },
+    { to: "/admin/dashboard", label: "Tableau de bord", icon: DashboardIcon, adminOnly: true },
     { to: "/admin/place", label: "Lieux", icon: PushPinIcon },
     { to: "/admin/ballade", label: "Balades", icon: ApprovalIcon },
     { to: "/admin/hebergement", label: "Hébergements", icon: HotelOutlinedIcon },
-    { to: "/admin/category", label: "Catégories", icon: CategoryIcon },
-    { to: "/admin/tag", label: "Tags", icon: TagIcon },
-    { to: "/admin/user", label: "Utilisateurs", icon: PersonIcon },
+    { to: "/admin/category", label: "Catégories", icon: CategoryIcon, adminOnly: true },
+    { to: "/admin/tag", label: "Tags", icon: TagIcon, adminOnly: true },
+    { to: "/admin/user", label: "Utilisateurs", icon: PersonIcon, adminOnly: true },
     { to: "/admin/contact-messages", label: "Messages", icon: MailIcon },
-    { to: "/admin/export", label: "Export", icon: CloudDownloadIcon },
+    { to: "/admin/export", label: "Export", icon: CloudDownloadIcon, adminOnly: true },
 ];
 
 // Persistent sidebar shell for the admin area (dashboard + resource CRUD
@@ -30,6 +31,8 @@ export function AdminLayout() {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
     const location = useLocation();
+    const isAdmin = auth.loggedAndAdmin();
+    const navItems = NAV_ITEMS.filter((item) => isAdmin || !item.adminOnly);
 
     const focusRing = {
         outline: "none",
@@ -60,7 +63,7 @@ export function AdminLayout() {
                         <Box component="img" src={Logo} alt="Woofalk" sx={{ height: 40, borderRadius: "12px" }} />
                     </Box>
                 )}
-                {NAV_ITEMS.map(({ to, label, icon: Icon }) => {
+                {navItems.map(({ to, label, icon: Icon }) => {
                     const isActive = location.pathname === to;
                     return (
                         <Box

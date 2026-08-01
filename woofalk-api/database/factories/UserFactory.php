@@ -40,6 +40,18 @@ class UserFactory extends Factory
     }
 
     /**
+     * Indicate that the model should have the moderator role.
+     *
+     * @return static
+     */
+    public function moderator()
+    {
+        return $this->state(fn (array $attributes) => [
+            'roles' => json_encode(['ROLE_MODERATOR']),
+        ]);
+    }
+
+    /**
      * Indicate that the model's email address should be unverified.
      *
      * @return static
