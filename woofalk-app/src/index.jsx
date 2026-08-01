@@ -30,6 +30,7 @@ import Home from "./component/home/home";
 // avant même de voir la home — c'était une grosse partie de la lenteur au chargement.
 const Contact = lazy(() => import("./component/contact/contact"));
 const ContactMessages = lazy(() => import("./component/contact/contactMessages"));
+const Reports = lazy(() => import("./component/report/reports"));
 const Category = lazy(() => import("./component/category/category"));
 const Places = lazy(() => import("./component/place/places"));
 const Place = lazy(() => import("./component/place/place"));
@@ -50,6 +51,7 @@ const Tag = lazy(() => import("./component/tag/tag"));
 const User = lazy(() => import("./component/user/user"));
 const Dashboard = lazy(() => import("./component/dashboard/dashboard"));
 const Export = lazy(() => import("./component/export/export"));
+const Import = lazy(() => import("./component/import/import"));
 const AdminLayout = lazy(() => import("./component/_partials/_admin/AdminLayout"));
 import {ScrollToTop} from "./component/_partials/ScrollToTop";
 import {Navbar} from "./component/_partials/_navbar/_navbar";
@@ -110,8 +112,10 @@ function AppRoutes() {
                 <Route exact path="tag" element={auth.loggedAndAdmin() ? <Tag/> : <Home adminMessage='unauthorizedRole'/>}>Tag</Route>
                 <Route exact path="user" element={auth.loggedAndAdmin() ? <User/> : <Home adminMessage='unauthorizedRole'/>}>User</Route>
                 <Route exact path="contact-messages" element={<ContactMessages/>}>ContactMessages</Route>
+                <Route exact path="reports" element={<Reports/>}>Reports</Route>
                 <Route exact path="dashboard" element={auth.loggedAndAdmin() ? <Dashboard/> : <Home adminMessage='unauthorizedRole'/>}>Dashboard</Route>
                 <Route exact path="export" element={auth.loggedAndAdmin() ? <Export/> : <Home adminMessage='unauthorizedRole'/>}>Export</Route>
+                <Route exact path="import" element={auth.loggedAndAdmin() ? <Import/> : <Home adminMessage='unauthorizedRole'/>}>Import</Route>
             </Route>
             <Route exact path="mon-compte" element={auth.loggedAndUser() || auth.loggedAndCanModerate() ? <Account/> : <Home adminMessage='Non connecté'/> }>Account</Route>
             <Route exact path="change-password" element={auth.loggedAndUser() || auth.loggedAndCanModerate() ? <ChangePassword/> : <Home adminMessage='Non connecté'/> }>Change Password</Route>

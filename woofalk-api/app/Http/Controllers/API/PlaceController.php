@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Concerns\CachesListing;
+use App\Http\Controllers\API\Concerns\HandlesReports;
 use App\Http\Controllers\Controller;
 use App\Mail\PlacePublished;
 use App\Models\Place;
+use App\Models\Report;
 use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -18,7 +20,7 @@ use Illuminate\Validation\Rule;
 
 class PlaceController extends Controller
 {
-    use CachesListing;
+    use CachesListing, HandlesReports;
 
     private const CACHE_KEY = 'places.index';
 
@@ -155,6 +157,17 @@ class PlaceController extends Controller
     }
 
     /**
+     * Report the specified resource on behalf of the authenticated user;
+     * see HandlesReports::reportListing() for the shared logic.
+     *
+     * @return Response
+     */
+    public function report(Request $request, Place $place)
+    {
+        return $this->reportListing($request, $place, self::CACHE_KEY);
+    }
+
+    /**
      * Mark, without an extra query per row, which of the given places the
      * authenticated user (if any) has liked.
      *
@@ -240,6 +253,7 @@ class PlaceController extends Controller
         $place->loadCount('likedByUsers as likes_count');
         $userId = Auth::id();
         $place->is_liked = $userId ? $place->likedByUsers()->where('users.id', $userId)->exists() : false;
+        $place->is_reported = $userId ? $place->reports()->where('user_id', $userId)->exists() : false;
 
         return response()->json($place);
     }
@@ -380,6 +394,10 @@ class PlaceController extends Controller
             'ids.*' => ['integer', Rule::exists('places', 'id')],
         ]);
 
+        // Query-builder deletes don't fire Eloquent model events, so the
+        // HasReports::bootHasReports() cleanup hook never runs here — clean
+        // up manually instead.
+        Report::where('reportable_type', Place::class)->whereIn('reportable_id', $validated['ids'])->delete();
         Place::whereIn('id', $validated['ids'])->delete();
         $this->forgetListing(self::CACHE_KEY);
 

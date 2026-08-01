@@ -26,6 +26,13 @@
         </exclude>
     </source>
     <php>
+        <!-- The dev DB this suite runs against (no sqlite :memory: override, see below)
+             holds thousands of real seeded places/ballades/hebergements; several
+             *ControllerTest index tests cache-serialize that whole listing in this
+             single long-running process (CACHE_DRIVER=array never releases it between
+             tests), which already sat within a few MB of PHP's default 128M CLI
+             memory_limit. Give the suite headroom instead of trimming coverage. -->
+        <ini name="memory_limit" value="256M"/>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
         <env name="CACHE_DRIVER" value="array"/>

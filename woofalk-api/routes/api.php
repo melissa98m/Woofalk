@@ -7,7 +7,9 @@ use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\ContactController;
 use App\Http\Controllers\API\ExportController;
 use App\Http\Controllers\API\HebergementController;
+use App\Http\Controllers\API\ImportController;
 use App\Http\Controllers\API\PlaceController;
+use App\Http\Controllers\API\ReportController;
 use App\Http\Controllers\API\TagController;
 use App\Http\Controllers\API\UserController;
 use Illuminate\Support\Facades\Route;
@@ -59,6 +61,7 @@ Route::controller(BalladeController::class)->group(function () {
     Route::post('ballades', 'store')->middleware(['auth:api', 'throttle:api']);
     Route::post('ballades/{ballade}/like', 'like')->middleware('auth:api');
     Route::delete('ballades/{ballade}/like', 'unlike')->middleware('auth:api');
+    Route::post('ballades/{ballade}/report', 'report')->middleware('auth:api');
     Route::patch('ballades/{ballade}', 'update')->middleware('auth:api');
     Route::delete('ballades/{ballade}', 'destroy')->middleware('auth:api');
 });
@@ -82,6 +85,7 @@ Route::controller(PlaceController::class)->group(function () {
     Route::post('places', 'store')->middleware(['auth:api', 'throttle:api']);
     Route::post('places/{place}/like', 'like')->middleware('auth:api');
     Route::delete('places/{place}/like', 'unlike')->middleware('auth:api');
+    Route::post('places/{place}/report', 'report')->middleware('auth:api');
     Route::patch('places/{place}', 'update')->middleware('auth:api');
     Route::delete('places/{place}', 'destroy')->middleware('auth:api');
 });
@@ -96,6 +100,7 @@ Route::controller(HebergementController::class)->group(function () {
     Route::post('hebergements', 'store')->middleware(['auth:api', 'throttle:api']);
     Route::post('hebergements/{hebergement}/like', 'like')->middleware('auth:api');
     Route::delete('hebergements/{hebergement}/like', 'unlike')->middleware('auth:api');
+    Route::post('hebergements/{hebergement}/report', 'report')->middleware('auth:api');
     Route::patch('hebergements/{hebergement}', 'update')->middleware('auth:api');
     Route::delete('hebergements/{hebergement}', 'destroy')->middleware('auth:api');
 });
@@ -112,6 +117,11 @@ Route::controller(ContactController::class)->group(function () {
     Route::post('contact', 'store')->middleware('throttle:contact');
     Route::get('contacts', 'index')->middleware(['auth:api', 'moderate']);
     Route::post('contacts/{contact}/reply', 'reply')->middleware(['auth:api', 'moderate', 'throttle:api']);
+});
+
+Route::controller(ReportController::class)->middleware(['auth:api', 'moderate'])->group(function () {
+    Route::get('reports', 'index');
+    Route::patch('reports/{report}/dismiss', 'dismiss');
 });
 
 Route::controller(UserController::class)->group(function () {
@@ -131,4 +141,10 @@ Route::controller(ExportController::class)->middleware(['auth:api', 'admin'])->g
     Route::get('export/options', 'options');
     Route::post('export/csv', 'csv');
     Route::get('export/sql', 'sql');
+});
+
+Route::controller(ImportController::class)->middleware(['auth:api', 'admin'])->group(function () {
+    Route::get('import/options', 'options');
+    Route::post('import/preview', 'preview')->middleware('throttle:api');
+    Route::post('import/commit', 'commit')->middleware('throttle:api');
 });

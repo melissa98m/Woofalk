@@ -8,7 +8,9 @@ import CategoryIcon from "@mui/icons-material/Category";
 import TagIcon from "@mui/icons-material/Tag";
 import PersonIcon from "@mui/icons-material/Person";
 import MailIcon from "@mui/icons-material/MailOutlined";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import CloudDownloadIcon from "@mui/icons-material/CloudDownload";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import Logo from "../../../assets/logo.png";
 import auth from "../../../services/auth/token";
 
@@ -21,7 +23,9 @@ const NAV_ITEMS = [
     { to: "/admin/tag", label: "Tags", icon: TagIcon, adminOnly: true },
     { to: "/admin/user", label: "Utilisateurs", icon: PersonIcon, adminOnly: true },
     { to: "/admin/contact-messages", label: "Messages", icon: MailIcon },
+    { to: "/admin/reports", label: "Signalements", icon: ReportProblemIcon },
     { to: "/admin/export", label: "Export", icon: CloudDownloadIcon, adminOnly: true },
+    { to: "/admin/import", label: "Import", icon: CloudUploadIcon, adminOnly: true },
 ];
 
 // Persistent sidebar shell for the admin area (dashboard + resource CRUD

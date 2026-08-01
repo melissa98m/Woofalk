@@ -9,6 +9,7 @@ import { Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { LikeButton } from "../_partials/_ui/LikeButton";
+import { ReportButton } from "../_partials/_ui/ReportButton";
 import { Seo, truncateDescription } from "../_partials/_seo/Seo";
 import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
 import { API_URL, SITE_URL } from "../../config";
@@ -21,6 +22,7 @@ function PlaceDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [like, setLike] = useState({ liked: false, count: 0 });
+    const [report, setReport] = useState({ reported: false });
 
     useEffect(() => {
         setLoading(true);
@@ -28,6 +30,7 @@ function PlaceDetail() {
             .then((res) => {
                 setPlace(res.data);
                 setLike({ liked: !!res.data.is_liked, count: res.data.likes_count ?? 0 });
+                setReport({ reported: !!res.data.is_reported });
             })
             .catch(() => setError("Lieu introuvable."))
             .finally(() => setLoading(false));
@@ -102,13 +105,16 @@ function PlaceDetail() {
         <Box sx={{ marginBottom: "24px" }}>
             <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
                 <Typography variant="h1" sx={{ fontSize: { xs: "24px", md: "32px" }, marginBottom: "8px" }}>{place_name}</Typography>
-                <LikeButton
-                    type="places"
-                    id={id}
-                    liked={like.liked}
-                    likesCount={like.count}
-                    onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
-                />
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <LikeButton
+                        type="places"
+                        id={id}
+                        liked={like.liked}
+                        likesCount={like.count}
+                        onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
+                    />
+                    <ReportButton type="places" id={id} reported={report.reported} onChange={setReport} />
+                </Box>
             </Box>
             {category ? (
                 <Chip label={category.category_name} sx={{ bgcolor: "sageSoft", color: "sageDark", fontWeight: 700 }} />

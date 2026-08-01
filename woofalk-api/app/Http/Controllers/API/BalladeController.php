@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Concerns\CachesListing;
+use App\Http\Controllers\API\Concerns\HandlesReports;
 use App\Http\Controllers\Controller;
 use App\Models\Ballade;
+use App\Models\Report;
 use App\Models\Tag;
 use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
@@ -17,7 +19,7 @@ use Illuminate\Validation\Rule;
 
 class BalladeController extends Controller
 {
-    use CachesListing;
+    use CachesListing, HandlesReports;
 
     private const CACHE_KEY = 'ballades.index';
 
@@ -149,6 +151,17 @@ class BalladeController extends Controller
             'is_liked' => false,
             'likes_count' => $ballade->likedByUsers()->count(),
         ]);
+    }
+
+    /**
+     * Report the specified resource on behalf of the authenticated user;
+     * see HandlesReports::reportListing() for the shared logic.
+     *
+     * @return Response
+     */
+    public function report(Request $request, Ballade $ballade)
+    {
+        return $this->reportListing($request, $ballade, self::CACHE_KEY);
     }
 
     /**
@@ -288,6 +301,7 @@ class BalladeController extends Controller
         $ballade->loadCount('likedByUsers as likes_count');
         $userId = Auth::id();
         $ballade->is_liked = $userId ? $ballade->likedByUsers()->where('users.id', $userId)->exists() : false;
+        $ballade->is_reported = $userId ? $ballade->reports()->where('user_id', $userId)->exists() : false;
 
         return response()->json($ballade);
     }
@@ -418,6 +432,10 @@ class BalladeController extends Controller
             }
         }
 
+        // Query-builder deletes don't fire Eloquent model events, so the
+        // HasReports::bootHasReports() cleanup hook never runs here — clean
+        // up manually instead.
+        Report::where('reportable_type', Ballade::class)->whereIn('reportable_id', $validated['ids'])->delete();
         Ballade::whereIn('id', $validated['ids'])->delete();
         $this->forgetListing(self::CACHE_KEY);
 

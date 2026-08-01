@@ -38,6 +38,7 @@ test("admin sees every admin nav item", () => {
     expect(screen.getByText("Balades")).toBeInTheDocument();
     expect(screen.getByText("Hébergements")).toBeInTheDocument();
     expect(screen.getByText("Messages")).toBeInTheDocument();
+    expect(screen.getByText("Signalements")).toBeInTheDocument();
 });
 
 test("moderator only sees the moderation-scoped nav items", () => {
@@ -54,4 +55,5 @@ test("moderator only sees the moderation-scoped nav items", () => {
     expect(screen.getByText("Balades")).toBeInTheDocument();
     expect(screen.getByText("Hébergements")).toBeInTheDocument();
     expect(screen.getByText("Messages")).toBeInTheDocument();
+    expect(screen.getByText("Signalements")).toBeInTheDocument();
 });

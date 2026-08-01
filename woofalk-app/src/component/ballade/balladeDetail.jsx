@@ -9,6 +9,7 @@ import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { DetailStat } from "../_partials/_ui/DetailStat";
 import { LikeButton } from "../_partials/_ui/LikeButton";
+import { ReportButton } from "../_partials/_ui/ReportButton";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { formatDistance } from "../_partials/_ui/formatDistance";
 import { Seo, truncateDescription } from "../_partials/_seo/Seo";
@@ -23,6 +24,7 @@ function BalladeDetail() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [like, setLike] = useState({ liked: false, count: 0 });
+    const [report, setReport] = useState({ reported: false });
 
     useEffect(() => {
         setLoading(true);
@@ -30,6 +32,7 @@ function BalladeDetail() {
             .then((res) => {
                 setBallade(res.data);
                 setLike({ liked: !!res.data.is_liked, count: res.data.likes_count ?? 0 });
+                setReport({ reported: !!res.data.is_reported });
             })
             .catch(() => setError("Balade introuvable."))
             .finally(() => setLoading(false));
@@ -111,13 +114,16 @@ function BalladeDetail() {
                     </Box>
                 ) : null}
             </Box>
-            <LikeButton
-                type="ballades"
-                id={id}
-                liked={like.liked}
-                likesCount={like.count}
-                onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
-            />
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+                <LikeButton
+                    type="ballades"
+                    id={id}
+                    liked={like.liked}
+                    likesCount={like.count}
+                    onChange={({ liked, likesCount }) => setLike({ liked, count: likesCount })}
+                />
+                <ReportButton type="ballades" id={id} reported={report.reported} onChange={setReport} />
+            </Box>
         </Box>
 
         <Box sx={{ display: "flex", gap: "14px", flexWrap: "wrap", marginBottom: "32px" }}>

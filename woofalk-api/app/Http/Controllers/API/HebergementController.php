@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Concerns\CachesListing;
+use App\Http\Controllers\API\Concerns\HandlesReports;
 use App\Http\Controllers\Controller;
 use App\Models\Hebergement;
+use App\Models\Report;
 use App\Support\Roles;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -16,7 +18,7 @@ use Illuminate\Validation\Rule;
 
 class HebergementController extends Controller
 {
-    use CachesListing;
+    use CachesListing, HandlesReports;
 
     private const CACHE_KEY = 'hebergements.index';
 
@@ -162,6 +164,17 @@ class HebergementController extends Controller
     }
 
     /**
+     * Report the specified resource on behalf of the authenticated user;
+     * see HandlesReports::reportListing() for the shared logic.
+     *
+     * @return Response
+     */
+    public function report(Request $request, Hebergement $hebergement)
+    {
+        return $this->reportListing($request, $hebergement, self::CACHE_KEY);
+    }
+
+    /**
      * Mark, without an extra query per row, which of the given hebergements the
      * authenticated user (if any) has liked.
      *
@@ -249,6 +262,7 @@ class HebergementController extends Controller
         $hebergement->loadCount('likedByUsers as likes_count');
         $userId = Auth::id();
         $hebergement->is_liked = $userId ? $hebergement->likedByUsers()->where('users.id', $userId)->exists() : false;
+        $hebergement->is_reported = $userId ? $hebergement->reports()->where('user_id', $userId)->exists() : false;
 
         return response()->json($hebergement);
     }
@@ -374,6 +388,10 @@ class HebergementController extends Controller
                 Storage::delete('/public/uploads/hebergements/'.$hebergement->hebergement_image);
             }
         }
+        // Query-builder deletes don't fire Eloquent model events, so the
+        // HasReports::bootHasReports() cleanup hook never runs here — clean
+        // up manually instead.
+        Report::where('reportable_type', Hebergement::class)->whereIn('reportable_id', $validated['ids'])->delete();
         Hebergement::whereIn('id', $validated['ids'])->delete();
         $this->forgetListing(self::CACHE_KEY);
 
