@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasComments;
 use App\Models\Concerns\HasReports;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Ballade extends Model
 {
-    use HasFactory, HasReports;
+    use HasComments, HasFactory, HasReports;
 
     protected $casts = [
         'ballade_latitude' => 'float',

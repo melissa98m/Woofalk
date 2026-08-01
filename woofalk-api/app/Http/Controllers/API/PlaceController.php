@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Concerns\CachesListing;
+use App\Http\Controllers\API\Concerns\HandlesComments;
 use App\Http\Controllers\API\Concerns\HandlesReports;
 use App\Http\Controllers\Controller;
 use App\Mail\PlacePublished;
+use App\Models\Comment;
 use App\Models\Place;
 use App\Models\Report;
 use App\Support\Roles;
@@ -20,7 +22,7 @@ use Illuminate\Validation\Rule;
 
 class PlaceController extends Controller
 {
-    use CachesListing, HandlesReports;
+    use CachesListing, HandlesComments, HandlesReports;
 
     private const CACHE_KEY = 'places.index';
 
@@ -165,6 +167,36 @@ class PlaceController extends Controller
     public function report(Request $request, Place $place)
     {
         return $this->reportListing($request, $place, self::CACHE_KEY);
+    }
+
+    /**
+     * List the comments left on the specified resource; see
+     * HandlesComments::listComments() for the shared logic.
+     *
+     * @return Response
+     */
+    public function comments(Place $place)
+    {
+        if ($place->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $place->user)) {
+            abort(404);
+        }
+
+        return $this->listComments($place);
+    }
+
+    /**
+     * Post a comment on the specified resource; see
+     * HandlesComments::storeComment() for the shared logic.
+     *
+     * @return Response
+     */
+    public function addComment(Request $request, Place $place)
+    {
+        if ($place->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $place->user)) {
+            abort(404);
+        }
+
+        return $this->storeComment($request, $place);
     }
 
     /**
@@ -395,9 +427,10 @@ class PlaceController extends Controller
         ]);
 
         // Query-builder deletes don't fire Eloquent model events, so the
-        // HasReports::bootHasReports() cleanup hook never runs here — clean
-        // up manually instead.
+        // HasReports::bootHasReports()/HasComments::bootHasComments() cleanup
+        // hooks never run here — clean up manually instead.
         Report::where('reportable_type', Place::class)->whereIn('reportable_id', $validated['ids'])->delete();
+        Comment::where('commentable_type', Place::class)->whereIn('commentable_id', $validated['ids'])->delete();
         Place::whereIn('id', $validated['ids'])->delete();
         $this->forgetListing(self::CACHE_KEY);
 

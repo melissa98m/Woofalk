@@ -10,6 +10,7 @@ import "leaflet/dist/leaflet.css";
 import marker from "../../assets/icon.svg";
 import { LikeButton } from "../_partials/_ui/LikeButton";
 import { ReportButton } from "../_partials/_ui/ReportButton";
+import { CommentSection } from "../_partials/_ui/CommentSection";
 import { Seo, truncateDescription } from "../_partials/_seo/Seo";
 import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
 import { API_URL, SITE_URL } from "../../config";
@@ -183,6 +184,8 @@ function PlaceDetail() {
                 ) : null}
             </Box>
         </Box>
+
+        <CommentSection type="places" id={id} />
     </Container>;
 }
 

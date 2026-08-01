@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\API\Concerns\CachesListing;
+use App\Http\Controllers\API\Concerns\HandlesComments;
 use App\Http\Controllers\API\Concerns\HandlesReports;
 use App\Http\Controllers\Controller;
 use App\Models\Ballade;
+use App\Models\Comment;
 use App\Models\Report;
 use App\Models\Tag;
 use App\Support\Roles;
@@ -19,7 +21,7 @@ use Illuminate\Validation\Rule;
 
 class BalladeController extends Controller
 {
-    use CachesListing, HandlesReports;
+    use CachesListing, HandlesComments, HandlesReports;
 
     private const CACHE_KEY = 'ballades.index';
 
@@ -162,6 +164,36 @@ class BalladeController extends Controller
     public function report(Request $request, Ballade $ballade)
     {
         return $this->reportListing($request, $ballade, self::CACHE_KEY);
+    }
+
+    /**
+     * List the comments left on the specified resource; see
+     * HandlesComments::listComments() for the shared logic.
+     *
+     * @return Response
+     */
+    public function comments(Ballade $ballade)
+    {
+        if ($ballade->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $ballade->user)) {
+            abort(404);
+        }
+
+        return $this->listComments($ballade);
+    }
+
+    /**
+     * Post a comment on the specified resource; see
+     * HandlesComments::storeComment() for the shared logic.
+     *
+     * @return Response
+     */
+    public function addComment(Request $request, Ballade $ballade)
+    {
+        if ($ballade->status !== 'publie' && ! Roles::canViewPending(Auth::user(), $ballade->user)) {
+            abort(404);
+        }
+
+        return $this->storeComment($request, $ballade);
     }
 
     /**
@@ -433,9 +465,10 @@ class BalladeController extends Controller
         }
 
         // Query-builder deletes don't fire Eloquent model events, so the
-        // HasReports::bootHasReports() cleanup hook never runs here — clean
-        // up manually instead.
+        // HasReports::bootHasReports()/HasComments::bootHasComments() cleanup
+        // hooks never run here — clean up manually instead.
         Report::where('reportable_type', Ballade::class)->whereIn('reportable_id', $validated['ids'])->delete();
+        Comment::where('commentable_type', Ballade::class)->whereIn('commentable_id', $validated['ids'])->delete();
         Ballade::whereIn('id', $validated['ids'])->delete();
         $this->forgetListing(self::CACHE_KEY);
 

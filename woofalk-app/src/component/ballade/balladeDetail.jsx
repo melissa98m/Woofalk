@@ -10,6 +10,7 @@ import marker from "../../assets/icon.svg";
 import { DetailStat } from "../_partials/_ui/DetailStat";
 import { LikeButton } from "../_partials/_ui/LikeButton";
 import { ReportButton } from "../_partials/_ui/ReportButton";
+import { CommentSection } from "../_partials/_ui/CommentSection";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import { formatDistance } from "../_partials/_ui/formatDistance";
 import { Seo, truncateDescription } from "../_partials/_seo/Seo";
@@ -175,6 +176,8 @@ function BalladeDetail() {
                 </Box>
             </Box>
         </Box>
+
+        <CommentSection type="ballades" id={id} />
     </Container>;
 }
 
