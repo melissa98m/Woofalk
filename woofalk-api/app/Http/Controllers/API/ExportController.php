@@ -7,6 +7,7 @@ use App\Models\Address;
 use App\Models\Ballade;
 use App\Models\Category;
 use App\Models\Contact;
+use App\Models\Hebergement;
 use App\Models\Place;
 use App\Models\Tag;
 use App\Models\User;
@@ -28,22 +29,27 @@ class ExportController extends Controller
         'places' => [
             'label' => 'Lieux',
             'model' => Place::class,
-            'columns' => ['id', 'place_name', 'place_description', 'status', 'user', 'address', 'category', 'created_at', 'updated_at'],
+            'columns' => ['id', 'place_name', 'place_description', 'place_website', 'status', 'user', 'address', 'category', 'created_at', 'updated_at'],
         ],
         'ballades' => [
             'label' => 'Balades',
             'model' => Ballade::class,
-            'columns' => ['id', 'ballade_name', 'ballade_description', 'distance', 'denivele', 'ballade_latitude', 'ballade_longitude', 'status', 'user', 'created_at', 'updated_at'],
+            'columns' => ['id', 'ballade_name', 'ballade_description', 'ballade_website', 'distance', 'denivele', 'ballade_latitude', 'ballade_longitude', 'status', 'user', 'created_at', 'updated_at'],
+        ],
+        'hebergements' => [
+            'label' => 'Hébergements',
+            'model' => Hebergement::class,
+            'columns' => ['id', 'hebergement_name', 'hebergement_description', 'hebergement_website', 'price_indication', 'status', 'user', 'address', 'category', 'created_at', 'updated_at'],
         ],
         'categories' => [
             'label' => 'Catégories',
             'model' => Category::class,
-            'columns' => ['id', 'category_name', 'created_at', 'updated_at'],
+            'columns' => ['id', 'category_name', 'scope', 'created_at', 'updated_at'],
         ],
         'tags' => [
             'label' => 'Tags',
             'model' => Tag::class,
-            'columns' => ['id', 'tag_name', 'color', 'created_at', 'updated_at'],
+            'columns' => ['id', 'tag_name', 'color', 'scope', 'created_at', 'updated_at'],
         ],
         'addresses' => [
             'label' => 'Adresses',
@@ -53,13 +59,12 @@ class ExportController extends Controller
         'users' => [
             'label' => 'Utilisateurs',
             'model' => User::class,
-            'columns' => ['id', 'username', 'email', 'roles', 'email_verified_at', 'created_at', 'updated_at'],
+            'columns' => ['id', 'username', 'email', 'roles', 'email_verified_at', 'terms_accepted_at', 'created_at', 'updated_at'],
         ],
         'contacts' => [
             'label' => 'Messages de contact',
             'model' => Contact::class,
-            // no `id` column on this table (see its migration)
-            'columns' => ['name', 'email', 'subject', 'contenu', 'created_at', 'updated_at'],
+            'columns' => ['id', 'name', 'email', 'subject', 'contenu', 'replied_at', 'created_at', 'updated_at'],
         ],
     ];
 
@@ -151,6 +156,11 @@ class ExportController extends Controller
 
         $handle = fopen($sqlPath, 'w');
         fwrite($handle, "-- Woofalk database export ({$timestamp})\n");
+        // Without this, a reimport uses the client's own default charset to
+        // interpret the file's string literals instead of utf8mb4 (the one
+        // the app's DB connection — and thus every byte written below —
+        // actually uses), silently mangling accented characters.
+        fwrite($handle, "SET NAMES utf8mb4;\n");
         fwrite($handle, "SET FOREIGN_KEY_CHECKS=0;\n\n");
 
         $tables = collect(DB::select('SHOW TABLES'))->map(fn ($row) => array_values((array) $row)[0]);
@@ -205,8 +215,9 @@ class ExportController extends Controller
         $handle = fopen('php://temp', 'r+');
         fputcsv($handle, $columns);
 
-        // Every exportable table has timestamps, but `contacts` has no `id`
-        // column, so order by `created_at` rather than assuming a PK name.
+        // Every exportable table has timestamps, so order by `created_at`
+        // rather than assuming a PK name (needed historically for `contacts`,
+        // which had no `id` column before a later migration added one).
         $modelClass::query()
             ->select($columns)
             ->orderBy('created_at')
