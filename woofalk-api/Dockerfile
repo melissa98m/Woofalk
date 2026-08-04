@@ -50,6 +50,7 @@ RUN deluser www-data 2>/dev/null || true \
 WORKDIR /var/www/html
 
 COPY docker/php/opcache.ini /usr/local/etc/php/conf.d/zz-opcache.ini
+COPY docker/php/security.ini /usr/local/etc/php/conf.d/zz-security.ini
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 

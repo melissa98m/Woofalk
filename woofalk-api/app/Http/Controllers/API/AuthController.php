@@ -232,23 +232,26 @@ class AuthController extends Controller
     public function forgotPassword(Request $request)
     {
         try {
-            // Valider la requête
+            // No `exists:users,email` here on purpose: this response must be
+            // identical whether or not the address is registered, otherwise
+            // it becomes an account-enumeration oracle (a 422 for "unknown
+            // email" vs 200 for "known email" lets an attacker probe which
+            // emails have an account here).
             $validatedData = $request->validate([
-                'email' => 'required|email|exists:users,email',
+                'email' => 'required|email',
             ]);
 
-            // Générer un jeton de réinitialisation de mot de passe
-            $token = Str::random(60);
+            if (User::where('email', $validatedData['email'])->exists()) {
+                $token = Str::random(60);
 
-            // Enregistrer le jeton dans la table password_resets
-            DB::table('password_resets')->insert([
-                'email' => $validatedData['email'],
-                'token' => $token,
-                'created_at' => Carbon::now(),
-            ]);
+                DB::table('password_resets')->insert([
+                    'email' => $validatedData['email'],
+                    'token' => $token,
+                    'created_at' => Carbon::now(),
+                ]);
 
-            // Envoyer un e-mail de réinitialisation de mot de passe à l'utilisateur
-            Mail::to($validatedData['email'])->send(new ResetPasswordEmail($token));
+                Mail::to($validatedData['email'])->send(new ResetPasswordEmail($token));
+            }
 
             return response()->json(
                 ['message' => 'Un e-mail de réinitialisation de mot de passe a été envoyé.'], 200);

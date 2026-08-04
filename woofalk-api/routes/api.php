@@ -60,9 +60,9 @@ Route::controller(BalladeController::class)->group(function () {
     Route::get('ballades/sortDateDesc', 'sortByDateDesc');
     Route::get('ballades/{ballade}', 'show');
     Route::post('ballades', 'store')->middleware(['auth:api', 'throttle:api']);
-    Route::post('ballades/{ballade}/like', 'like')->middleware('auth:api');
-    Route::delete('ballades/{ballade}/like', 'unlike')->middleware('auth:api');
-    Route::post('ballades/{ballade}/report', 'report')->middleware('auth:api');
+    Route::post('ballades/{ballade}/like', 'like')->middleware(['auth:api', 'throttle:api']);
+    Route::delete('ballades/{ballade}/like', 'unlike')->middleware(['auth:api', 'throttle:api']);
+    Route::post('ballades/{ballade}/report', 'report')->middleware(['auth:api', 'throttle:api']);
     Route::get('ballades/{ballade}/comments', 'comments');
     Route::post('ballades/{ballade}/comments', 'addComment')->middleware(['auth:api', 'throttle:api']);
     Route::patch('ballades/{ballade}', 'update')->middleware('auth:api');
@@ -86,9 +86,9 @@ Route::controller(PlaceController::class)->group(function () {
     Route::delete('places/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('places/{place}', 'show');
     Route::post('places', 'store')->middleware(['auth:api', 'throttle:api']);
-    Route::post('places/{place}/like', 'like')->middleware('auth:api');
-    Route::delete('places/{place}/like', 'unlike')->middleware('auth:api');
-    Route::post('places/{place}/report', 'report')->middleware('auth:api');
+    Route::post('places/{place}/like', 'like')->middleware(['auth:api', 'throttle:api']);
+    Route::delete('places/{place}/like', 'unlike')->middleware(['auth:api', 'throttle:api']);
+    Route::post('places/{place}/report', 'report')->middleware(['auth:api', 'throttle:api']);
     Route::get('places/{place}/comments', 'comments');
     Route::post('places/{place}/comments', 'addComment')->middleware(['auth:api', 'throttle:api']);
     Route::patch('places/{place}', 'update')->middleware('auth:api');
@@ -103,9 +103,9 @@ Route::controller(HebergementController::class)->group(function () {
     Route::delete('hebergements/bulk', 'bulkDestroy')->middleware(['auth:api', 'admin']);
     Route::get('hebergements/{hebergement}', 'show');
     Route::post('hebergements', 'store')->middleware(['auth:api', 'throttle:api']);
-    Route::post('hebergements/{hebergement}/like', 'like')->middleware('auth:api');
-    Route::delete('hebergements/{hebergement}/like', 'unlike')->middleware('auth:api');
-    Route::post('hebergements/{hebergement}/report', 'report')->middleware('auth:api');
+    Route::post('hebergements/{hebergement}/like', 'like')->middleware(['auth:api', 'throttle:api']);
+    Route::delete('hebergements/{hebergement}/like', 'unlike')->middleware(['auth:api', 'throttle:api']);
+    Route::post('hebergements/{hebergement}/report', 'report')->middleware(['auth:api', 'throttle:api']);
     Route::get('hebergements/{hebergement}/comments', 'comments');
     Route::post('hebergements/{hebergement}/comments', 'addComment')->middleware(['auth:api', 'throttle:api']);
     Route::patch('hebergements/{hebergement}', 'update')->middleware('auth:api');
@@ -134,8 +134,8 @@ Route::controller(ReportController::class)->middleware(['auth:api', 'moderate'])
 Route::controller(CommentController::class)->middleware('auth:api')->group(function () {
     Route::patch('comments/{comment}', 'update');
     Route::delete('comments/{comment}', 'destroy');
-    Route::post('comments/{comment}/like', 'like');
-    Route::delete('comments/{comment}/like', 'unlike');
+    Route::post('comments/{comment}/like', 'like')->middleware('throttle:api');
+    Route::delete('comments/{comment}/like', 'unlike')->middleware('throttle:api');
 });
 
 Route::controller(UserController::class)->group(function () {

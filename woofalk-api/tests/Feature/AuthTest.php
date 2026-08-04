@@ -130,11 +130,18 @@ class AuthTest extends TestCase
         Mail::assertSent(ResetPasswordEmail::class);
     }
 
-    public function test_forgot_password_rejects_an_unknown_email(): void
+    public function test_forgot_password_returns_the_same_response_for_an_unknown_email(): void
     {
+        // Must not reveal whether the address is registered — a 422 for
+        // "unknown email" vs 200 for "known email" would make this an
+        // account-enumeration oracle.
+        Mail::fake();
+
         $response = $this->postJson('/api/forgot-password', ['email' => 'nobody@example.com']);
 
-        $response->assertStatus(422);
+        $response->assertStatus(200);
+        $this->assertDatabaseMissing('password_resets', ['email' => 'nobody@example.com']);
+        Mail::assertNotSent(ResetPasswordEmail::class);
     }
 
     public function test_reset_password_succeeds_with_a_valid_token(): void
