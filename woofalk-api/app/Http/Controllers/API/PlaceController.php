@@ -11,6 +11,7 @@ use App\Models\Comment;
 use App\Models\Place;
 use App\Models\Report;
 use App\Support\Roles;
+use App\Support\ThumbnailGenerator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -317,8 +318,10 @@ class PlaceController extends Controller
             ],
         ]);
         if ($request->hasFile('place_image')) {
-            if (Place::findOrFail($place->id)->place_image) {
-                Storage::delete('/public/uploads/places/'.Place::findOrFail($place->id)->place_image);
+            $oldImage = Place::findOrFail($place->id)->place_image;
+            if ($oldImage) {
+                Storage::delete('/public/uploads/places/'.$oldImage);
+                ThumbnailGenerator::delete('public/uploads/places', $oldImage);
             }
             $filename = $this->getFilename($request);
             $request->place_image = $filename;
@@ -443,7 +446,8 @@ class PlaceController extends Controller
         $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
         $extension = $request->file('place_image')->getClientOriginalExtension();
         $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
-        $path = $request->file('place_image')->storeAs('public/uploads/places', $filename);
+        $request->file('place_image')->storeAs('public/uploads/places', $filename);
+        ThumbnailGenerator::make('public/uploads/places', $filename);
 
         return $filename;
     }

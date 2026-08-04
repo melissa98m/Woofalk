@@ -11,6 +11,7 @@ use App\Models\Comment;
 use App\Models\Report;
 use App\Models\Tag;
 use App\Support\Roles;
+use App\Support\ThumbnailGenerator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -367,8 +368,12 @@ class BalladeController extends Controller
         ]);
 
         if ($request->hasFile('ballade_image')) {
-            if (Ballade::findOrFail($ballade->id)->ballade_image) {
-                Storage::delete('/public/uploads/ballade/'.Ballade::findOrFail($ballade->id)->ballade_image);
+            $oldImage = Ballade::findOrFail($ballade->id)->ballade_image;
+            if ($oldImage) {
+                // Was 'ballade/' (singular) — didn't match where getFilename() actually
+                // stores files ('ballades/'), so old images were never actually deleted.
+                Storage::delete('/public/uploads/ballades/'.$oldImage);
+                ThumbnailGenerator::delete('public/uploads/ballades', $oldImage);
             }
             $filename = $this->getFilename($request);
             $request->ballade_image = $filename;
@@ -481,7 +486,8 @@ class BalladeController extends Controller
         $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
         $extension = $request->file('ballade_image')->getClientOriginalExtension();
         $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
-        $path = $request->file('ballade_image')->storeAs('public/uploads/ballades', $filename);
+        $request->file('ballade_image')->storeAs('public/uploads/ballades', $filename);
+        ThumbnailGenerator::make('public/uploads/ballades', $filename);
 
         return $filename;
     }

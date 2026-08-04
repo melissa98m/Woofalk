@@ -10,6 +10,7 @@ use App\Models\Comment;
 use App\Models\Hebergement;
 use App\Models\Report;
 use App\Support\Roles;
+use App\Support\ThumbnailGenerator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -326,8 +327,10 @@ class HebergementController extends Controller
             ],
         ]);
         if ($request->hasFile('hebergement_image')) {
-            if (Hebergement::findOrFail($hebergement->id)->hebergement_image) {
-                Storage::delete('/public/uploads/hebergements/'.Hebergement::findOrFail($hebergement->id)->hebergement_image);
+            $oldImage = Hebergement::findOrFail($hebergement->id)->hebergement_image;
+            if ($oldImage) {
+                Storage::delete('/public/uploads/hebergements/'.$oldImage);
+                ThumbnailGenerator::delete('public/uploads/hebergements', $oldImage);
             }
             $filename = $this->getFilename($request);
             $request->hebergement_image = $filename;
@@ -438,6 +441,7 @@ class HebergementController extends Controller
         $extension = $request->file('hebergement_image')->getClientOriginalExtension();
         $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
         $request->file('hebergement_image')->storeAs('public/uploads/hebergements', $filename);
+        ThumbnailGenerator::make('public/uploads/hebergements', $filename);
 
         return $filename;
     }

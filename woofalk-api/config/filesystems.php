@@ -30,9 +30,22 @@ return [
 
     'disks' => [
 
+        // Place/Ballade/Hebergement controllers upload via storeAs('public/uploads/...')
+        // on this default disk (not ->disk('public')) — 'public/' there is just a literal
+        // path prefix, so THIS is the config that actually governs upload permissions, even
+        // though it lands at the same storage/app/public/... path the 'public' disk below
+        // points at. Without 'visibility'/'permissions', Flysystem's local adapter defaults
+        // new directories to 0700 (see PortableVisibilityConverter::$defaultForDirectories),
+        // unreadable by the api-nginx container's worker user — every uploaded image 404s
+        // behind "Permission denied" once nginx tries to serve it.
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            'visibility' => 'public',
+            'permissions' => [
+                'file' => ['public' => 0644, 'private' => 0600],
+                'dir' => ['public' => 0755, 'private' => 0700],
+            ],
             'throw' => false,
         ],
 
@@ -41,6 +54,10 @@ return [
             'root' => storage_path('app/public'),
             'url' => env('APP_URL').'/storage',
             'visibility' => 'public',
+            'permissions' => [
+                'file' => ['public' => 0644, 'private' => 0600],
+                'dir' => ['public' => 0755, 'private' => 0700],
+            ],
             'throw' => false,
         ],
 
