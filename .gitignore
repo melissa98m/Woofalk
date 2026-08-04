@@ -7,3 +7,5 @@ CLAUDE.md
 TODO.md
 /scripts/pentest-report.md
 woofalk-app/.env
+__pycache__/
+*.pyc
