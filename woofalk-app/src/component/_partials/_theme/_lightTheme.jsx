@@ -43,7 +43,10 @@ export const lightTheme = {
             main: '#E2624B',
             light: '#EA8065',
             dark: '#B94A36',
-            contrastText: '#ffffff',
+            // White on #E2624B is 3.45:1, below WCAG AA's 4.5:1 for normal text.
+            // Dark contrastText (same tone the dark theme already uses on its
+            // lighter error.main) gives 4.72:1 without changing the brand color.
+            contrastText: '#2C1D0F',
         },
         presentation: {
              main: '#E1EBDA',

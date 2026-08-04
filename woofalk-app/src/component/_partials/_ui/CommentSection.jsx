@@ -219,14 +219,14 @@ export function CommentSection({ type, id }) {
                                             />
                                             {isOwner ? (
                                                 <Tooltip title="Modifier">
-                                                    <IconButton size="small" onClick={() => startEdit(comment)} aria-label="Modifier ce commentaire">
+                                                    <IconButton size="small" sx={{ p: "12px" }} onClick={() => startEdit(comment)} aria-label="Modifier ce commentaire">
                                                         <EditIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>
                                             ) : null}
                                             {isOwner || canModerate ? (
                                                 <Tooltip title="Supprimer">
-                                                    <IconButton size="small" onClick={() => setPendingDelete(comment)} aria-label="Supprimer ce commentaire">
+                                                    <IconButton size="small" sx={{ p: "12px" }} onClick={() => setPendingDelete(comment)} aria-label="Supprimer ce commentaire">
                                                         <DeleteOutlineIcon fontSize="small" />
                                                     </IconButton>
                                                 </Tooltip>

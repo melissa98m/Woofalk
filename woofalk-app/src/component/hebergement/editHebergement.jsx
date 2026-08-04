@@ -137,6 +137,8 @@ function EditHebergement(props) {
                                            required: 'Ce champ est requis'
                                        }
                                    )}
+                                   aria-invalid={!!errors.hebergement_name}
+                                   aria-describedby={errors.hebergement_name ? "hebergement_name-error" : undefined}
                                    onChange={(e) => setName(e.target.value)}
                                    sx={{mt: 5, height: 50}}
                                    label="Nom"
@@ -146,7 +148,7 @@ function EditHebergement(props) {
                               )}
                             />
                             {errors.hebergement_name ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_name?.message}</Alert>
+                                <Alert id="hebergement_name-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_name?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -160,6 +162,8 @@ function EditHebergement(props) {
                                            pattern: {value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://"}
                                        }
                                    )}
+                                   aria-invalid={!!errors.hebergement_website}
+                                   aria-describedby={errors.hebergement_website ? "hebergement_website-error" : undefined}
                                    type="url"
                                    onChange={(e) => setWebsite(e.target.value)}
                                    sx={{mt: 5, height: 50}}
@@ -170,7 +174,7 @@ function EditHebergement(props) {
                               )}
                             />
                             {errors.hebergement_website ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_website?.message}</Alert>
+                                <Alert id="hebergement_website-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_website?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -199,6 +203,8 @@ function EditHebergement(props) {
                                            required: 'Ce champ est requis'
                                        }
                                    )}
+                                   aria-invalid={!!errors.hebergement_description}
+                                   aria-describedby={errors.hebergement_description ? "hebergement_description-error" : undefined}
                                    multiline
                                    rows={4}
                                    onChange={(e) => setDescription(e.target.value)}
@@ -210,7 +216,7 @@ function EditHebergement(props) {
                               )}
                             />
                             {errors.hebergement_description ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_description?.message}</Alert>
+                                <Alert id="hebergement_description-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_description?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -222,6 +228,8 @@ function EditHebergement(props) {
                                       <Input
                                        type='file'
                                        {...register('hebergement_image')}
+                                       aria-invalid={!!errors.hebergement_image}
+                                       aria-describedby={errors.hebergement_image ? "hebergement_image-error" : undefined}
                                        onChange={(e) => setImage(e.target.files[0])}
                                        sx={{mt: 5, height: 50}}
                                       />
@@ -229,7 +237,7 @@ function EditHebergement(props) {
                               )}
                             />
                             {errors.hebergement_image ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_image?.message}</Alert>
+                                <Alert id="hebergement_image-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.hebergement_image?.message}</Alert>
                             ) : ''}
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex',flexDirection: 'column'}}>

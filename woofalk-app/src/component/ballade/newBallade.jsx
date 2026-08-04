@@ -131,6 +131,8 @@ function NewBallade() {
                             render={() => (
                                 <TextField
                                     {...register("ballade_name", { required: "Ce champ est requis" })}
+                                    aria-invalid={!!errors.ballade_name}
+                                    aria-describedby={errors.ballade_name ? "ballade_name-error" : undefined}
                                     id="ballade_name"
                                     onChange={(e) => setName(e.target.value)}
                                     hiddenLabel
@@ -143,7 +145,7 @@ function NewBallade() {
                             )}
                         />
                         {errors.ballade_name ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_name?.message}</Alert>
+                            <Alert id="ballade_name-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_name?.message}</Alert>
                         ) : null}
                     </Box>
 
@@ -186,6 +188,8 @@ function NewBallade() {
                                 render={() => (
                                     <TextField
                                         {...register("ballade_latitude", { required: "Ce champ est requis" })}
+                                        aria-invalid={!!errors.ballade_latitude}
+                                        aria-describedby={errors.ballade_latitude ? "ballade_latitude-error" : undefined}
                                         id="ballade_latitude"
                                         onChange={(e) => setLatitude(e.target.value)}
                                         hiddenLabel
@@ -199,7 +203,7 @@ function NewBallade() {
                                 )}
                             />
                             {errors.ballade_latitude ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_latitude?.message}</Alert>
+                                <Alert id="ballade_latitude-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_latitude?.message}</Alert>
                             ) : null}
                         </Box>
 
@@ -211,6 +215,8 @@ function NewBallade() {
                                 render={() => (
                                     <TextField
                                         {...register("ballade_longitude", { required: "Ce champ est requis" })}
+                                        aria-invalid={!!errors.ballade_longitude}
+                                        aria-describedby={errors.ballade_longitude ? "ballade_longitude-error" : undefined}
                                         id="ballade_longitude"
                                         onChange={(e) => setLongitude(e.target.value)}
                                         hiddenLabel
@@ -224,7 +230,7 @@ function NewBallade() {
                                 )}
                             />
                             {errors.ballade_longitude ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_longitude?.message}</Alert>
+                                <Alert id="ballade_longitude-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_longitude?.message}</Alert>
                             ) : null}
                         </Box>
                     </Box>
@@ -241,6 +247,8 @@ function NewBallade() {
                                         required: "Ce champ est requis",
                                         pattern: { value: /^\d+([.,]\d+)?$/, message: "Distance invalide (ex. 8,4)" },
                                     })}
+                                        aria-invalid={!!errors.distance}
+                                        aria-describedby={errors.distance ? "distance-error" : undefined}
                                         id="distance"
                                         onChange={(e) => setDistance(e.target.value)}
                                         hiddenLabel
@@ -254,7 +262,7 @@ function NewBallade() {
                                 )}
                             />
                             {errors.distance ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.distance?.message}</Alert>
+                                <Alert id="distance-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.distance?.message}</Alert>
                             ) : null}
                         </Box>
 
@@ -266,6 +274,8 @@ function NewBallade() {
                                 render={() => (
                                     <TextField
                                         {...register("denivele", { required: "Ce champ est requis" })}
+                                        aria-invalid={!!errors.denivele}
+                                        aria-describedby={errors.denivele ? "denivele-error" : undefined}
                                         id="denivele"
                                         type="number"
                                         onChange={(e) => setDenivele(e.target.value)}
@@ -279,7 +289,7 @@ function NewBallade() {
                                 )}
                             />
                             {errors.denivele ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.denivele?.message}</Alert>
+                                <Alert id="denivele-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.denivele?.message}</Alert>
                             ) : null}
                         </Box>
                     </Box>
@@ -294,6 +304,8 @@ function NewBallade() {
                                     {...register("ballade_description", {
                                         required: "Ce champ est requis",
                                     })}
+                                    aria-invalid={!!errors.ballade_description}
+                                    aria-describedby={errors.ballade_description ? "ballade_description-error" : undefined}
                                     id="ballade_description"
                                     multiline
                                     rows={4}
@@ -308,7 +320,7 @@ function NewBallade() {
                             )}
                         />
                         {errors.ballade_description ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_description?.message}</Alert>
+                            <Alert id="ballade_description-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_description?.message}</Alert>
                         ) : null}
                     </Box>
 
@@ -322,6 +334,8 @@ function NewBallade() {
                                     {...register("ballade_website", {
                                         pattern: { value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://" },
                                     })}
+                                    aria-invalid={!!errors.ballade_website}
+                                    aria-describedby={errors.ballade_website ? "ballade_website-error" : undefined}
                                     id="ballade_website"
                                     type="url"
                                     onChange={(e) => setWebsite(e.target.value)}
@@ -334,7 +348,7 @@ function NewBallade() {
                             )}
                         />
                         {errors.ballade_website ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_website?.message}</Alert>
+                            <Alert id="ballade_website-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.ballade_website?.message}</Alert>
                         ) : null}
                     </Box>
 

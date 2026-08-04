@@ -143,6 +143,8 @@ function EditPlace(props) {
                                            required: 'Ce champ est requis'
                                        }
                                    )}
+                                   aria-invalid={!!errors.place_name}
+                                   aria-describedby={errors.place_name ? "place_name-error" : undefined}
                                    onChange={(e) => setName(e.target.value)}
                                    sx={{mt: 5, height: 50}}
                                    label="Nom"
@@ -152,7 +154,7 @@ function EditPlace(props) {
                               )}
                             />
                             {errors.place_name ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_name?.message}</Alert>
+                                <Alert id="place_name-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_name?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -166,6 +168,8 @@ function EditPlace(props) {
                                            pattern: {value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://"}
                                        }
                                    )}
+                                   aria-invalid={!!errors.place_website}
+                                   aria-describedby={errors.place_website ? "place_website-error" : undefined}
                                    type="url"
                                    onChange={(e) => setWebsite(e.target.value)}
                                    sx={{mt: 5, height: 50}}
@@ -176,7 +180,7 @@ function EditPlace(props) {
                               )}
                             />
                             {errors.place_website ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_website?.message}</Alert>
+                                <Alert id="place_website-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_website?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -190,6 +194,8 @@ function EditPlace(props) {
                                            required: 'Ce champ est requis'
                                        }
                                    )}
+                                   aria-invalid={!!errors.place_description}
+                                   aria-describedby={errors.place_description ? "place_description-error" : undefined}
                                    multiline
                                    rows={4}
                                    onChange={(e) => setDescription(e.target.value)}
@@ -201,7 +207,7 @@ function EditPlace(props) {
                               )}
                             />
                             {errors.place_description ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_description?.message}</Alert>
+                                <Alert id="place_description-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_description?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -213,6 +219,8 @@ function EditPlace(props) {
                                       <Input
                                        type='file'
                                        {...register('place_image')}
+                                       aria-invalid={!!errors.place_image}
+                                       aria-describedby={errors.place_image ? "place_image-error" : undefined}
                                        onChange={(e) => setImage(e.target.files[0])}
                                        sx={{mt: 5, height: 50}}
                                       />
@@ -220,7 +228,7 @@ function EditPlace(props) {
                               )}
                             />
                             {errors.place_image ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_image?.message}</Alert>
+                                <Alert id="place_image-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.place_image?.message}</Alert>
                             ) : ''}
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex',flexDirection: 'column'}}>

@@ -92,7 +92,7 @@ const Search = ({
                                     <>
                                         {params.slotProps?.input?.endAdornment}
                                         {!isHero ? (
-                                            <IconButton type="submit" aria-label="Rechercher" size="small">
+                                            <IconButton type="submit" aria-label="Rechercher" size="small" sx={{ p: "12px" }}>
                                                 <SearchIcon fontSize="small" />
                                             </IconButton>
                                         ) : null}

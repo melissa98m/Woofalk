@@ -87,6 +87,8 @@ function EditAddress(props) {
                                            minLength: {value: 5, message: 'Longueur minimale de 5 caractères'}
                                        }
                                    )}
+                                   aria-invalid={!!errors.address}
+                                   aria-describedby={errors.address ? "address-error" : undefined}
                                    onChange={(e) => setName(e.target.value)}
                                    sx={{mt: 5, height: 50}}
                                    label="Adresse"
@@ -96,7 +98,7 @@ function EditAddress(props) {
                               )}
                             />
                             {errors.address ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.address?.message}</Alert>
+                                <Alert id="address-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.address?.message}</Alert>
                             ) : ''}
                            <Controller
                               name="postal_code"
@@ -149,6 +151,8 @@ function EditAddress(props) {
                                    required: 'Ce champ est requis'
                                     }
                                     )}
+                                  aria-invalid={!!errors.latitude}
+                                  aria-describedby={errors.latitude ? "latitude-error" : undefined}
 
                                     onChange={(e) => setLatitude(e.target.value)}
                                     sx={{mt: 5, height: 50}}
@@ -159,7 +163,7 @@ function EditAddress(props) {
                                       )}
                                        />
                                        {errors.latitude ? (
-                                        <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.latitude?.message}</Alert>
+                                        <Alert id="latitude-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.latitude?.message}</Alert>
                                          ) : ''}
                             <Controller
                                 name="longitude"
@@ -172,6 +176,8 @@ function EditAddress(props) {
                                    required: 'Ce champ est requis'
                                     }
                                     )}
+                                  aria-invalid={!!errors.longitude}
+                                  aria-describedby={errors.longitude ? "longitude-error" : undefined}
 
                                     onChange={(e) => setLongitude(e.target.value)}
                                     sx={{mt: 5, height: 50}}
@@ -182,7 +188,7 @@ function EditAddress(props) {
                                       )}
                                        />
                                        {errors.longitude ? (
-                                        <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.longitude?.message}</Alert>
+                                        <Alert id="longitude-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.longitude?.message}</Alert>
                                          ) : ''}
 
                         <Box className="action-button">

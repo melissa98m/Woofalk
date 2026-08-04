@@ -67,6 +67,8 @@ function EditCategory(props) {
                                            required: 'Ce champ est requis',
                                        }
                                    )}
+                                   aria-invalid={!!errors.category_name}
+                                   aria-describedby={errors.category_name ? "category_name-error" : undefined}
                                    onChange={(e) => setName(e.target.value)}
                                    sx={{mt: 5, height: 50}}
                                    label="Nom"
@@ -76,7 +78,7 @@ function EditCategory(props) {
                               )}
                             />
                             {errors.category_name ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.category_name?.message}</Alert>
+                                <Alert id="category_name-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.category_name?.message}</Alert>
                             ) : ''}
                         <InputLabel id="edit-category-scope-label" sx={{mt: 3}}>S'applique à</InputLabel>
                         <Select

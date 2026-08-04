@@ -120,6 +120,8 @@ function Contact() {
                                 render={() => (
                                     <TextField
                                         {...register("name", { required: "Ce champ est requis" })}
+                                        aria-invalid={!!errors.name}
+                                        aria-describedby={errors.name ? "name-error" : undefined}
                                         id="contact_name"
                                         onChange={(e) => setName(e.target.value)}
                                         hiddenLabel
@@ -132,7 +134,7 @@ function Contact() {
                                 )}
                             />
                             {errors.name ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.name?.message}</Alert>
+                                <Alert id="name-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.name?.message}</Alert>
                             ) : null}
                         </Box>
 
@@ -147,6 +149,8 @@ function Contact() {
                                             required: "Ce champ est requis",
                                             pattern: { value: EMAIL_PATTERN, message: "Adresse email invalide" },
                                         })}
+                                        aria-invalid={!!errors.email}
+                                        aria-describedby={errors.email ? "email-error" : undefined}
                                         id="contact_email"
                                         type="email"
                                         onChange={(e) => setEmail(e.target.value)}
@@ -160,7 +164,7 @@ function Contact() {
                                 )}
                             />
                             {errors.email ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.email?.message}</Alert>
+                                <Alert id="email-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.email?.message}</Alert>
                             ) : null}
                         </Box>
 
@@ -201,6 +205,8 @@ function Contact() {
                                 render={() => (
                                     <TextField
                                         {...register("contenu", { required: "Ce champ est requis" })}
+                                        aria-invalid={!!errors.contenu}
+                                        aria-describedby={errors.contenu ? "contenu-error" : undefined}
                                         id="contact_message"
                                         multiline
                                         rows={5}
@@ -215,7 +221,7 @@ function Contact() {
                                 )}
                             />
                             {errors.contenu ? (
-                                <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.contenu?.message}</Alert>
+                                <Alert id="contenu-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.contenu?.message}</Alert>
                             ) : null}
                         </Box>
 

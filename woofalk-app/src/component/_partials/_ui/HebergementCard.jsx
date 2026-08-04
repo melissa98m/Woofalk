@@ -11,6 +11,7 @@ const MAX_VISIBLE_TAGS = 3;
 export function HebergementCard({ hebergement }) {
     const { id, hebergement_name, hebergement_image, category, address, price_indication, tags, is_liked, likes_count } = hebergement;
     const [like, setLike] = useState({ liked: !!is_liked, count: likes_count ?? 0 });
+    const fullImageSrc = `${API_URL}/storage/uploads/hebergements/${hebergement_image}`;
 
     return (
         <Card component="article">
@@ -19,7 +20,8 @@ export function HebergementCard({ hebergement }) {
                     component="img"
                     height="150"
                     loading="lazy"
-                    src={`${API_URL}/storage/uploads/hebergements/${hebergement_image}`}
+                    src={`${API_URL}/storage/uploads/hebergements/thumb_${hebergement_image}`}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fullImageSrc; }}
                     alt={hebergement_name}
                 />
                 <Box sx={{ position: "absolute", top: 6, right: 6, bgcolor: "background.paper", borderRadius: "50%", boxShadow: 1 }}>

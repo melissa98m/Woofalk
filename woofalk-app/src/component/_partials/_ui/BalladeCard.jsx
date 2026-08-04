@@ -17,6 +17,7 @@ const DISTANCE_TAG_NAMES = ["Court", "Long"];
 export function BalladeCard({ ballade }) {
     const { id, ballade_name, ballade_image, tags, denivele, distance, is_liked, likes_count } = ballade;
     const [like, setLike] = useState({ liked: !!is_liked, count: likes_count ?? 0 });
+    const fullImageSrc = `${API_URL}/storage/uploads/ballades/${ballade_image}`;
 
     const deniveleTag = tags?.find((t) => DENIVELE_TAG_NAMES.includes(t.tag_name));
     const distanceTag = tags?.find((t) => DISTANCE_TAG_NAMES.includes(t.tag_name));
@@ -28,7 +29,8 @@ export function BalladeCard({ ballade }) {
                     component="img"
                     height="150"
                     loading="lazy"
-                    src={`${API_URL}/storage/uploads/ballades/${ballade_image}`}
+                    src={`${API_URL}/storage/uploads/ballades/thumb_${ballade_image}`}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fullImageSrc; }}
                     alt={ballade_name}
                 />
                 <Box sx={{ position: "absolute", top: 6, right: 6, bgcolor: "background.paper", borderRadius: "50%", boxShadow: 1 }}>

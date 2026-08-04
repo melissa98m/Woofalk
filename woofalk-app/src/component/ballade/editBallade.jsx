@@ -138,6 +138,8 @@ function EditBallade(props) {
                                            required: 'Ce champ est requis'
                                        }
                                    )}
+                                   aria-invalid={!!errors.ballade_name}
+                                   aria-describedby={errors.ballade_name ? "ballade_name-error" : undefined}
                                    onChange={(e) => setName(e.target.value)}
                                    sx={{mt: 5, height: 50}}
                                    label="Nom"
@@ -147,7 +149,7 @@ function EditBallade(props) {
                               )}
                             />
                             {errors.ballade_name ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_name?.message}</Alert>
+                                <Alert id="ballade_name-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_name?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -161,6 +163,8 @@ function EditBallade(props) {
                                            required: 'Ce champ est requis'
                                        }
                                    )}
+                                   aria-invalid={!!errors.ballade_description}
+                                   aria-describedby={errors.ballade_description ? "ballade_description-error" : undefined}
                                    multiline
                                    rows={4}
                                    onChange={(e) => setDescription(e.target.value)}
@@ -172,7 +176,7 @@ function EditBallade(props) {
                               )}
                             />
                             {errors.ballade_description ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_description?.message}</Alert>
+                                <Alert id="ballade_description-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_description?.message}</Alert>
                             ) : ''}
                             <Controller
                              name="ballade_latitude"
@@ -185,6 +189,8 @@ function EditBallade(props) {
                                     required: 'Ce champ est requis'
                                   }
                                  )}
+                                aria-invalid={!!errors.ballade_latitude}
+                                aria-describedby={errors.ballade_latitude ? "ballade_latitude-error" : undefined}
                                  type="number"
                                   onChange={(e) => setLatitude(e.target.value)}
                                   sx={{mt: 5, height: 50}}
@@ -195,7 +201,7 @@ function EditBallade(props) {
                                    )}
                                     />
                                     {errors.ballade_latitude ? (
-                                     <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_latitude?.message}</Alert>
+                                     <Alert id="ballade_latitude-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_latitude?.message}</Alert>
                                      ) : ''}
                             <Controller
                                 name="ballade_longitude"
@@ -208,6 +214,8 @@ function EditBallade(props) {
                                    required: 'Ce champ est requis'
                                     }
                                     )}
+                                  aria-invalid={!!errors.ballade_longitude}
+                                  aria-describedby={errors.ballade_longitude ? "ballade_longitude-error" : undefined}
                                     type="number"
                                     onChange={(e) => setLongitude(e.target.value)}
                                     sx={{mt: 5, height: 50}}
@@ -218,7 +226,7 @@ function EditBallade(props) {
                                       )}
                                        />
                                        {errors.ballade_longitude ? (
-                                        <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_longitude?.message}</Alert>
+                                        <Alert id="ballade_longitude-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_longitude?.message}</Alert>
                                          ) : ''}
 
                             <Controller
@@ -230,6 +238,8 @@ function EditBallade(props) {
                                       <Input
                                        type='file'
                                        {...register('ballade_image')}
+                                       aria-invalid={!!errors.ballade_image}
+                                       aria-describedby={errors.ballade_image ? "ballade_image-error" : undefined}
                                        onChange={(e) => setImage(e.target.files[0])}
                                        sx={{mt: 5, height: 50}}
                                       />
@@ -237,7 +247,7 @@ function EditBallade(props) {
                               )}
                             />
                             {errors.ballade_image ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_image?.message}</Alert>
+                                <Alert id="ballade_image-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_image?.message}</Alert>
                             ) : ''}
 
                             <Controller
@@ -251,6 +261,8 @@ function EditBallade(props) {
                                            pattern: {value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://"}
                                        }
                                    )}
+                                   aria-invalid={!!errors.ballade_website}
+                                   aria-describedby={errors.ballade_website ? "ballade_website-error" : undefined}
                                    type="url"
                                    onChange={(e) => setWebsite(e.target.value)}
                                    sx={{mt: 5, height: 50}}
@@ -261,7 +273,7 @@ function EditBallade(props) {
                               )}
                             />
                             {errors.ballade_website ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_website?.message}</Alert>
+                                <Alert id="ballade_website-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.ballade_website?.message}</Alert>
                             ) : ''}
                         </Grid>
                         <Grid item xs={6} sx={{ display: 'flex',flexDirection: 'column'}}>
@@ -311,6 +323,8 @@ function EditBallade(props) {
                                      pattern: { value: /^\d+([.,]\d+)?$/, message: 'Distance invalide (ex. 8,4)' },
                                      }
                                     )}
+                                  aria-invalid={!!errors.distance}
+                                  aria-describedby={errors.distance ? "distance-error" : undefined}
                                     inputMode="decimal"
                                      onChange={(e) => setDistance(e.target.value)}
                                       sx={{mt: 5, height: 50}}
@@ -322,7 +336,7 @@ function EditBallade(props) {
                                         )}
                                          />
                                           {errors.distance ? (
-                                   <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.distance?.message}</Alert>
+                                   <Alert id="distance-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.distance?.message}</Alert>
                                      ) : ''}
                                     <Controller
                                                          name="denivele"
@@ -335,6 +349,8 @@ function EditBallade(props) {
                                                                 required: 'Ce champ est requis'
                                                               }
                                                              )}
+                                                            aria-invalid={!!errors.denivele}
+                                                            aria-describedby={errors.denivele ? "denivele-error" : undefined}
                                                              type="number"
                                                               onChange={(e) => setDenivele(e.target.value)}
                                                               sx={{mt: 5, height: 50}}
@@ -345,7 +361,7 @@ function EditBallade(props) {
                                                                )}
                                                                 />
                                                                 {errors.denivele ? (
-                                                                 <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.denivele?.message}</Alert>
+                                                                 <Alert id="denivele-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.denivele?.message}</Alert>
                                                                  ) : ''}
 
                             <FormControl sx={{ m: 1, mt: 5, minWidth: 120 }} size="small">

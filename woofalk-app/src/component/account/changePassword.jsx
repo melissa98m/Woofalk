@@ -114,6 +114,8 @@ const ChangePassword = () => {
                                                    required: 'Ce champ est requis'
                                                }
                                            )}
+                                           aria-invalid={!!errors.old_password}
+                                           aria-describedby={errors.old_password ? "old_password-error" : undefined}
                                            onChange={(e) => setOlderPassword(e.target.value)}
                                            style={{width: 400, height: 50}}
                                            label="Ancien mot de passe"
@@ -123,7 +125,7 @@ const ChangePassword = () => {
                                       )}
                                     />
                                     {errors.old_password ? (
-                                        <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.old_password?.message}</Alert>
+                                        <Alert id="old_password-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.old_password?.message}</Alert>
                                     ) : ''}
                                      <Controller
                                                               name="new_password"
@@ -137,6 +139,8 @@ const ChangePassword = () => {
                                                                            required: 'Ce champ est requis'
                                                                        }
                                                                    )}
+                                                                   aria-invalid={!!errors.new_password}
+                                                                   aria-describedby={errors.new_password ? "new_password-error" : undefined}
                                                                    onChange={(e) => setNewPassword(e.target.value)}
                                                                    style={{width: 400, height: 50}}
                                                                    label="Nouveau mot de passe"
@@ -146,7 +150,7 @@ const ChangePassword = () => {
                                                               )}
                                                             />
                                                             {errors.new_password ? (
-                                                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.new_password?.message}</Alert>
+                                                                <Alert id="new_password-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.new_password?.message}</Alert>
                                                             ) : ''}
 
                                                 <Box className="regex">
@@ -179,6 +183,8 @@ const ChangePassword = () => {
                                                                                 required: 'Ce champ est requis'
                                                                             }
                                                                         )}
+                                                                        aria-invalid={!!errors.confirm_password}
+                                                                        aria-describedby={errors.confirm_password ? "confirm_password-error" : undefined}
                                                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                                                         style={{width: 400, height: 50}}
                                                                         label="Confirmer le mot de passe"
@@ -188,7 +194,7 @@ const ChangePassword = () => {
                                                                    )}
                                                                  />
                                                                  {errors.confirm_password ? (
-                                                                     <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.confirm_password?.message}</Alert>
+                                                                     <Alert id="confirm_password-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.confirm_password?.message}</Alert>
                                                                  ) : ''}
                                     <Box className="action-button">
                                         <Button type="submit" sx={{m: 3}} variant="contained">Envoyer</Button>

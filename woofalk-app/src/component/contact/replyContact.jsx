@@ -54,6 +54,8 @@ function ReplyContact({ contact, onReplied }) {
                             render={() => (
                                 <TextField
                                     {...register("message", { required: "Ce champ est requis" })}
+                                    aria-invalid={!!errors.message}
+                                    aria-describedby={errors.message ? "message-error" : undefined}
                                     label="Votre réponse"
                                     variant="outlined"
                                     multiline
@@ -66,7 +68,7 @@ function ReplyContact({ contact, onReplied }) {
                             )}
                         />
                         {errors.message ? (
-                            <Alert sx={{ mt: 2, p: 0, pl: 2 }} severity="error">{errors.message?.message}</Alert>
+                            <Alert id="message-error" sx={{ mt: 2, p: 0, pl: 2 }} severity="error">{errors.message?.message}</Alert>
                         ) : null}
                         <Box className="action-button">
                             <Button type="submit" sx={{ m: 3 }} variant="contained" disabled={submitting}>

@@ -159,6 +159,8 @@ function NewPlace() {
                             render={() => (
                                 <TextField
                                     {...register("place_name", { required: "Ce champ est requis" })}
+                                    aria-invalid={!!errors.place_name}
+                                    aria-describedby={errors.place_name ? "place_name-error" : undefined}
                                     id="place_name"
                                     onChange={(e) => setName(e.target.value)}
                                     hiddenLabel
@@ -171,7 +173,7 @@ function NewPlace() {
                             )}
                         />
                         {errors.place_name ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.place_name?.message}</Alert>
+                            <Alert id="place_name-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.place_name?.message}</Alert>
                         ) : null}
                     </Box>
 
@@ -256,6 +258,8 @@ function NewPlace() {
                                     {...register("place_website", {
                                         pattern: { value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://" },
                                     })}
+                                    aria-invalid={!!errors.place_website}
+                                    aria-describedby={errors.place_website ? "place_website-error" : undefined}
                                     id="place_website"
                                     type="url"
                                     onChange={(e) => setWebsite(e.target.value)}
@@ -268,7 +272,7 @@ function NewPlace() {
                             )}
                         />
                         {errors.place_website ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.place_website?.message}</Alert>
+                            <Alert id="place_website-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.place_website?.message}</Alert>
                         ) : null}
                     </Box>
 
@@ -282,6 +286,8 @@ function NewPlace() {
                                     {...register("place_description", {
                                         required: "Ce champ est requis",
                                     })}
+                                    aria-invalid={!!errors.place_description}
+                                    aria-describedby={errors.place_description ? "place_description-error" : undefined}
                                     id="place_description"
                                     multiline
                                     rows={4}
@@ -296,7 +302,7 @@ function NewPlace() {
                             )}
                         />
                         {errors.place_description ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.place_description?.message}</Alert>
+                            <Alert id="place_description-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.place_description?.message}</Alert>
                         ) : null}
                     </Box>
 

@@ -65,7 +65,7 @@ export function Navbar() {
                 }}
             >
                 <Box component={Link} to="/" aria-label="Accueil Woofalk" sx={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0, justifySelf: "start", textDecoration: "none" }}>
-                    <Box component="img" alt="Woofalk" src={Logo} id="logo" />
+                    <Box component="img" alt="Woofalk" src={Logo} id="logo" width={56} height={56} />
                     <Typography
                         component="span"
                         sx={{

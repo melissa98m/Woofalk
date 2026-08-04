@@ -11,6 +11,7 @@ const MAX_VISIBLE_TAGS = 3;
 export function PlaceCard({ place }) {
     const { id, place_name, place_image, category, address, tags, is_liked, likes_count } = place;
     const [like, setLike] = useState({ liked: !!is_liked, count: likes_count ?? 0 });
+    const fullImageSrc = `${API_URL}/storage/uploads/places/${place_image}`;
 
     return (
         <Card component="article">
@@ -19,7 +20,8 @@ export function PlaceCard({ place }) {
                     component="img"
                     height="150"
                     loading="lazy"
-                    src={`${API_URL}/storage/uploads/places/${place_image}`}
+                    src={`${API_URL}/storage/uploads/places/thumb_${place_image}`}
+                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = fullImageSrc; }}
                     alt={place_name}
                 />
                 <Box sx={{ position: "absolute", top: 6, right: 6, bgcolor: "background.paper", borderRadius: "50%", boxShadow: 1 }}>

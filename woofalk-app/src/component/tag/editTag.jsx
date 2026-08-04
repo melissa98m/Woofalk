@@ -78,6 +78,8 @@ const handleChange = (color) => {
                                            minLength: {value: 5, message: 'Longueur minimale de 5 caractères'}
                                        }
                                    )}
+                                   aria-invalid={!!errors.tag_name}
+                                   aria-describedby={errors.tag_name ? "tag_name-error" : undefined}
                                    onChange={(e) => setName(e.target.value)}
                                    sx={{mt: 5, height: 50}}
                                    label="Nom du tag"
@@ -87,7 +89,7 @@ const handleChange = (color) => {
                               )}
                             />
                             {errors.tag_name ? (
-                                <Alert sx={{mt:2, p:0, pl:2}} severity="error">{errors.tag_name?.message}</Alert>
+                                <Alert id="tag_name-error" sx={{mt:2, p:0, pl:2}} severity="error">{errors.tag_name?.message}</Alert>
                             ) : ''}
                             <Typography variant="body1">Couleur :</Typography>
                             <input type="color" id="color" name="color" required className="color-picker"

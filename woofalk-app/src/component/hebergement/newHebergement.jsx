@@ -163,6 +163,8 @@ function NewHebergement() {
                             render={() => (
                                 <TextField
                                     {...register("hebergement_name", { required: "Ce champ est requis" })}
+                                    aria-invalid={!!errors.hebergement_name}
+                                    aria-describedby={errors.hebergement_name ? "hebergement_name-error" : undefined}
                                     id="hebergement_name"
                                     onChange={(e) => setName(e.target.value)}
                                     hiddenLabel
@@ -175,7 +177,7 @@ function NewHebergement() {
                             )}
                         />
                         {errors.hebergement_name ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.hebergement_name?.message}</Alert>
+                            <Alert id="hebergement_name-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.hebergement_name?.message}</Alert>
                         ) : null}
                     </Box>
 
@@ -279,6 +281,8 @@ function NewHebergement() {
                                     {...register("hebergement_website", {
                                         pattern: { value: /^https?:\/\/.+/i, message: "L'URL doit commencer par http:// ou https://" },
                                     })}
+                                    aria-invalid={!!errors.hebergement_website}
+                                    aria-describedby={errors.hebergement_website ? "hebergement_website-error" : undefined}
                                     id="hebergement_website"
                                     type="url"
                                     onChange={(e) => setWebsite(e.target.value)}
@@ -291,7 +295,7 @@ function NewHebergement() {
                             )}
                         />
                         {errors.hebergement_website ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.hebergement_website?.message}</Alert>
+                            <Alert id="hebergement_website-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.hebergement_website?.message}</Alert>
                         ) : null}
                     </Box>
 
@@ -305,6 +309,8 @@ function NewHebergement() {
                                     {...register("hebergement_description", {
                                         required: "Ce champ est requis",
                                     })}
+                                    aria-invalid={!!errors.hebergement_description}
+                                    aria-describedby={errors.hebergement_description ? "hebergement_description-error" : undefined}
                                     id="hebergement_description"
                                     multiline
                                     rows={4}
@@ -319,7 +325,7 @@ function NewHebergement() {
                             )}
                         />
                         {errors.hebergement_description ? (
-                            <Alert sx={{ p: 0, pl: 2 }} severity="error">{errors.hebergement_description?.message}</Alert>
+                            <Alert id="hebergement_description-error" sx={{ p: 0, pl: 2 }} severity="error">{errors.hebergement_description?.message}</Alert>
                         ) : null}
                     </Box>
 
