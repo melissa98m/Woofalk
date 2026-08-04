@@ -7,7 +7,7 @@ import {
     Link as MuiLink,
     Typography,
 } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Seo } from "../_partials/_seo/Seo";
 

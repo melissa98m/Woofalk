@@ -20,7 +20,7 @@ class AuthTest extends TestCase
         return array_merge([
             'username' => 'chiendetest',
             'email' => 'chien@example.com',
-            'password' => 'password123',
+            'password' => 'Password123',
             'accept_terms' => '1',
         ], $overrides);
     }
@@ -150,7 +150,9 @@ class AuthTest extends TestCase
         $token = Str::random(60);
         DB::table('password_resets')->insert([
             'email' => $user->email,
-            'token' => $token,
+            // Tokens are stored hashed in production (see AuthController::forgotPassword) —
+            // match that here so this test exercises the real Hash::check comparison.
+            'token' => Hash::make($token),
             'created_at' => now(),
         ]);
 

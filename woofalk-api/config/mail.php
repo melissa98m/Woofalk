@@ -98,6 +98,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Admin Notification Address
+    |--------------------------------------------------------------------------
+    |
+    | Where operational notifications (new registration, contact form
+    | submissions) are sent. Configurable via env rather than hardcoded so
+    | it isn't tied to one person's personal inbox and can be rotated
+    | without a code change.
+    |
+    */
+
+    'admin_address' => env('MAIL_ADMIN_ADDRESS', 'melissa.mangione@gmail.com'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Markdown Mail Settings
     |--------------------------------------------------------------------------
     |

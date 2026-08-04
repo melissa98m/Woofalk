@@ -3,7 +3,7 @@ import {useState ,useEffect, useRef} from "react";
 import update from "immutability-helper";
 import {useForm, Controller} from "react-hook-form";
 import axios from 'axios';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router';
 import { API_URL } from "../../config";
 
 

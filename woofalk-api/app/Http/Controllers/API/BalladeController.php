@@ -12,6 +12,7 @@ use App\Models\Report;
 use App\Models\Tag;
 use App\Support\Roles;
 use App\Support\ThumbnailGenerator;
+use App\Support\UploadedImageStorage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -279,7 +280,7 @@ class BalladeController extends Controller
             'ballade_description' => 'required',
             'distance' => 'nullable|numeric',
             'denivele' => 'nullable|integer',
-            'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048|dimensions:max_width=4000,max_height=4000',
             'ballade_website' => 'nullable|url|max:255',
             'ballade_latitude' => 'required|numeric|between:-90,90',
             'ballade_longitude' => 'required|numeric|between:-180,180',
@@ -355,7 +356,7 @@ class BalladeController extends Controller
             'ballade_description' => 'required',
             'distance' => 'nullable|numeric',
             'denivele' => 'nullable|integer',
-            'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'ballade_image' => 'nullable|mimes:png,jpg,jpeg|max:2048|dimensions:max_width=4000,max_height=4000',
             'ballade_website' => 'nullable|url|max:255',
             'ballade_latitude' => 'required|numeric|between:-90,90',
             'ballade_longitude' => 'required|numeric|between:-180,180',
@@ -419,7 +420,8 @@ class BalladeController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
         if ($ballade->ballade_image) {
-            Storage::delete('/public/uploads/ballades'.$ballade->ballade_image);
+            Storage::delete('/public/uploads/ballades/'.$ballade->ballade_image);
+            ThumbnailGenerator::delete('public/uploads/ballades', $ballade->ballade_image);
         }
         $ballade->delete();
         $this->forgetListing(self::CACHE_KEY);
@@ -465,7 +467,8 @@ class BalladeController extends Controller
         $ballades = Ballade::whereIn('id', $validated['ids'])->get(['id', 'ballade_image']);
         foreach ($ballades as $ballade) {
             if ($ballade->ballade_image) {
-                Storage::delete('/public/uploads/ballades'.$ballade->ballade_image);
+                Storage::delete('/public/uploads/ballades/'.$ballade->ballade_image);
+                ThumbnailGenerator::delete('public/uploads/ballades', $ballade->ballade_image);
             }
         }
 
@@ -482,13 +485,6 @@ class BalladeController extends Controller
 
     public function getFilename(Request $request): string
     {
-        $filenameWithExt = $request->file('ballade_image')->getClientOriginalName();
-        $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-        $extension = $request->file('ballade_image')->getClientOriginalExtension();
-        $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
-        $request->file('ballade_image')->storeAs('public/uploads/ballades', $filename);
-        ThumbnailGenerator::make('public/uploads/ballades', $filename);
-
-        return $filename;
+        return UploadedImageStorage::store($request->file('ballade_image'), 'public/uploads/ballades', 'ballade_image');
     }
 }

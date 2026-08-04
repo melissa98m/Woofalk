@@ -44,7 +44,6 @@ function NewAddress(props) {
                 setShowToast(true);
             }
         } catch (err) {
-            console.log(err);
             setToastMessage({message: "Une erreur est survenue", severity: "error"});
             setShowToast(true);
         } finally {

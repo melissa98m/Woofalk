@@ -97,7 +97,6 @@ function EditHebergement(props) {
             }
 
         } catch (err) {
-            console.log(err);
         }
     }
 

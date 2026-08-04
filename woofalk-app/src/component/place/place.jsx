@@ -10,7 +10,7 @@ import {
     TableRow,
     Chip
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import DeletePlace from "./deletePlace";
 import EditPlace from "./editPlace";
 import axios from "axios";

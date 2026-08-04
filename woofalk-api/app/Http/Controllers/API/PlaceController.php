@@ -12,6 +12,7 @@ use App\Models\Place;
 use App\Models\Report;
 use App\Support\Roles;
 use App\Support\ThumbnailGenerator;
+use App\Support\UploadedImageStorage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -229,7 +230,7 @@ class PlaceController extends Controller
         $request->validate([
             'place_name' => 'required|max:200',
             'place_description' => 'required',
-            'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048|dimensions:max_width=4000,max_height=4000',
             'place_website' => 'nullable|url|max:255',
             'category' => 'required',
             'address' => 'required',
@@ -306,7 +307,7 @@ class PlaceController extends Controller
         $this->validate($request, [
             'place_name' => 'required|max:200',
             'place_description' => 'required',
-            'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'place_image' => 'nullable|mimes:png,jpg,jpeg|max:2048|dimensions:max_width=4000,max_height=4000',
             'place_website' => 'nullable|url|max:255',
             'category' => 'required',
             'address' => 'required',
@@ -369,6 +370,10 @@ class PlaceController extends Controller
         if ($place->user !== Auth::id() && ! Roles::isAdmin(Auth::user())) {
             return response()->json(['message' => 'Forbidden'], 403);
         }
+        if ($place->place_image) {
+            Storage::delete('/public/uploads/places/'.$place->place_image);
+            ThumbnailGenerator::delete('public/uploads/places', $place->place_image);
+        }
         $place->delete();
         $this->forgetListing(self::CACHE_KEY);
 
@@ -429,6 +434,14 @@ class PlaceController extends Controller
             'ids.*' => ['integer', Rule::exists('places', 'id')],
         ]);
 
+        $places = Place::whereIn('id', $validated['ids'])->get(['id', 'place_image']);
+        foreach ($places as $place) {
+            if ($place->place_image) {
+                Storage::delete('/public/uploads/places/'.$place->place_image);
+                ThumbnailGenerator::delete('public/uploads/places', $place->place_image);
+            }
+        }
+
         // Query-builder deletes don't fire Eloquent model events, so the
         // HasReports::bootHasReports()/HasComments::bootHasComments() cleanup
         // hooks never run here — clean up manually instead.
@@ -442,13 +455,6 @@ class PlaceController extends Controller
 
     public function getFilename(Request $request): string
     {
-        $filenameWithExt = $request->file('place_image')->getClientOriginalName();
-        $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-        $extension = $request->file('place_image')->getClientOriginalExtension();
-        $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
-        $request->file('place_image')->storeAs('public/uploads/places', $filename);
-        ThumbnailGenerator::make('public/uploads/places', $filename);
-
-        return $filename;
+        return UploadedImageStorage::store($request->file('place_image'), 'public/uploads/places', 'place_image');
     }
 }

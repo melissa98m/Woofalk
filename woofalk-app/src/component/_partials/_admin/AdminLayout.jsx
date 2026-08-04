@@ -1,5 +1,5 @@
 import { Box, useMediaQuery, useTheme } from "@mui/material";
-import { NavLink, Outlet, useLocation } from "react-router-dom";
+import { NavLink, Outlet, useLocation } from "react-router";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import PushPinIcon from "@mui/icons-material/PushPin";
 import ApprovalIcon from "@mui/icons-material/Approval";

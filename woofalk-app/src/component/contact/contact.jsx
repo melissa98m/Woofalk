@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router";
 import axios from "axios";
 import { FieldLabel } from "../_partials/_ui/FieldLabel";
 import { Seo } from "../_partials/_seo/Seo";

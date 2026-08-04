@@ -105,7 +105,6 @@ function EditPlace(props) {
             }
 
         } catch (err) {
-            console.log(err);
         }
     }
 

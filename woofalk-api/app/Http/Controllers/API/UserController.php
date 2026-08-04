@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 
 class UserController extends Controller
 {
@@ -172,7 +173,7 @@ class UserController extends Controller
         $request->validate(
             [
                 'old_password' => 'required',
-                'new_password' => 'required|min:6',
+                'new_password' => ['required', Password::min(8)->mixedCase()->numbers()],
                 'confirm_password' => 'required|same:new_password',
             ]);
 

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Breadcrumbs, Chip, Container, Typography } from "@mui/material";
 import { Language } from "@mui/icons-material";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
@@ -14,6 +14,7 @@ import { CommentSection } from "../_partials/_ui/CommentSection";
 import { Seo, truncateDescription } from "../_partials/_seo/Seo";
 import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
 import { API_URL, SITE_URL } from "../../config";
+import { isSafeHttpUrl } from "../../utils/safeUrl";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
 
@@ -150,7 +151,7 @@ function HebergementDetail() {
                         <div><strong>Ville :</strong> {address.postal_code} {address.city}</div>
                         {category ? <div><strong>Catégorie :</strong> {category.category_name}</div> : null}
                         {price_indication ? <div><strong>Tarif chien :</strong> {price_indication}</div> : null}
-                        {hebergement_website ? (
+                        {hebergement_website && isSafeHttpUrl(hebergement_website) ? (
                             <div>
                                 <strong>Site web :</strong>{" "}
                                 <Typography

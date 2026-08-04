@@ -1,6 +1,6 @@
 import {useEffect, useRef, useState} from "react";
 import {useForm, Controller} from "react-hook-form";
-import {Link as RouterLink, useLocation, useNavigate} from "react-router-dom";
+import {Link as RouterLink, useLocation, useNavigate} from "react-router";
 import {
     Alert,
     Box,

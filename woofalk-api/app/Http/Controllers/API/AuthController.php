@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -164,7 +165,7 @@ class AuthController extends Controller
         $request->validate([
             'username' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
+            'password' => ['required', 'string', PasswordRule::min(8)->mixedCase()->numbers()],
             'accept_terms' => 'accepted',
         ],
             [
@@ -189,7 +190,7 @@ class AuthController extends Controller
             'roles' => json_encode(['ROLE_USER']),
             'terms_accepted_at' => now(),
         ]);
-        Mail::to('melissa.mangione@gmail.com') // permet définir de qui est envoyé le mail
+        Mail::to(config('mail.admin_address'))
             ->send(new MailRegister($user));
         Mail::to($user->email, $user->username)->send(new Welcome($user));
 
@@ -244,9 +245,15 @@ class AuthController extends Controller
             if (User::where('email', $validatedData['email'])->exists()) {
                 $token = Str::random(60);
 
+                // Only the hash is persisted — the plaintext token only ever
+                // exists in the email sent below. A leaked backup/export of
+                // this table (or a future SQL injection) then yields nothing
+                // directly usable, the same guarantee already given to user
+                // passwords.
+                DB::table('password_resets')->where('email', $validatedData['email'])->delete();
                 DB::table('password_resets')->insert([
                     'email' => $validatedData['email'],
-                    'token' => $token,
+                    'token' => Hash::make($token),
                     'created_at' => Carbon::now(),
                 ]);
 
@@ -271,17 +278,22 @@ class AuthController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'password' => 'required|min:8',
+            'password' => ['required', PasswordRule::min(8)->mixedCase()->numbers()],
             'token' => 'required|string',
         ]);
         try {
-            // find a matching, unexpired token for this email
+            // Tokens are stored hashed (see forgotPassword()), so the match
+            // can't be done in the query itself — fetch the row for this
+            // email and compare with Hash::check() instead.
             $passwordReset = DB::table('password_resets')
                 ->where('email', $request->email)
-                ->where('token', $request->token)
                 ->first();
 
-            if (! $passwordReset || Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()) {
+            if (
+                ! $passwordReset
+                || ! Hash::check($request->token, $passwordReset->token)
+                || Carbon::parse($passwordReset->created_at)->addMinutes(60)->isPast()
+            ) {
                 DB::table('password_resets')->where('email', $request->email)->delete();
 
                 return response(['message' => 'Token invalide ou expiré'], 422);

@@ -42,10 +42,10 @@ class ContactController extends Controller
 
         // Form validation
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'subject' => 'required',
-            'contenu' => 'required',
+            'name' => 'required|max:255',
+            'email' => 'required|email|max:255',
+            'subject' => 'required|max:255',
+            'contenu' => 'required|max:5000',
         ]);
 
         $contact = Contact::create([ // Assigne les valeurs saisies dans le formulaire au champs correspondant dans la bd (création de la nouvelle opération)
@@ -55,7 +55,7 @@ class ContactController extends Controller
             'contenu' => $request->contenu,
         ]);
 
-        Mail::to('melissa.mangione@gmail.com') // permet définir de qui est envoyé le mail
+        Mail::to(config('mail.admin_address'))
             ->send(new MailContact($contact));
         Mail::to($contact->email, $contact->name)->send(new ContactConfirmation($contact));
 

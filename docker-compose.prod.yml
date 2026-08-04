@@ -80,6 +80,11 @@ services:
   # so it needs an explicit `!reset` to drop the service altogether.
   web: !reset null
 
+  # Mail goes through Resend in production (MAIL_MAILER=resend in
+  # .env.production) — Mailhog is a dev-only mail trap and has no reason to
+  # run on the Pi. Same `!reset` rationale as `web` above.
+  mailhog: !reset null
+
   db:
     ports: !reset null
     # docker-compose.yml's dev credentials (gowithdog/gowithdog/root) are

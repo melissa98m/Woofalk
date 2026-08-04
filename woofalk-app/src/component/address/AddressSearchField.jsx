@@ -23,7 +23,6 @@ export function AddressSearchField({ value, onSelect, label = "Rechercher une ad
             try {
                 setOptions(await searchAddresses(text));
             } catch (err) {
-                console.log(err);
             } finally {
                 setSearching(false);
             }

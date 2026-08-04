@@ -3,7 +3,7 @@
 ########################################
 # base: PHP runtime + extensions shared by every stage
 ########################################
-FROM php:8.3-fpm-alpine AS base
+FROM php:8.3-fpm-alpine@sha256:bf90236449d333cef008b1f01c72a3d4f11a6470a74629665e4c6b6158f03fc8 AS base
 
 RUN apk add --no-cache \
         icu-libs \

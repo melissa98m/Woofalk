@@ -43,7 +43,6 @@ function EditTag(props) {
             }
 
         } catch (err) {
-            console.log(err);
         }
     }
 

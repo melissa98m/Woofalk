@@ -12,7 +12,7 @@ import {
     Typography,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import axios from "axios";
 import { API_URL } from "../../config";
 import { StatCard } from "../_partials/_ui/StatCard";

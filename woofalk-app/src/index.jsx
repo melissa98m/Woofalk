@@ -12,7 +12,7 @@ axios.defaults.withCredentials = true;
 import './index.css';
 import './assets/css/component/_partials/_theme.scss';
 
-import {BrowserRouter, Route, Routes, useLocation} from 'react-router-dom';
+import {BrowserRouter, Route, Routes, useLocation} from 'react-router';
 import {useTheme, useMediaQuery} from "@mui/material";
 import {HelmetProvider} from "react-helmet-async";
 

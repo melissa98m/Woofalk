@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { IconButton, Tooltip } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import auth from "../../../services/auth/token";

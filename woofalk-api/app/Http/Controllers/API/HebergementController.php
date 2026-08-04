@@ -11,6 +11,7 @@ use App\Models\Hebergement;
 use App\Models\Report;
 use App\Support\Roles;
 use App\Support\ThumbnailGenerator;
+use App\Support\UploadedImageStorage;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -236,7 +237,7 @@ class HebergementController extends Controller
         $request->validate([
             'hebergement_name' => 'required|max:200',
             'hebergement_description' => 'required',
-            'hebergement_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'hebergement_image' => 'nullable|mimes:png,jpg,jpeg|max:2048|dimensions:max_width=4000,max_height=4000',
             'hebergement_website' => 'nullable|url|max:2048',
             'price_indication' => 'nullable|max:100',
             'category' => 'required',
@@ -314,7 +315,7 @@ class HebergementController extends Controller
         $this->validate($request, [
             'hebergement_name' => 'required|max:200',
             'hebergement_description' => 'required',
-            'hebergement_image' => 'nullable|mimes:png,jpg,jpeg|max:2048',
+            'hebergement_image' => 'nullable|mimes:png,jpg,jpeg|max:2048|dimensions:max_width=4000,max_height=4000',
             'hebergement_website' => 'nullable|url|max:2048',
             'price_indication' => 'nullable|max:100',
             'category' => 'required',
@@ -375,6 +376,7 @@ class HebergementController extends Controller
         }
         if ($hebergement->hebergement_image) {
             Storage::delete('/public/uploads/hebergements/'.$hebergement->hebergement_image);
+            ThumbnailGenerator::delete('public/uploads/hebergements', $hebergement->hebergement_image);
         }
         $hebergement->delete();
         $this->forgetListing(self::CACHE_KEY);
@@ -421,6 +423,7 @@ class HebergementController extends Controller
         foreach ($hebergements as $hebergement) {
             if ($hebergement->hebergement_image) {
                 Storage::delete('/public/uploads/hebergements/'.$hebergement->hebergement_image);
+                ThumbnailGenerator::delete('public/uploads/hebergements', $hebergement->hebergement_image);
             }
         }
         // Query-builder deletes don't fire Eloquent model events, so the
@@ -436,13 +439,6 @@ class HebergementController extends Controller
 
     public function getFilename(Request $request): string
     {
-        $filenameWithExt = $request->file('hebergement_image')->getClientOriginalName();
-        $filenameWithoutExt = pathinfo($filenameWithExt, PATHINFO_FILENAME);
-        $extension = $request->file('hebergement_image')->getClientOriginalExtension();
-        $filename = $filenameWithoutExt.'_'.time().'.'.$extension;
-        $request->file('hebergement_image')->storeAs('public/uploads/hebergements', $filename);
-        ThumbnailGenerator::make('public/uploads/hebergements', $filename);
-
-        return $filename;
+        return UploadedImageStorage::store($request->file('hebergement_image'), 'public/uploads/hebergements', 'hebergement_image');
     }
 }

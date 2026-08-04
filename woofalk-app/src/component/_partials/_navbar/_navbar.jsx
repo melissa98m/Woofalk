@@ -1,5 +1,5 @@
 import { AppBar, Box, Button, Typography, useTheme, useMediaQuery } from "@mui/material";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router";
 import { SwitchModeButton } from "../_theme/_switchModeButton";
 import "../../../assets/css/component/_partials/_navbar.scss";
 import { LogginButton } from "../../../services/auth/logginButton";

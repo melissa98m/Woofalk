@@ -21,6 +21,11 @@ defaults:
   run:
     working-directory: woofalk-api
 
+# Least-privilege default: neither job writes to the repo (the deploy job
+# only uses SSH secrets), so the GITHUB_TOKEN only needs read access.
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test (PHPUnit)
@@ -44,10 +49,10 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@v2
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2 (this repo tags without a leading "v")
         with:
           php-version: "8.3"
           extensions: mbstring, pdo_mysql, bcmath, gd, intl, zip, exif, pcntl
@@ -58,7 +63,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache composer dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ runner.os }}-composer-${{ hashFiles('woofalk-api/composer.lock') }}
@@ -115,6 +120,13 @@ jobs:
           DB_USERNAME: woofalk
           DB_PASSWORD: woofalk
 
+      # Informational only, same as Pint above: surfaces known vulnerable
+      # packages in the PR/build log without gating on a supply-chain
+      # advisory the team hasn't triaged yet.
+      - name: Audit dependencies (composer audit)
+        run: composer audit
+        continue-on-error: true
+
   deploy:
     name: Deploy to Raspberry Pi
     needs: test
@@ -127,11 +139,15 @@ jobs:
         # be locked down with a forced command in the Pi's authorized_keys,
         # so a leaked key could only ever run that one script — not
         # arbitrary shell commands. See the setup guide for that part.
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@0ff4204d59e8e51228ff73bce53f80d53301dee2 # v1.2.5
         with:
           host: ${{ secrets.PI_HOST }}
           username: ${{ secrets.PI_USER }}
           key: ${{ secrets.PI_SSH_KEY }}
           port: ${{ secrets.PI_PORT || 22 }}
-          script_stop: true
+          # Pins the Pi's host key so a MITM between the runner and the Pi
+          # can't intercept/tamper with this session using PI_SSH_KEY.
+          # Populate this secret with the output of, run once against the
+          # real Pi: `ssh-keyscan -p <port> <host>`
+          fingerprint: ${{ secrets.PI_HOST_FINGERPRINT }}
           script: bash "${{ secrets.PI_DEPLOY_PATH }}/scripts/deploy-pi.sh"

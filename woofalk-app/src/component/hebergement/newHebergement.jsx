@@ -15,7 +15,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router";
 import update from "immutability-helper";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
@@ -128,7 +128,6 @@ function NewHebergement() {
                 setShowToast(true);
             }
         } catch (err) {
-            console.log(err);
             setToastMessage({ message: "Une erreur est survenue", severity: "error" });
             setShowToast(true);
         } finally {

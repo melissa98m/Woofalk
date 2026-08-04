@@ -1,5 +1,5 @@
 import { Box, Container, Link, Typography } from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router";
 import { Seo } from "../_partials/_seo/Seo";
 
 const CONTACT_EMAIL = "bonjour@woofalk.com";

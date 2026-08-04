@@ -10,7 +10,7 @@ import {
     TableRow,
     Chip
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import DeleteHebergement from "./deleteHebergement";
 import EditHebergement from "./editHebergement";
 import axios from "axios";

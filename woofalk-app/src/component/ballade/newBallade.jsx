@@ -15,7 +15,7 @@ import {
     Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link } from "react-router";
 import { useForm, Controller } from "react-hook-form";
 import axios from "axios";
 import { FieldLabel } from "../_partials/_ui/FieldLabel";
@@ -96,7 +96,6 @@ function NewBallade() {
                 setShowToast(true);
             }
         } catch (err) {
-            console.log(err);
             setToastMessage({ message: "Une erreur est survenue", severity: "error" });
             setShowToast(true);
         } finally {

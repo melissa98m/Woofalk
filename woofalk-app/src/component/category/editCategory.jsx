@@ -39,7 +39,6 @@ function EditCategory(props) {
             }
 
         } catch (err) {
-            console.log(err);
         }
     }
 

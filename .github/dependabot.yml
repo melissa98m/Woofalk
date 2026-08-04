@@ -1,0 +1,38 @@
+version: 2
+updates:
+  # Keeps the SHA-pinned actions in .github/workflows/*.yml current —
+  # without this, pinning by SHA would silently freeze the CI/deploy
+  # pipeline on whatever commit was current the day it was pinned,
+  # including any security fixes actions publish afterwards.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  # Same rationale for the digest-pinned base images: a digest pin without
+  # an update mechanism just trades "can drift to an untrusted tag" for
+  # "never receives the base image's own security patches".
+  - package-ecosystem: docker
+    directory: /woofalk-api
+    schedule:
+      interval: weekly
+  - package-ecosystem: docker
+    directory: /woofalk-app
+    schedule:
+      interval: weekly
+  # docker-compose.yml (nginx/mysql/mailhog images) lives at the repo root,
+  # separate from either Dockerfile.
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: composer
+    directory: /woofalk-api
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: npm
+    directory: /woofalk-app
+    schedule:
+      interval: weekly

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Alert, Avatar, Box, Button, Chip, Container, Snackbar, Stack, Typography } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import axios from "axios";
 import PlaceIcon from "@mui/icons-material/Place";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";

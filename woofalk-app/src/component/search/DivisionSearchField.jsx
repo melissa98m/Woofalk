@@ -60,7 +60,6 @@ export function DivisionSearchField({ value, onSelect, label = "Département ou 
             }
             onSelect({ ...newValue, ...resolved, resolving: false });
         } catch (err) {
-            console.log(err);
             setError("Impossible de localiser cette zone pour le moment.");
             onSelect(null);
         }

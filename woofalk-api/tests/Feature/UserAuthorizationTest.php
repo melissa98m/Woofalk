@@ -162,12 +162,12 @@ class UserAuthorizationTest extends TestCase
 
         $response = $this->actingAs($user, 'api')->postJson('/api/users/change-password', [
             'old_password' => 'password',
-            'new_password' => 'newpassword123',
-            'confirm_password' => 'newpassword123',
+            'new_password' => 'NewPassword123',
+            'confirm_password' => 'NewPassword123',
         ]);
 
         $response->assertStatus(200);
-        $this->assertTrue(Hash::check('newpassword123', $user->fresh()->password));
+        $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
     }
 
     public function test_change_password_fails_with_wrong_old_password(): void
@@ -176,8 +176,8 @@ class UserAuthorizationTest extends TestCase
 
         $response = $this->actingAs($user, 'api')->postJson('/api/users/change-password', [
             'old_password' => 'wrong-password',
-            'new_password' => 'newpassword123',
-            'confirm_password' => 'newpassword123',
+            'new_password' => 'NewPassword123',
+            'confirm_password' => 'NewPassword123',
         ]);
 
         $response->assertStatus(400);
@@ -190,7 +190,7 @@ class UserAuthorizationTest extends TestCase
 
         $response = $this->actingAs($user, 'api')->postJson('/api/users/change-password', [
             'old_password' => 'password',
-            'new_password' => 'newpassword123',
+            'new_password' => 'NewPassword123',
             'confirm_password' => 'does-not-match',
         ]);
 

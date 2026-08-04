@@ -97,7 +97,6 @@ function EditBallade(props) {
             }
 
         } catch (err) {
-            console.log(err);
         }
     }
 

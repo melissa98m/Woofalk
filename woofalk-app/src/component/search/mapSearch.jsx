@@ -21,7 +21,7 @@ import {
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
 import { Language } from "@mui/icons-material";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from "react-leaflet";
 import { Icon, divIcon, latLng } from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -33,6 +33,7 @@ import { useSearchIndex } from "../../services/search/searchIndex";
 import { haversineDistanceKm } from "../../services/geo/haversine";
 import { formatDistance } from "../_partials/_ui/formatDistance";
 import { truncateLabel } from "../_partials/_ui/truncateLabel";
+import { isSafeHttpUrl } from "../../utils/safeUrl";
 
 const RADIUS_OPTIONS_KM = [5, 10, 25, 50, 100, 150, 250];
 const DEFAULT_RADIUS_KM = 25;
@@ -605,7 +606,7 @@ function MapSearch() {
                                                         ))}
                                                     </Box>
                                                 ) : null}
-                                                {item.website ? (
+                                                {item.website && isSafeHttpUrl(item.website) ? (
                                                     <Typography
                                                         component="a"
                                                         href={item.website}

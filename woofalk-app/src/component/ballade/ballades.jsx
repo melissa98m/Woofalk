@@ -11,7 +11,7 @@ import {
     InputAdornment,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router";
 
 import axios from "axios";
 import auth from "../../services/auth/token";

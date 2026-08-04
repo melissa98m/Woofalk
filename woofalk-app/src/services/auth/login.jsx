@@ -4,7 +4,7 @@ import Grid from "@mui/material/Grid";
 import axios from "axios";
 import React, { useState } from 'react';
 import { Controller, useForm } from "react-hook-form";
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { Link as RouterLink, useLocation, useNavigate } from "react-router";
 import { API_URL } from "../../config";
 import GoogleSignInButton from "../../component/_partials/_auth/GoogleSignInButton";
 import auth from "./token";
@@ -51,7 +51,6 @@ function Login() {
       } else {
         setToastMessage({message: "Une erreur est survenue", severity: "error"});
         setShowToast(true);
-        console.log(res);
     }
 } catch (err) {
     let errors = err.response.data;

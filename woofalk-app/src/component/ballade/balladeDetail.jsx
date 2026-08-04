@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Box, Breadcrumbs, Chip, Container, Typography } from "@mui/material";
 import { Language } from "@mui/icons-material";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router";
 import axios from "axios";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Icon } from "leaflet";
@@ -16,6 +16,7 @@ import { formatDistance } from "../_partials/_ui/formatDistance";
 import { Seo, truncateDescription } from "../_partials/_seo/Seo";
 import { breadcrumbJsonLd } from "../_partials/_seo/breadcrumbJsonLd";
 import { API_URL, SITE_URL } from "../../config";
+import { isSafeHttpUrl } from "../../utils/safeUrl";
 
 const myIcon = new Icon({ iconUrl: marker, iconSize: [32, 32] });
 
@@ -143,7 +144,7 @@ function BalladeDetail() {
                     <div><strong>Distance :</strong> {formatDistance(distance) ?? "non renseignée"}</div>
                     <div><strong>Dénivelé :</strong> {denivele != null ? `+${denivele} m` : "non renseigné"}</div>
                     {tags && tags.length > 0 ? <div><strong>Tags :</strong> {tags.map((t) => t.tag_name).join(", ")}</div> : null}
-                    {ballade_website ? (
+                    {ballade_website && isSafeHttpUrl(ballade_website) ? (
                         <div>
                             <strong>Site web :</strong>{" "}
                             <Typography

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Button, Card, CardActions, CardContent, CardMedia, Chip, Typography } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 import { API_URL } from "../../../config";
 import { LikeButton } from "./LikeButton";
 import { truncateLabel } from "./truncateLabel";

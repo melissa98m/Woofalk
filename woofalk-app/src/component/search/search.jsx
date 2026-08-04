@@ -3,7 +3,7 @@ import { Autocomplete, Box, Button, IconButton, TextField, Typography } from "@m
 import SearchIcon from "@mui/icons-material/Search";
 import PlaceIcon from "@mui/icons-material/Place";
 import DirectionsWalkIcon from "@mui/icons-material/DirectionsWalk";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useSearchIndex, buildSuggestions } from "../../services/search/searchIndex";
 
 // Compact pill (navbar/drawer) by default; variant="hero" renders the

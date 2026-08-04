@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { Box, Container, Typography } from "@mui/material";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router";
 import { useSearchIndex, normalizeText } from "../../services/search/searchIndex";
 import { PlaceCard } from "../_partials/_ui/PlaceCard";
 import { BalladeCard } from "../_partials/_ui/BalladeCard";

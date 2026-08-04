@@ -27,7 +27,6 @@ function DeleteUser(props) {
                 setToastMessage({message: "Une erreur est survenue", severity: "error"});
             }
         } catch (err) {
-            console.log(err);
         }
     }
 
