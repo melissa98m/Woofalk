@@ -1,88 +1,23 @@
-<!doctype html>
-<html lang="fr-FR">
+@extends('emails.layouts.base')
 
-<head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-    <meta name="description" content="New Account Email Template.">
-    <style type="text/css">
-        a:hover {
-            text-decoration: underline !important;
-        }
-    </style>
-</head>
+@section('title', 'Nouvelle inscription - Woofalk')
+@section('preheader', 'Un nouveau compte vient d\'être créé sur Woofalk.')
+@section('banner_bg', '#E1EBDA')
 
-<body marginheight="0" topmargin="0" marginwidth="0" style="margin: 0px; background-color: #f2f3f8;" leftmargin="0">
-<!-- 100% body table -->
-<table cellspacing="0" border="0" cellpadding="0" width="100%" bgcolor="#f2f3f8"
-       style="@import url(https://fonts.googleapis.com/css?family=Rubik:300,400,500,700|Open+Sans:300,400,600,700); font-family: 'Open Sans', sans-serif;">
-    <tr>
-        <td>
-            <table style="background-color: #E1E1E1; max-width:670px; margin:0 auto;" width="100%" border="0"
-                   align="center" cellpadding="0" cellspacing="0">
-                <tr>
-                    <td style="height:80px;">&nbsp;</td>
-                </tr>
-                <tr>
+@section('content')
+<tr><td style="padding:36px 32px 8px;">
+  <p style="margin:0 0 18px; font-family:Arial, Helvetica, sans-serif; font-size:22px; font-weight:bold; color:#362E24;">Nouvelle inscription</p>
+  <p style="margin:0 0 18px; font-family:Arial, Helvetica, sans-serif; font-size:15px; line-height:1.6; color:#362E24;">Un nouveau compte vient d'être créé sur la plateforme Woofalk.</p>
+</td></tr>
 
-                </tr>
-                <tr>
-                    <td style="height:20px;">&nbsp;</td>
-                </tr>
-                <tr>
-                    <td>
-                        <table width="95%" border="0" align="center" cellpadding="0" cellspacing="0"
-                               style="max-width:670px; background:#C3D4CF; border-radius:3px; text-align:center;-webkit-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);-moz-box-shadow:0 6px 18px 0 rgba(0,0,0,.06);box-shadow:0 6px 18px 0 rgba(0,0,0,.06);">
-                            <tr>
-                                <td style="height:40px;">&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:0 35px;">
-                                    <h1 style="color:#7BABD8; font-weight:500; margin:0;font-size:32px;font-family:'Rubik',sans-serif;">
-                                        Bonjour <span style="color: #44455f;"> {{ $username }}</span>
-                                    </h1>
-                                    <p style="font-size:15px; color:#44455f; margin:8px 0 0; line-height:24px;">
-                                        Votre compte pour la plateforme "Woofalk" a été créé, vous trouverez vos
-                                        identifiants ci-dessous<br>.</p>
-                                    <span
-                                        style="display:inline-block; vertical-align:middle; margin:29px 0 26px; border-bottom:1px solid #cecece; width:100px;"></span>
-                                    <p
-                                        style="color:#455056; font-size:18px;line-height:20px; margin:0; font-weight: 500;">
-                                        <strong
-                                            style="display: block;font-size: 13px; margin: 0 0 4px; color:rgba(0,0,0,.64); font-weight:normal;">Username</strong><span
-                                            style="text-decoration: none;color: #44455f;">{{ $username }}</span>
-                                        <strong
-                                            style="display: block; font-size: 13px; margin: 24px 0 4px 0; font-weight:normal; color:rgba(0,0,0,.64);">Email</strong><span
-                                            style="color: #44455f;">{{ $email }}</span>
-                                    </p>
-
-                                    <a href="http://localhost:3000"
-                                       style="background:#B1B3C1;text-decoration:none !important; display:inline-block; font-weight:500; margin-top:24px; color:#44455f;text-transform:uppercase; font-size:14px;padding:10px 24px;display:inline-block;border-radius:50px;">connectez
-                                        vous</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="height:40px;">&nbsp;</td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="height:20px;">&nbsp;</td>
-                </tr>
-                <tr>
-                    <td style="text-align:center;">
-                        <p style="font-size:14px; line-height:18px; margin:0 0 0; color: #44455f">&copy;<strong>www.woofalk.com</strong>
-                        </p>
-                    </td>
-                </tr>
-                <tr>
-                    <td style="height:80px;">&nbsp;</td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<!--/100% body table-->
-</body>
-
-</html>
+<tr><td style="padding:0 32px 32px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#F5F0E6; border-radius:16px;">
+    <tr><td style="padding:20px 24px;">
+      <p style="margin:0 0 8px; font-family:Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; color:#6B6153; text-transform:uppercase; letter-spacing:0.04em;">Nom d'utilisateur</p>
+      <p style="margin:0 0 16px; font-family:Arial, Helvetica, sans-serif; font-size:15px; color:#362E24;">{{ $username }}</p>
+      <p style="margin:0 0 8px; font-family:Arial, Helvetica, sans-serif; font-size:13px; font-weight:bold; color:#6B6153; text-transform:uppercase; letter-spacing:0.04em;">Email</p>
+      <p style="margin:0; font-family:Arial, Helvetica, sans-serif; font-size:15px; color:#362E24;">{{ $email }}</p>
+    </td></tr>
+  </table>
+</td></tr>
+@endsection

@@ -8,15 +8,14 @@ return [
     |--------------------------------------------------------------------------
     |
     | This file is for storing the credentials for third party services such
-    | as Mailjet, Postmark, AWS and more. This file provides the de facto
+    | as Resend, Postmark, AWS and more. This file provides the de facto
     | location for this type of information, allowing packages to have
     | a conventional file to locate the various service credentials.
     |
     */
 
-    'mailjet' => [
-        'key' => env('MAILJET_KEY'),
-        'secret' => env('MAILJET_SECRET'),
+    'resend' => [
+        'key' => env('RESEND_KEY'),
     ],
 
     'postmark' => [

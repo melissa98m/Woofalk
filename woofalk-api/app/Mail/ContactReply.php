@@ -15,7 +15,7 @@ class ContactReply extends Mailable
 
     public function build()
     {
-        return $this->from('melissa.mangione+supportwoofalk@gmail.com', 'Woofalk')
+        return $this->from('contact@woofalk.com', 'Woofalk')
             ->view('emails.contact-reply')
             ->subject('Réponse à votre message - Woofalk')
             ->with([

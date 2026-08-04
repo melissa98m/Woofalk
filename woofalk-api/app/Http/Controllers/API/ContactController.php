@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Mail\Contact as MailContact;
+use App\Mail\ContactConfirmation;
 use App\Mail\ContactReply;
 use App\Models\Contact;
 use Illuminate\Http\Request;
@@ -56,6 +57,7 @@ class ContactController extends Controller
 
         Mail::to('melissa.mangione@gmail.com') // permet définir de qui est envoyé le mail
             ->send(new MailContact($contact));
+        Mail::to($contact->email, $contact->name)->send(new ContactConfirmation($contact));
 
         return response()->json([
             'status' => 'success',

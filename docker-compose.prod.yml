@@ -37,7 +37,7 @@ services:
     # given key — without this override, those dev defaults (including the
     # dev DB password) would silently leak into prod and take priority over
     # the real values in .env.production. Only non-secret, infra-level
-    # constants belong here; secrets (DB credentials, MAIL_MAILER, Mailjet
+    # constants belong here; secrets (DB credentials, MAIL_MAILER, Resend
     # keys, APP_KEY/JWT_SECRET) stay in .env.production via env_file, which
     # now has nothing left in this map to be overridden by.
     environment: !override

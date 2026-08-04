@@ -23,7 +23,7 @@ class Register extends Mailable
      */
     public function build()
     {
-        return $this->from("melissa.mangione+woofalk@gmail.com")
+        return $this->from('noreply@woofalk.com', 'Woofalk')
                     ->view('emails.register')
                     ->subject("Inscription à la plateforme Woofalk")
                     ->with([ //ici j'assigne aux variables les données rentrées dans le formulaire pour les envoyer à la vue

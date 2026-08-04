@@ -15,7 +15,7 @@
         "symfony/css-selector": "^7.4",
         "symfony/dom-crawler": "^7.4",
         "symfony/http-client": "^7.0",
-        "symfony/mailjet-mailer": "^7.4"
+        "symfony/resend-mailer": "^7.4"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

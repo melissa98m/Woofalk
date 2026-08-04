@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
-use Symfony\Component\Mailer\Bridge\Mailjet\Transport\MailjetTransportFactory;
+use Symfony\Component\Mailer\Bridge\Resend\Transport\ResendTransportFactory;
 use Symfony\Component\Mailer\Transport\Dsn;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,11 +32,11 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
-        Mail::extend('mailjet', function () {
-            $credentials = Config::get('services.mailjet', []);
+        Mail::extend('resend', function () {
+            $credentials = Config::get('services.resend', []);
 
-            return (new MailjetTransportFactory)->create(
-                new Dsn('mailjet+api', 'default', $credentials['key'] ?? null, $credentials['secret'] ?? null)
+            return (new ResendTransportFactory)->create(
+                new Dsn('resend+api', 'default', $credentials['key'] ?? null)
             );
         });
     }

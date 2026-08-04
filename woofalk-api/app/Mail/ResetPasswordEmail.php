@@ -29,7 +29,7 @@ class ResetPasswordEmail extends Mailable
     {
         return $this->subject('Réinitialisation de mot de passe')
             ->view('emails.reset-password')
-            ->from("melissa.mangione+woofalk@gmail.com")
+            ->from('noreply@woofalk.com', 'Woofalk')
             ->with([
                 'url' => 'http://localhost:3000/reset-password/' . $this->token
             ]);

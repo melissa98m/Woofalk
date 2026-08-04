@@ -27,7 +27,7 @@ class Contact extends Mailable
      */
     public function build()
     {
-        return $this->from('melissa.mangione+supportwoofalk@gmail.com')
+        return $this->from('contact@woofalk.com', 'Woofalk')
             ->view('emails.contact')
             ->subject('Message provenant de la plateforme Woofalk')
             ->with([ // ici j'assigne aux variables les données rentrées dans le formulaire pour les envoyer à la vue

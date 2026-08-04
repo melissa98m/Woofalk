@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Mail\Register as MailRegister;
 use App\Mail\ResetPasswordEmail;
+use App\Mail\Welcome;
 use App\Models\User;
 use App\Services\Auth\GoogleTokenVerifierContract;
 use Exception;
@@ -190,6 +191,7 @@ class AuthController extends Controller
         ]);
         Mail::to('melissa.mangione@gmail.com') // permet définir de qui est envoyé le mail
             ->send(new MailRegister($user));
+        Mail::to($user->email, $user->username)->send(new Welcome($user));
 
         // Registration does not log the user in — the front-end sends them
         // to the login page afterwards, so no cookie/token is issued here.

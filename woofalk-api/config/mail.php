@@ -28,7 +28,7 @@ return [
     | sending an e-mail. You will specify which one you are using for your
     | mailers below. You are free to add additional mailers as required.
     |
-    | Supported: "smtp", "sendmail", "mailjet", "ses",
+    | Supported: "smtp", "sendmail", "resend", "ses",
     |            "postmark", "log", "array", "failover"
     |
     */
@@ -36,7 +36,7 @@ return [
     'mailers' => [
         'smtp' => [
             'transport' => 'smtp',
-            'host' => env('MAIL_HOST', 'in-v3.mailjet.com'),
+            'host' => env('MAIL_HOST', 'smtp.resend.com'),
             'port' => env('MAIL_PORT', 587),
             'encryption' => env('MAIL_ENCRYPTION', 'tls'),
             'username' => env('MAIL_USERNAME'),
@@ -49,8 +49,8 @@ return [
             'transport' => 'ses',
         ],
 
-        'mailjet' => [
-            'transport' => 'mailjet',
+        'resend' => [
+            'transport' => 'resend',
         ],
 
         'postmark' => [

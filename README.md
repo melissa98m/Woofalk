@@ -16,7 +16,7 @@ Le dépôt contient trois sous-projets indépendants, chacun avec son propre arb
 | Auth | JWT (`php-open-source-saver/jwt-auth`), middleware `auth:api` | Rôles décodés côté client depuis le JWT (`roles`: `ROLE_ADMIN` / `ROLE_USER`) |
 | UI | — | MUI v9 |
 | Base de données | MySQL | — |
-| Emails | Mailjet en prod, Mailhog en local | — |
+| Emails | Resend en prod, Mailhog en local | — |
 | Cartes | — | `react-leaflet` / `leaflet` |
 | Graphiques (dashboard admin) | — | `chart.js`, `@devexpress/dx-react-chart-material-ui` |
 | Tests | PHPUnit (`tests/Feature`, `tests/Unit`) | Vitest + Testing Library |
@@ -125,7 +125,7 @@ Principales variables d'environnement de l'API (`woofalk-api/.env`) :
     DB_DATABASE    Le nom de la base de données.
     DB_USERNAME    Le nom d'utilisateur de la base de données.
     DB_PASSWORD    Le mot de passe de la base de données.
-    MAIL_MAILER    Le transport d'email (smtp/mailhog en local, mailjet en prod).
+    MAIL_MAILER    Le transport d'email (smtp/mailhog en local, resend en prod).
 
 Côté front (`woofalk-app/.env`) :
 
