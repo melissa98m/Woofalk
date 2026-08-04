@@ -1,0 +1,48 @@
+name: Web CI
+
+# Scoped to woofalk-app only. No deploy job here: the front-end deploys via
+# Vercel's own GitHub integration (see CLAUDE.md), decoupled from this repo's
+# Actions — this workflow is just the test/build/bundle-budget gate.
+on:
+  push:
+    paths:
+      - "woofalk-app/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "woofalk-app/**"
+      - ".github/workflows/web-ci.yml"
+
+defaults:
+  run:
+    working-directory: woofalk-app
+
+jobs:
+  test:
+    name: Test, build & bundle budget
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: woofalk-app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      # Fails the build if the entry chunk grows past scripts/check-bundle-size.mjs's
+      # budget — see that file for the current threshold and why it was picked.
+      - name: Check bundle size budget
+        run: npm run check:bundle-size

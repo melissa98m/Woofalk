@@ -4,9 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@devexpress/dx-react-chart": "^4.0.11",
-    "@devexpress/dx-react-chart-material-ui": "^4.0.11",
-    "@devexpress/dx-react-core": "^4.0.11",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
@@ -14,12 +11,10 @@
     "@mui/lab": "^9.0.0-beta.6",
     "@mui/material": "^9.2.0",
     "axios": "^1.18.1",
-    "chart.js": "^4.5.1",
     "immutability-helper": "^3.1.1",
     "jwt-decode": "^4.0.0",
     "leaflet": "^1.9.4",
     "react": "^19.2.8",
-    "react-chartjs-2": "^5.3.1",
     "react-dom": "^19.2.8",
     "react-helmet-async": "^3.0.0",
     "react-hook-form": "^7.82.0",
@@ -35,6 +30,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@vitejs/plugin-react": "^4.3.4",
     "jsdom": "^26.0.0",
+    "rollup-plugin-visualizer": "^7.0.1",
     "vite": "^6.0.11",
     "vitest": "^3.0.4"
   },
@@ -43,7 +39,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview --host --port 3000",
-    "test": "vitest run"
+    "test": "vitest run",
+    "check:bundle-size": "node scripts/check-bundle-size.mjs"
   },
   "browserslist": {
     "production": [

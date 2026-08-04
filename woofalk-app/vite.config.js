@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 
 // The production headers (incl. CSP) live in vercel.json, since that's what
 // actually serves the deployed front-end. These dev-server headers are just
@@ -14,7 +15,14 @@ const securityHeaders = {
 };
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Off by default — a stats page on every build is noise. Run
+    // `ANALYZE=true npm run build` to inspect what's actually in each chunk.
+    process.env.ANALYZE
+      ? visualizer({ filename: "dist/stats.html", gzipSize: true, brotliSize: true, open: false })
+      : null,
+  ],
   server: {
     host: true,
     port: 3000,
